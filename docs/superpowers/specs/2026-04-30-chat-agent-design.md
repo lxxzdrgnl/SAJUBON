@@ -29,6 +29,12 @@ Dexter 스타일의 사주 상담 채팅 Agent. LangGraph ReAct 패턴 + Postgre
        ▼
 Router → Service → LangGraph ReAct Agent
                          │
+                    [guard_node]          입력 검증 + 차단
+                         │
+                    [agent_node]          LLM 추론
+                         │
+                    [tools_node]          tool 실행
+                         │
           ┌──────────────┼──────────────┐
           ▼              ▼              ▼
      search_rag   get_daily_fortune  get_wol_un / get_dae_un
@@ -63,8 +69,14 @@ class ChatState(TypedDict):
     "yong_sin": ["화", "토"],
     "ji_sin": ["금", "수"],
     "strength": "신약",
-    "pillars": { ... },       # 4기둥 간략
-    "current_dae_un": { ... },
+    "pillars": {
+        "year":  {"stem": "경", "branch": "오"},
+        "month": {"stem": "무", "branch": "자"},
+        "day":   {"stem": "갑", "branch": "진"},
+        "hour":  {"stem": "병", "branch": "인"},
+    },
+    "current_dae_un": {"stem": "임", "branch": "술", "start_age": 32, "end_age": 42},
+    "wuxing_pct": {"목": 25.0, "화": 12.5, "토": 37.5, "금": 12.5, "수": 12.5},
 }
 ```
 
@@ -151,13 +163,25 @@ class ChatSession(Base):
 
     id: UUID (PK)              # = LangGraph thread_id
     user_id: int (FK)
-    title: str | None          # 첫 메시지에서 자동 생성 (나중에)
-    birth_info: JSON           # {date, time, gender, calendar}
+    title: str | None          # 보류
+    birth_info: JSON           # {date, time, gender, calendar} — saju_summary 재생성용
     created_at: datetime
     last_message_at: datetime
+
+class ChatReport(Base):
+    __tablename__ = "chat_reports"
+
+    id: int (PK, autoincrement)
+    session_id: UUID (FK → chat_sessions.id)
+    summary: str
+    key_insights: JSON         # list[str]
+    advice: JSON               # list[str]
+    topics_covered: JSON       # list[str]
+    created_at: datetime
 ```
 
-메시지는 LangGraph `AsyncPostgresSaver`가 자체 테이블(`checkpoints` 등)에 관리.
+메시지는 LangGraph `AsyncPostgresSaver`가 자체 테이블(`checkpoints` 등)에 관리.  
+`GET /api/chat/{id}/history`는 checkpointer에서 thread_id로 메시지를 읽어 반환.
 
 ---
 
