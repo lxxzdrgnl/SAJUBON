@@ -1,4 +1,4 @@
-PHOENIX_ENDPOINT := http://localhost:6006/v1/traces
+PHOENIX_ENDPOINT := http://localhost:4318/v1/traces
 PHOENIX_PROJECT := sajuguri-chat
 
 # ─── 일반 개발 ───────────────────────────────────────────────────────────────

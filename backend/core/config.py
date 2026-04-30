@@ -35,9 +35,11 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 15  # 15분 (short-lived)
     refresh_token_expire_days: int = 30  # 30일
 
-    # Observability — Arize Phoenix (optional)
+    # Observability — IQHub / Arize Phoenix (optional)
+    # IQHub: cd /home/rheon/Desktop/projects/my-own-phoenix && docker compose up -d
+    # 포트: 4318 = OTLP HTTP (트레이스 수신), 6006 = Phoenix UI, 3000 = IQHub 대시보드
     phoenix_enabled: bool = False
-    phoenix_endpoint: str = "http://localhost:6006/v1/traces"
+    phoenix_endpoint: str = "http://localhost:4318/v1/traces"
     phoenix_project: str = "sajuguri-chat"
 
     @property
