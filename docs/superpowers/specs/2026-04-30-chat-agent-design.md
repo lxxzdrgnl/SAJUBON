@@ -29,16 +29,16 @@ Dexter 스타일의 사주 상담 채팅 Agent. LangGraph ReAct 패턴 + Postgre
        ▼
 Router → Service → LangGraph ReAct Agent
                          │
-                    [guard_node]          입력 검증 + 차단
+                    [guard_node]     입력 검증 + 차단
                          │
-                    [agent_node]          LLM 추론
+                    [agent_node]     LLM 추론 (saju_summary 시스템 프롬프트 주입)
                          │
-                    [tools_node]          tool 실행
+                    [tools_node]     tool 실행 (12개)
                          │
-          ┌──────────────┼──────────────┐
-          ▼              ▼              ▼
-     search_rag   get_daily_fortune  get_wol_un / get_dae_un
-     (RAG)        (engine handler)   (engine handlers)
+          ┌──────────────┼───────────────────────┐
+          ▼              ▼                        ▼
+      RAG 검색      운세 계산 tool            날짜/시기 tool
+    (search_rag)  (daily/wol/dae/yeon/il_jin) (evaluate_date, past_event, sinsal)
           │
           ▼
     AsyncPostgresSaver (기존 PostgreSQL)
@@ -56,31 +56,49 @@ Router → Service → LangGraph ReAct Agent
 ```python
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
-    birth_info: dict          # {date, time, gender, calendar}
-    saju_summary: dict        # 세션 시작 시 1회 계산, 이후 재사용
+    birth_info: dict       # {date, time, gender, calendar}
+    saju_summary: dict     # 세션 시작 시 1회 계산, 이후 재사용
 ```
 
-**saju_summary 구조:**
+**saju_summary 구조 (세션 내내 시스템 프롬프트에 주입):**
 ```python
 {
+    # 핵심 결론
     "day_stem": "갑",
     "day_element": "목",
     "gyeok_guk": "정관격",
     "yong_sin": ["화", "토"],
     "ji_sin": ["금", "수"],
     "strength": "신약",
+
+    # 4기둥
     "pillars": {
         "year":  {"stem": "경", "branch": "오"},
         "month": {"stem": "무", "branch": "자"},
         "day":   {"stem": "갑", "branch": "진"},
         "hour":  {"stem": "병", "branch": "인"},
     },
+
+    # 운
     "current_dae_un": {"stem": "임", "branch": "술", "start_age": 32, "end_age": 42},
     "wuxing_pct": {"목": 25.0, "화": 12.5, "토": 37.5, "금": 12.5, "수": 12.5},
+
+    # Agent 해석용 (tool 없이 직업/재물/관계/건강 질문에 바로 답하기 위해)
+    "ten_gods_distribution": {"정관": 35.0, "식신": 20.0, ...},
+    "structure_patterns": ["종격 아님", "식신생재 구조"],
+    "sin_sals": [{"name": "천을귀인", "type": "lucky"}, ...],
+    "behavior_profile": {"독립성": 0.8, "사교성": 0.4, ...},
+    "life_domains": {
+        "직업": ["안정적", "조직적", "전문직"],
+        "연애": ["늦은 결혼", "관성 약함"],
+        "재물": ["재성 중간", "식신생재"],
+        "건강": ["목 기운 과다", "토 허약"],
+    },
+    "branch_relations": {"삼합": [...], "충": [...], "합": [...]},
 }
 ```
 
-전체 엔진 결과(~50개 키)는 저장하지 않음 → 체크포인트 비대화 방지.
+전체 엔진 결과(~50개 키)가 아닌 이 요약만 저장 → 체크포인트 비대화 방지.
 
 ---
 
@@ -92,7 +110,7 @@ POST /api/chat/session
   └─ handle_calculate_saju() 호출
   └─ extract_summary() → saju_summary
   └─ LangGraph initial state 저장
-  └─ ChatSession DB 저장 (thread_id + user_id)
+  └─ ChatSession DB 저장 (thread_id + user_id + birth_info)
 ```
 
 ### 이후 매 턴
@@ -100,17 +118,21 @@ POST /api/chat/session
 
 ```python
 def agent_node(state: ChatState):
-    system = f"""당신은 사주 상담가입니다.
-
-[사용자 사주]
-일간: {state['saju_summary']['day_stem']} ({state['saju_summary']['day_element']})
-격국: {state['saju_summary']['gyeok_guk']}
-용신: {', '.join(state['saju_summary']['yong_sin'])}
-...
-"""
+    system = build_chat_system_prompt(state["saju_summary"])
     messages = [SystemMessage(content=system)] + state["messages"]
     return {"messages": [llm_with_tools.invoke(messages)]}
 ```
+
+### Agent 직접 해석 (tool 불필요)
+saju_summary에 이미 있는 데이터로 agent가 바로 답변:
+
+| 질문 유형 | 사용 데이터 | 보완 |
+|---|---|---|
+| "나한테 맞는 직업은?" | `life_domains["직업"]` + `gyeok_guk` | `search_rag` |
+| "돈 버는 팔자인가요?" | `ten_gods_distribution` + `structure_patterns` | `search_rag` |
+| "왜 연애가 안 될까요?" | `sin_sals` + `life_domains["연애"]` | `search_rag` |
+| "어디 몸이 약한가요?" | `life_domains["건강"]` + `ji_sin` | `search_rag` |
+| "내 성격이 어때요?" | `behavior_profile` + `gyeok_guk` | `search_rag` |
 
 ### CLI 세션 생성
 - 인자(`--birth-date`, `--birth-time`, `--gender`) 있으면 즉시 계산
@@ -118,16 +140,38 @@ def agent_node(state: ChatState):
 
 ---
 
-## 5. Agent Tools
+## 5. Agent Tools (12개)
 
-| Tool | 설명 | 내부 호출 |
+모든 tool은 `async def` + `asyncio.to_thread()` 패턴으로 이벤트 루프 블로킹 방지.  
+데이터 반환만 담당, 해석은 Agent가 수행.
+
+### RAG
+| Tool | 설명 |
+|---|---|
+| `search_rag(query, domain)` | 명리 지식 RAG 검색 |
+
+### 운세 계산
+| Tool | 설명 | 답하는 질문 |
 |---|---|---|
-| `search_rag` | 명리 지식 검색 | `handle_search_by_context()` |
-| `get_daily_fortune` | 오늘/특정일 운세 | `handle_get_daily_fortune()` |
-| `get_wol_un` | 월운 | `get_wol_un()` handler |
-| `get_dae_un` | 대운 목록 | `get_dae_un()` handler |
+| `get_daily_fortune(date?)` | 오늘/특정일 운세 | "오늘 운세 어때요?" |
+| `get_wol_un(year)` | 특정 연도 월운 12개 | "이번 달 운세는?" |
+| `get_dae_un()` | 대운 전체 목록 | "앞으로 대운 흐름은?" |
+| `get_yeon_un(start, count)` | N년치 연운 | "향후 5년 운세 보여줘" |
+| `get_il_jin(year, month)` | 일진 달력 | "좋은 날 언제예요?" |
+| `get_current_luck_overview()` | 현재 대운+세운+월운 교차 | "지금 어떤 시기예요?" |
+| `find_favorable_periods(domain, years)` | 도메인별 길한 시기 | "결혼/사업 언제가 좋아요?" |
 
-모든 tool은 `async def` + `asyncio.to_thread()` 패턴으로 블로킹 방지.
+### 날짜·시기 특수 계산
+| Tool | 설명 | 답하는 질문 |
+|---|---|---|
+| `evaluate_specific_date(date, action)` | 특정 날짜 길흉 판단 | "3월 20일에 계약해도 될까요?" |
+| `explain_past_event(date)` | 과거 시기 세운/월운 역산 | "작년에 왜 그렇게 힘들었나요?" |
+| `check_current_sin_sal_timing()` | 현재 신살 발동 여부 | "지금 삼재인가요?" |
+
+### 유틸
+| Tool | 설명 | 답하는 질문 |
+|---|---|---|
+| `convert_calendar(date, from, to)` | 음력↔양력 변환 | "음력 생일인데요" |
 
 ---
 
@@ -191,12 +235,12 @@ class ChatReport(Base):
 backend/
 ├── llm/
 │   ├── tools/
-│   │   └── saju_tools.py         # @tool 래퍼 4개 + extract_summary()
+│   │   └── saju_tools.py         # @tool 래퍼 12개 + extract_summary()
 │   ├── pipelines/
 │   │   ├── chat.py               # LangGraph StateGraph 정의
 │   │   └── chat_report.py        # 채팅→리포트 파이프라인
 │   └── prompts/
-│       └── chat.py               # 채팅 system prompt 포맷터
+│       └── chat.py               # 채팅 system prompt 포맷터 (build_chat_system_prompt)
 ├── routers/
 │   └── chat.py
 ├── services/
@@ -204,7 +248,7 @@ backend/
 ├── crud/
 │   └── chat.py
 ├── models/
-│   └── chat.py                   # ChatSession
+│   └── chat.py                   # ChatSession, ChatReport
 └── cli.py                        # typer CLI 진입점
 ```
 
@@ -214,20 +258,23 @@ backend/
 
 - **선제 질문**: 고민이 불명확하면 tool 호출 전 맥락 파악 질문 1개 먼저
 - **질문 제한**: 한 번에 1개 이하 (대화 흐름 방해 방지)
-- **효과**: 대화 히스토리에 사용자 맥락이 쌓여 리포트 품질 향상
+- **해석 원칙**: tool은 데이터만 반환, 사주 해석은 항상 Agent가 수행
+- **효과**: 대화 히스토리에 사용자 맥락이 쌓여 채팅 리포트 품질 향상
 
 ---
 
 ## 10. 에러 처리
 
 - Tool 실패 → 구조화된 에러 메시지 반환 (RuntimeError 미전파), agent가 fallback 응답
-- Guard 차단 → LangGraph 노드에서 early return, 차단 메시지 스트리밍
+- Guard 차단 → guard_node에서 early return, 차단 메시지 스트리밍
 - LLM 파싱 실패 → `_parse_with_recovery` 2회 재시도, 그래도 실패 시 degraded 응답
 
 ---
 
-## 11. 보류 (Phase 5 이후)
+## 11. 보류 (이후)
 
-- 궁합 tool 추가
+- `get_compatibility_detail` — 궁합 tool (Phase 5)
+- `find_best_timing` — 월운+일진 교차 최적 날짜 (구현 복잡)
+- `get_child_luck` — 자녀 인연 분석
 - 세션 title 자동 생성
 - 프론트엔드 채팅 UI
