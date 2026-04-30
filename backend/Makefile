@@ -1,4 +1,3 @@
-PHOENIX_DIR := ../../my-own-phoenix
 PHOENIX_ENDPOINT := http://localhost:6006/v1/traces
 PHOENIX_PROJECT := sajuguri-chat
 
@@ -7,20 +6,11 @@ PHOENIX_PROJECT := sajuguri-chat
 dev:
 	uv run uvicorn main:app --reload --port 8000
 
-# ─── Phoenix 관찰 (원할 때만) ────────────────────────────────────────────────
+# ─── Phoenix 트레이싱 (my-own-phoenix가 실행 중일 때만) ──────────────────────
+# Phoenix 시작: cd /home/rheon/Desktop/projects/my-own-phoenix && docker compose up -d
 
-phoenix-up:
-	cd $(PHOENIX_DIR) && docker compose up -d phoenix
-	@echo "Phoenix UI → http://localhost:6006"
-
-phoenix-down:
-	cd $(PHOENIX_DIR) && docker compose stop phoenix
-
-dev-phoenix: phoenix-up
+dev-phoenix:
 	PHOENIX_ENABLED=true \
 	PHOENIX_ENDPOINT=$(PHOENIX_ENDPOINT) \
 	PHOENIX_PROJECT=$(PHOENIX_PROJECT) \
 	uv run uvicorn main:app --reload --port 8000
-
-phoenix-logs:
-	cd $(PHOENIX_DIR) && docker compose logs -f phoenix
