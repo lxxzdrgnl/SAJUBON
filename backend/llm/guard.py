@@ -52,6 +52,7 @@ _MEDICAL_KW = ("약 복용", "치료법", "처방", "입원", "항생제", "진�
 async def guard_and_classify(
     question: str,
     provider: str | None = None,
+    history: list[dict] | None = None,
 ) -> tuple[str | None, str, bool]:
     """
     Guard + 카테고리 자동 분류를 LLM 호출 1회로 처리.
@@ -62,9 +63,16 @@ async def guard_and_classify(
         category:   'career' | 'love' | 'money' | 'health' | 'general'
         is_instant: True면 즉시 답변 반환 (사주 분석 생략)
     """
+    system_content = _GUARD_PROMPT
+    if history:
+        history_text = "\n".join(
+            f"{'사용자' if m.get('role') == 'user' else 'AI'}: {m.get('content', '')}"
+            for m in history[-6:]  # 최근 6개만
+        )
+        system_content = system_content + f"\n\n[이전 대화]\n{history_text}"
     llm = get_llm(provider)
     resp = await llm.ainvoke([
-        SystemMessage(content=_GUARD_PROMPT),
+        SystemMessage(content=system_content),
         HumanMessage(content=f"고민: {question}"),
     ])
     raw = (resp.content if hasattr(resp, "content") else str(resp)).strip()
