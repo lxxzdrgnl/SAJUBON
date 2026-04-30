@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 15  # 15분 (short-lived)
     refresh_token_expire_days: int = 30  # 30일
 
+    @property
+    def postgres_url(self) -> str:
+        """LangGraph AsyncPostgresSaver용 psycopg3 URL."""
+        return self.database_url.replace("postgresql+asyncpg://", "postgresql://")
+
     class Config:
         env_file = ".env"
         extra = "ignore"

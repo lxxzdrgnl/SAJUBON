@@ -92,3 +92,32 @@ class Consultation(Base):
     content:     Mapped[str]            = mapped_column(Text, nullable=False)
     share_token: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), unique=True, nullable=True, default=None)
     created_at:  Mapped[datetime]       = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
+
+    id:               Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id:          Mapped[int]       = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    title:            Mapped[str | None] = mapped_column(String(200), nullable=True)
+    birth_info:       Mapped[dict]      = mapped_column(JSONB, nullable=False)
+    created_at:       Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
+    last_message_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class ChatReport(Base):
+    __tablename__ = "chat_reports"
+
+    id:             Mapped[int]       = mapped_column(Integer, primary_key=True)
+    session_id:     Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("chat_sessions.id", ondelete="CASCADE"), nullable=False
+    )
+    summary:        Mapped[str]       = mapped_column(Text, nullable=False)
+    key_insights:   Mapped[list]      = mapped_column(JSONB, nullable=False)
+    advice:         Mapped[list]      = mapped_column(JSONB, nullable=False)
+    topics_covered: Mapped[list]      = mapped_column(JSONB, nullable=False)
+    created_at:     Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)

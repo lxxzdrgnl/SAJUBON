@@ -23,6 +23,7 @@ class ErrorCode(str, Enum):
     RESOURCE_NOT_FOUND    = "RESOURCE_NOT_FOUND"
     REPORT_NOT_FOUND      = "REPORT_NOT_FOUND"
     USER_NOT_FOUND        = "USER_NOT_FOUND"
+    CHAT_SESSION_NOT_FOUND = "CHAT_SESSION_NOT_FOUND"
     # 409 Conflict
     DUPLICATE_RESOURCE    = "DUPLICATE_RESOURCE"
     STATE_CONFLICT        = "STATE_CONFLICT"
@@ -51,6 +52,7 @@ _STATUS_MAP: dict[ErrorCode, int] = {
     ErrorCode.RESOURCE_NOT_FOUND:    404,
     ErrorCode.REPORT_NOT_FOUND:      404,
     ErrorCode.USER_NOT_FOUND:        404,
+    ErrorCode.CHAT_SESSION_NOT_FOUND: 404,
     ErrorCode.DUPLICATE_RESOURCE:    409,
     ErrorCode.STATE_CONFLICT:        409,
     ErrorCode.UNPROCESSABLE_ENTITY:  422,

@@ -111,3 +111,12 @@ class LLMFailedException(AppException):
             "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
             {"detail": detail} if detail else None,
         )
+
+
+class ChatSessionNotFoundException(AppException):
+    def __init__(self, session_id: str):
+        super().__init__(
+            ErrorCode.CHAT_SESSION_NOT_FOUND,
+            "채팅 세션을 찾을 수 없습니다.",
+            {"session_id": session_id},
+        )
