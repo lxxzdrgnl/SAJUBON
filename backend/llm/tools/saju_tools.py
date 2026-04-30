@@ -16,6 +16,9 @@ from engine.handlers.get_yeon_un import handle_get_yeon_un
 from engine.handlers.get_il_jin import handle_get_il_jin
 from engine.handlers.convert_calendar import handle_convert_calendar
 from rag.search import handle_search_by_context
+from engine.calc.ten_gods import calculate_ten_god, get_branch_ten_god
+from engine.calc.se_un import calc_year_ganji, calc_month_ganji, get_element_interaction
+from engine.calc.twelve_wun import get_twelve_wun
 
 
 def _birth_info(config: RunnableConfig) -> dict:
@@ -163,4 +166,184 @@ async def convert_calendar(
         from_calendar=from_calendar,
         to_calendar=to_calendar,
     )
+    return json.dumps(result, ensure_ascii=False)
+
+
+# ─── Domain-to-ten-god mapping ─────────────────────────────────────────────
+_DOMAIN_TEN_GODS: dict[str, list[str]] = {
+    "연애": ["정관", "편관", "정재", "편재"],
+    "재물": ["정재", "편재", "식신", "상관"],
+    "직업": ["정관", "편관", "정인"],
+    "이사": ["편관", "식신"],
+    "general": [],
+}
+
+_SAM_JAE_MAP: dict[str, list[str]] = {
+    "인": ["신", "유", "술"], "오": ["신", "유", "술"], "술": ["신", "유", "술"],
+    "사": ["해", "자", "축"], "유": ["해", "자", "축"], "축": ["해", "자", "축"],
+    "신": ["인", "묘", "진"], "자": ["인", "묘", "진"], "진": ["인", "묘", "진"],
+    "해": ["사", "오", "미"], "묘": ["사", "오", "미"], "미": ["사", "오", "미"],
+}
+
+
+def _compute_current_luck_overview(saju: dict) -> dict:
+    today = date_type.today()
+    day_stem = saju["day_pillar"]["stem"]
+    day_el = saju["day_pillar"]["stem_element"]
+    yong_sin = saju["yong_sin"].get("primary", [])
+
+    se_un_ganji = calc_year_ganji(today.year)
+    se_un = {
+        **se_un_ganji,
+        "year": today.year,
+        "stem_ten_god":   calculate_ten_god(day_stem, se_un_ganji["stem"]),
+        "branch_ten_god": get_branch_ten_god(day_stem, se_un_ganji["branch"]),
+        "twelve_wun":     get_twelve_wun(se_un_ganji["stem"], se_un_ganji["branch"]),
+        "interaction_with_day_master": get_element_interaction(se_un_ganji["stem_element"], day_el),
+        "interaction_with_yong_sin":   get_element_interaction(
+            se_un_ganji["stem_element"], yong_sin[0] if yong_sin else ""
+        ),
+    }
+
+    wol_ganji = calc_month_ganji(today.year, today.month)
+    wol_un = {
+        **wol_ganji,
+        "month": today.month,
+        "stem_ten_god":   calculate_ten_god(day_stem, wol_ganji["stem"]),
+        "branch_ten_god": get_branch_ten_god(day_stem, wol_ganji["branch"]),
+        "twelve_wun":     get_twelve_wun(wol_ganji["stem"], wol_ganji["branch"]),
+        "interaction_with_day_master": get_element_interaction(wol_ganji["stem_element"], day_el),
+    }
+
+    return {
+        "current_dae_un": saju["current_dae_un"],
+        "se_un": se_un,
+        "wol_un": wol_un,
+        "yong_sin": yong_sin,
+        "ji_sin": saju["yong_sin"].get("taboo", []),
+    }
+
+
+def _compute_find_favorable_periods(saju: dict, domain: str, years: int = 5) -> dict:
+    day_stem = saju["day_pillar"]["stem"]
+    yong_sin = saju["yong_sin"].get("primary", [])
+    start = date_type.today().year
+    yeon_un = handle_get_yeon_un(start_year=start, count=min(years, 10), day_stem=day_stem)
+
+    domain_gods = _DOMAIN_TEN_GODS.get(domain, [])
+    favorable, neutral = [], []
+    for y in yeon_un:
+        score = 0
+        if y.get("stem_element") in yong_sin or y.get("branch_element") in yong_sin:
+            score += 1
+        if domain_gods and y.get("stem_ten_god") in domain_gods:
+            score += 1
+        entry = {**y, "favorability_score": score}
+        (favorable if score >= 1 else neutral).append(entry)
+
+    return {"domain": domain, "favorable": favorable, "neutral_or_unfavorable": neutral}
+
+
+def _compute_evaluate_specific_date(saju: dict, target_date: str, action: str) -> dict:
+    day_stem = saju["day_pillar"]["stem"]
+    yong_sin = saju["yong_sin"].get("primary", [])
+    ji_sin = saju["yong_sin"].get("taboo", [])
+
+    y, m, _ = map(int, target_date.split("-"))
+    il_jin_list = handle_get_il_jin(y, m)
+    target_day = next((x for x in il_jin_list if x.get("date") == target_date), None)
+    if not target_day:
+        return {"error": f"날짜를 찾을 수 없습니다: {target_date}"}
+
+    return {
+        "date": target_date,
+        "ganji": target_day.get("ganji_name", ""),
+        "stem": target_day.get("stem", ""),
+        "branch": target_day.get("branch", ""),
+        "stem_element": target_day.get("stem_element", ""),
+        "branch_element": target_day.get("branch_element", ""),
+        "stem_ten_god": calculate_ten_god(day_stem, target_day["stem"]) if target_day.get("stem") else "",
+        "branch_ten_god": get_branch_ten_god(day_stem, target_day["branch"]) if target_day.get("branch") else "",
+        "favorable": (
+            target_day.get("stem_element") in yong_sin or
+            target_day.get("branch_element") in yong_sin
+        ),
+        "unfavorable": (
+            target_day.get("stem_element") in ji_sin or
+            target_day.get("branch_element") in ji_sin
+        ),
+        "action": action,
+    }
+
+
+def _compute_check_current_sin_sal_timing(saju: dict) -> dict:
+    today = date_type.today()
+    year_ganji = calc_year_ganji(today.year)
+    month_ganji = calc_month_ganji(today.year, today.month)
+    year_branch = year_ganji["branch"]
+
+    year_pillar_branch = saju["year_pillar"]["branch"]
+    in_sam_jae = year_branch in _SAM_JAE_MAP.get(year_pillar_branch, [])
+
+    active = []
+    for sal in saju.get("sin_sals", []):
+        if sal["name"] == "역마살":
+            _YEOKMA = {"인": "신", "신": "인", "사": "해", "해": "사"}
+            for pillar_key in ["year_pillar", "month_pillar"]:
+                p_branch = saju.get(pillar_key, {}).get("branch", "")
+                if _YEOKMA.get(p_branch) == year_branch:
+                    active.append({**sal, "triggered_by": f"{today.year}년 세운", "reason": "역마충 발동"})
+                    break
+
+    return {
+        "year": today.year,
+        "month": today.month,
+        "in_sam_jae": in_sam_jae,
+        "active_sin_sals": active,
+        "current_year_branch": year_branch,
+        "current_month_branch": month_ganji["branch"],
+    }
+
+
+@tool
+async def get_current_luck_overview(config: RunnableConfig = None) -> str:
+    """현재 대운+세운+월운 교차 분석. '지금 어떤 시기예요?' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    result = _compute_current_luck_overview(saju)
+    return json.dumps(result, ensure_ascii=False)
+
+
+@tool
+async def find_favorable_periods(
+    domain: str = "general",
+    years: int = 5,
+    config: RunnableConfig = None,
+) -> str:
+    """도메인별 길한 시기. domain: 연애/재물/직업/이사/general. years: 조회 연수(최대10)"""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    result = _compute_find_favorable_periods(saju, domain=domain, years=years)
+    return json.dumps(result, ensure_ascii=False)
+
+
+@tool
+async def evaluate_specific_date(
+    target_date: str,
+    action: str = "일반",
+    config: RunnableConfig = None,
+) -> str:
+    """특정 날짜 길흉 판단. target_date: YYYY-MM-DD, action: 계약/이사/결혼 등"""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    result = _compute_evaluate_specific_date(saju, target_date=target_date, action=action)
+    return json.dumps(result, ensure_ascii=False)
+
+
+@tool
+async def check_current_sin_sal_timing(config: RunnableConfig = None) -> str:
+    """현재 삼재 여부 및 활성화된 신살 확인. '지금 삼재인가요?' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    result = _compute_check_current_sin_sal_timing(saju)
     return json.dumps(result, ensure_ascii=False)

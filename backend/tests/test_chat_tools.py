@@ -1,7 +1,13 @@
 """채팅 에이전트 tool 단위 테스트."""
 
 import pytest
-from llm.tools.saju_tools import extract_summary
+from llm.tools.saju_tools import (
+    extract_summary,
+    _compute_current_luck_overview,
+    _compute_find_favorable_periods,
+    _compute_evaluate_specific_date,
+    _compute_check_current_sin_sal_timing,
+)
 
 
 def _make_saju_result() -> dict:
@@ -54,3 +60,34 @@ class TestExtractSummary:
         saju["hour_pillar"] = None
         summary = extract_summary(saju)
         assert "hour" not in summary["pillars"]
+
+
+class TestNewEngineTools:
+    def test_current_luck_overview_keys(self):
+        saju = _make_saju_result()
+        result = _compute_current_luck_overview(saju)
+        assert "current_dae_un" in result
+        assert "se_un" in result
+        assert "wol_un" in result
+        assert "stem" in result["se_un"]
+
+    def test_find_favorable_periods_domain(self):
+        saju = _make_saju_result()
+        result = _compute_find_favorable_periods(saju, domain="재물", years=3)
+        assert "domain" in result
+        assert "favorable" in result
+        assert result["domain"] == "재물"
+
+    def test_evaluate_specific_date_valid(self):
+        saju = _make_saju_result()
+        result = _compute_evaluate_specific_date(saju, target_date="2026-05-01", action="계약")
+        assert "date" in result
+        assert "ganji" in result
+        assert "favorable" in result
+
+    def test_check_sin_sal_timing_keys(self):
+        saju = _make_saju_result()
+        result = _compute_check_current_sin_sal_timing(saju)
+        assert "in_sam_jae" in result
+        assert "active_sin_sals" in result
+        assert isinstance(result["in_sam_jae"], bool)
