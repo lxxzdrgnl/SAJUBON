@@ -14,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
 from core.config import settings
 from core.errors import ErrorCode, ErrorResponse, http_status
 from core.exceptions import AppException
@@ -40,7 +42,11 @@ async def lifespan(app: FastAPI):
             await conn.run_sync(Base.metadata.create_all)
     except Exception as e:
         logger.warning("DB 연결 실패 (create_all 건너뜀): %s", e)
-    yield
+
+    async with await AsyncPostgresSaver.from_conn_string(settings.postgres_url) as checkpointer:
+        await checkpointer.setup()
+        app.state.checkpointer = checkpointer
+        yield
 
 # ─── FastAPI 앱 ──────────────────────────────────────────────────────────────
 
