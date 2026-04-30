@@ -21,7 +21,7 @@ Dexter 스타일의 사주 상담 채팅 Agent. LangGraph ReAct 패턴 + Postgre
 ```
 [Web Frontend]
   POST /api/chat/session          세션 생성 (birth_info OR profile_id)
-  POST /api/chat/{id}/message     메시지 전송 (SSE 스트리밍)
+  POST /api/chat/{id}/message     메시지 전송 (SSE: LangGraph .astream_events() 사용)
   GET  /api/chat/{id}/history     히스토리 조회
   POST /api/chat/{id}/report      채팅 종료 후 리포트 생성
   GET  /api/chat/sessions         세션 목록
@@ -84,17 +84,28 @@ class ChatState(TypedDict):
     "wuxing_pct": {"목": 25.0, "화": 12.5, "토": 37.5, "금": 12.5, "수": 12.5},
 
     # Agent 해석용 (tool 없이 직업/재물/관계/건강 질문에 바로 답하기 위해)
-    "ten_gods_distribution": {"정관": 35.0, "식신": 20.0, ...},
-    "structure_patterns": ["종격 아님", "식신생재 구조"],
-    "sin_sals": [{"name": "천을귀인", "type": "lucky"}, ...],
-    "behavior_profile": {"독립성": 0.8, "사교성": 0.4, ...},
+    "ten_gods_distribution": {
+        "비견": 0.0, "겁재": 0.0, "식신": 20.0, "상관": 0.0,
+        "편재": 0.0, "정재": 0.0, "편관": 0.0, "정관": 35.0,
+        "편인": 10.0, "정인": 35.0,
+    },
+    "structure_patterns": ["식신생재 구조"],   # detect_structure_patterns() 결과
+    "sin_sals": [
+        {"name": "천을귀인", "type": "lucky", "priority": "medium"},
+        {"name": "역마살",   "type": "neutral", "priority": "low"},
+    ],
+    "behavior_profile": {"독립성": 0.8, "사교성": 0.4, "추진력": 0.6},
     "life_domains": {
         "직업": ["안정적", "조직적", "전문직"],
         "연애": ["늦은 결혼", "관성 약함"],
         "재물": ["재성 중간", "식신생재"],
         "건강": ["목 기운 과다", "토 허약"],
     },
-    "branch_relations": {"삼합": [...], "충": [...], "합": [...]},
+    "branch_relations": {
+        "삼합": [{"branches": ["인","오","술"], "element": "화"}],
+        "충":   [{"pair": ["자","오"]}],
+        "yuk_hap": [],
+    },
 }
 ```
 
@@ -106,10 +117,11 @@ class ChatState(TypedDict):
 
 ### 세션 생성 시 (1회)
 ```
-POST /api/chat/session
-  └─ handle_calculate_saju() 호출
+POST /api/chat/session  { birth_info? | profile_id? }
+  └─ profile_id 있으면 → DB에서 birth_info 조회
+  └─ handle_calculate_saju(**birth_info) 호출
   └─ extract_summary() → saju_summary
-  └─ LangGraph initial state 저장
+  └─ LangGraph initial state 저장 (birth_info + saju_summary)
   └─ ChatSession DB 저장 (thread_id + user_id + birth_info)
 ```
 
@@ -144,6 +156,15 @@ saju_summary에 이미 있는 데이터로 agent가 바로 답변:
 
 모든 tool은 `async def` + `asyncio.to_thread()` 패턴으로 이벤트 루프 블로킹 방지.  
 데이터 반환만 담당, 해석은 Agent가 수행.
+
+**birth_info 주입 방식**: tool 래퍼는 graph 컴파일 시 `birth_info`를 클로저로 캡처하거나,
+`RunnableConfig`의 `configurable`을 통해 전달받아 엔진 핸들러에 넘긴다.
+
+**신규 구현 필요 tool** (기존 핸들러 없음, `saju_tools.py`에서 새로 작성):
+- `get_current_luck_overview` — 현재 대운+세운+월운 교차 계산
+- `find_favorable_periods` — 연운 목록에서 용신 매칭 시기 추출
+- `evaluate_specific_date` — 특정 날짜 일진 + 사주 충합 계산
+- `check_current_sin_sal_timing` — 세운+대운 교차 신살 활성화 판단
 
 ### RAG
 | Tool | 설명 |
