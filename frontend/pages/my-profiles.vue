@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
 import { useSajuStore } from '~/stores/saju'
+import { useChatStore } from '~/stores/chat'
 import type { SajuCalcRequest, ProfileResponse } from '~/types/saju'
 import { iljuColor, formatIljuHanja, formatIljuLabel } from '~/utils/ganji'
 
@@ -75,6 +76,19 @@ async function setRepresentative(id: number) {
     repSettingId.value = null
   }
 }
+
+const chatStore = useChatStore()
+const chatStartingId = ref<number | null>(null)
+
+async function startChatWithProfile(profileId: number) {
+  chatStartingId.value = profileId
+  try {
+    const session = await chatStore.createSession({ profile_id: profileId })
+    await navigateTo(`/chat/${session.id}`)
+  } finally {
+    chatStartingId.value = null
+  }
+}
 </script>
 
 <template>
@@ -126,6 +140,13 @@ async function setRepresentative(id: number) {
         </div>
 
         <div class="profile-item-actions" @click.stop>
+          <button
+            class="action-btn chat-btn"
+            :disabled="chatStartingId === p.id"
+            @click="startChatWithProfile(p.id)"
+          >
+            {{ chatStartingId === p.id ? '시작 중...' : 'AI 상담' }}
+          </button>
           <button
             v-if="!p.is_representative"
             class="action-btn rep-btn"
@@ -326,5 +347,17 @@ async function setRepresentative(id: number) {
 .action-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.chat-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  background: color-mix(in srgb, #6366f1 15%, transparent);
+  color: #818cf8;
+  white-space: nowrap;
+}
+.chat-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, #6366f1 25%, transparent);
+  color: #a5b4fc;
 }
 </style>
