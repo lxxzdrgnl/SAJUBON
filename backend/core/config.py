@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 15  # 15분 (short-lived)
     refresh_token_expire_days: int = 30  # 30일
 
+    # Observability — Arize Phoenix (optional)
+    phoenix_enabled: bool = False
+    phoenix_endpoint: str = "http://localhost:6006/v1/traces"
+    phoenix_project: str = "sajuguri-chat"
+
     @property
     def postgres_url(self) -> str:
         """LangGraph AsyncPostgresSaver용 psycopg3 URL."""

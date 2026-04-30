@@ -33,6 +33,30 @@ logging.basicConfig(
 )
 logger = logging.getLogger("sajubon")
 
+# ─── Observability (Phoenix) ─────────────────────────────────────────────────
+
+def _setup_phoenix() -> None:
+    """Arize Phoenix 연동. PHOENIX_ENABLED=true 일 때만 활성화."""
+    if not settings.phoenix_enabled:
+        return
+    try:
+        from phoenix.otel import register
+        from openinference.instrumentation.langchain import LangChainInstrumentor
+        tracer_provider = register(
+            project_name=settings.phoenix_project,
+            endpoint=settings.phoenix_endpoint,
+        )
+        LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
+        logger.info("Phoenix tracing enabled → %s", settings.phoenix_endpoint)
+    except ImportError:
+        logger.warning(
+            "PHOENIX_ENABLED=true 지만 패키지가 없습니다. "
+            "pip install arize-phoenix-otel openinference-instrumentation-langchain"
+        )
+
+
+_setup_phoenix()
+
 # ─── Lifespan ────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
