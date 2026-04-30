@@ -1,0 +1,53 @@
+# backend/schemas/chat.py
+"""채팅 에이전트 요청/응답 스키마."""
+
+from __future__ import annotations
+import uuid
+from datetime import datetime
+from pydantic import BaseModel, Field
+
+
+class ChatSessionCreate(BaseModel):
+    profile_id: int | None = Field(default=None, description="저장된 프로필 ID")
+    birth_date: str | None = Field(default=None, description="생년월일 (YYYY-MM-DD)", examples=["1990-03-15"])
+    birth_time: str | None = Field(default=None, description="태어난 시간 (HH:MM)", examples=["14:30"])
+    gender: str | None = Field(default=None, description="성별 (male/female)", examples=["male"])
+    calendar: str = Field(default="solar", description="양력/음력")
+    is_leap_month: bool = Field(default=False)
+
+
+class ChatSessionResponse(BaseModel):
+    id: uuid.UUID
+    birth_info: dict
+    created_at: datetime
+    last_message_at: datetime
+    title: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class ChatMessageRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=500, description="사용자 메시지")
+
+
+class ChatHistoryMessage(BaseModel):
+    role: str          # "human" | "ai" | "tool"
+    content: str
+    created_at: str | None = None
+
+
+class ChatHistoryResponse(BaseModel):
+    session_id: uuid.UUID
+    messages: list[ChatHistoryMessage]
+
+
+class ChatReportResponse(BaseModel):
+    id: int
+    session_id: uuid.UUID
+    summary: str
+    key_insights: list[str]
+    advice: list[str]
+    topics_covered: list[str]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
