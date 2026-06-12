@@ -82,3 +82,15 @@ mcp_inspector/
 # Dev Notes
 # =========================
 curious.md
+CLAUDE.md
+backend/CLAUDE.md
+frontend/CLAUDE.md
+.superpowers/
+
+# =========================
+# Monorepo (Turborepo)
+# =========================
+.next/
+.turbo/
+*.tsbuildinfo
+speech.md
