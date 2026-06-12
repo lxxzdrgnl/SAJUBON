@@ -1,7 +1,8 @@
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import BrutalCard from '@/components/ui/BrutalCard'
+import { currentUser } from '@/lib/serverAuth'
 
 const ICONS = {
   doc: 'M5 3 h11 a2 2 0 0 1 2 2 v14 a2 2 0 0 1-2 2 H5 a0 0 0 0 1 0 0 V3 Z M9 8 H15 M9 12 H15 M9 16 H13',
@@ -32,8 +33,12 @@ function CardIcon({ d, bg, color }: { d: string; bg: string; color: string }) {
   )
 }
 
-export default function Home() {
-  const t = useTranslations('home')
+export default async function Home() {
+  const t = await getTranslations('home')
+  const user = await currentUser()
+  // 이메일 로컬파트(@ 앞)를 표시 이름으로 — 로그인 시에만 배너 서브 문구 개인화
+  const name = user?.email ? user.email.split('@')[0] : null
+  const fortuneSub = name ? t('fortuneSubAuthed', { name }) : t('fortuneSub')
   return (
     <main>
       <header className="mb-4 flex items-center gap-2 text-xl font-black">
@@ -45,7 +50,7 @@ export default function Home() {
         <Image src="/mascot.svg" alt="" width={44} height={44} />
         <div>
           <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
-          <p className="text-xs font-semibold text-[#5a4a00]">{t('fortuneSub')}</p>
+          <p className="text-xs font-semibold text-[#5a4a00]">{fortuneSub}</p>
         </div>
       </section>
 
