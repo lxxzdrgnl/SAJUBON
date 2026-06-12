@@ -15,9 +15,14 @@ import functools
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
+from datetime import datetime
+
 from engine.handlers.calculate_saju import handle_calculate_saju
+from engine.handlers.get_wol_un import handle_get_wol_un
 from llm.rag_builder import build_rag_context
 from llm.writer import WriterOutput, generate_report
+from schemas.report import UnFlowOutput
+from llm.writer import generate_un_flow
 
 logger = logging.getLogger(__name__)
 
@@ -87,3 +92,35 @@ async def run_saju_report(
     logger.info("Writer LLM 완료: 탭 %d개 생성", len(writer_output.tabs))
 
     return saju, writer_output
+
+
+async def run_un_flow(
+    saju: dict,
+    year: int | None = None,
+    llm_provider: str | None = None,
+) -> UnFlowOutput:
+    """
+    이미 계산된 사주 dict로 올해의 흐름·대운 해설을 생성한다.
+
+    Args:
+        saju         : run_saju_report()가 반환한 saju dict
+        year         : 대상 연도 (None이면 올해)
+        llm_provider : LLM provider 오버라이드
+
+    Returns:
+        UnFlowOutput (year_flow + dae_un_analysis)
+    """
+    loop = asyncio.get_running_loop()
+    target_year = year or datetime.now().year
+    day_stem = saju.get("day_pillar", {}).get("stem", "")
+
+    # ── 월운 12개 (동기 계산 → executor) ──
+    wol_fn = functools.partial(handle_get_wol_un, year=target_year, day_stem=day_stem)
+    months: list[dict] = await loop.run_in_executor(_executor, wol_fn)
+
+    # ── 올해의 흐름·대운 해설 LLM 호출 ──
+    logger.info("UnFlow LLM 호출 시작: year=%d", target_year)
+    un_flow: UnFlowOutput = await generate_un_flow(saju, months, target_year, llm_provider)
+    logger.info("UnFlow LLM 완료: 월 %d개", len(un_flow.year_flow.months))
+
+    return un_flow

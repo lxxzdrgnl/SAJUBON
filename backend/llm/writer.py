@@ -12,10 +12,11 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.messages import SystemMessage, HumanMessage
 from pydantic import BaseModel
 
-from schemas.report import WriterOutput
+from schemas.report import WriterOutput, UnFlowOutput
 from schemas.question import ConsultationOutput
 from llm.providers import get_llm
 from llm.prompts import SYSTEM_PROMPT, format_user_message, QUESTION_SYSTEM_PROMPT, format_question_message
+from llm.prompts.un_flow import UN_FLOW_SYSTEM_PROMPT, format_un_flow_message
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,47 @@ async def generate_consultation(
         raw = response.content if hasattr(response, "content") else str(response)
     except Exception as exc:
         logger.error("Consultation LLM 호출 실패: %s", exc)
+        raise
+
+    return await _parse_with_recovery(llm, raw, parser, format_instructions)
+
+
+async def generate_un_flow(
+    saju: dict,
+    months: list[dict],
+    year: int,
+    provider: str | None = None,
+) -> UnFlowOutput:
+    """
+    사주 + 올해 월운 12개 + 대상 연도를 받아 올해의 흐름·대운 해설을 생성한다.
+
+    Args:
+        saju     : handle_calculate_saju() 반환 dict (current_dae_un·dae_un_list 포함)
+        months   : handle_get_wol_un() 반환 12개 리스트
+        year     : 대상 연도
+        provider : LLM provider 오버라이드
+
+    Returns:
+        UnFlowOutput (year_flow + dae_un_analysis)
+    """
+    llm = get_llm(provider)
+
+    parser: PydanticOutputParser[UnFlowOutput] = PydanticOutputParser(
+        pydantic_object=UnFlowOutput
+    )
+    format_instructions = parser.get_format_instructions()
+
+    user_text = format_un_flow_message(saju, months, year, format_instructions)
+    messages = [
+        SystemMessage(content=UN_FLOW_SYSTEM_PROMPT),
+        HumanMessage(content=user_text),
+    ]
+
+    try:
+        response = await llm.ainvoke(messages)
+        raw = response.content if hasattr(response, "content") else str(response)
+    except Exception as exc:
+        logger.error("UnFlow LLM 호출 실패: %s", exc)
         raise
 
     return await _parse_with_recovery(llm, raw, parser, format_instructions)

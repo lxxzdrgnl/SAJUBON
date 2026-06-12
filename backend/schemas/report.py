@@ -81,6 +81,43 @@ class WriterOutput(BaseModel):
     tabs: list[TabContent]
 
 
+# ─── 올해의 흐름 · 대운 해설 ──────────────────────────────────────────────────
+
+class YearFlowMonth(BaseModel):
+    """올해의 흐름 — 월 1개."""
+    month: int = Field(description="월 (1~12)", examples=[1])
+    keyword: str = Field(description="2~4자 명사형 키워드", examples=["전환점"])
+    memo: str = Field(description="한 문장 메모", examples=["새 인연이 들어오는 달입니다."])
+
+
+class YearFlow(BaseModel):
+    """올해의 흐름 전체."""
+    year: int = Field(description="대상 연도", examples=[2026])
+    first_half: str = Field(description="상반기 요약 2~3문장")
+    second_half: str = Field(description="하반기 요약 2~3문장")
+    months: list[YearFlowMonth] = Field(description="12개월 흐름")
+
+
+class DaeUnPeriod(BaseModel):
+    """대운 한 구간(현재/다음)."""
+    ganji: str = Field(description="대운 간지", examples=["을해"])
+    period: str = Field(description="기간 표기", examples=["현재 ~2035"])
+    text: str = Field(description="해당 대운 해설 1문단")
+
+
+class DaeUnAnalysis(BaseModel):
+    """대운 비교 분석."""
+    current: DaeUnPeriod
+    next: DaeUnPeriod
+    caution: str = Field(description="주의점 1문단")
+
+
+class UnFlowOutput(BaseModel):
+    """올해의 흐름·대운 해설 LLM 출력 스키마."""
+    year_flow: YearFlow
+    dae_un_analysis: DaeUnAnalysis
+
+
 class SajuReportResponse(BaseModel):
     """사주 리포트 전체 응답."""
 
