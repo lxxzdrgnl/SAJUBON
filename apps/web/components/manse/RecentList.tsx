@@ -6,12 +6,7 @@ import { Link } from '@/i18n/navigation'
 import { loadRecentInputs, type RecentBirthInput } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
 import BrutalCard from '@/components/ui/BrutalCard'
-
-function toQuery(i: RecentBirthInput): string {
-  return new URLSearchParams(
-    Object.entries(i).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => [k, String(v)]),
-  ).toString()
-}
+import { toResultQuery } from '@/lib/manse/query'
 
 export default function RecentList() {
   const t = useTranslations('manse.index')
@@ -24,7 +19,7 @@ export default function RecentList() {
   return (
     <div className="flex flex-col gap-3">
       {items.map((i) => (
-        <Link key={toQuery(i)} href={`/manse/result?${toQuery(i)}`}>
+        <Link key={toResultQuery(i)} href={`/manse/result?${toResultQuery(i)}`}>
           <BrutalCard className="flex items-center gap-3">
             <span className="h-11 w-11 shrink-0 rounded-xl border-2 border-ink bg-yellow" />
             <span>
