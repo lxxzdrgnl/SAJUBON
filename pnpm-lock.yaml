@@ -12,6 +12,15 @@ importers:
         specifier: ^2.5.0
         version: 2.9.18
 
+  packages/api-client:
+    devDependencies:
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.1.0
+        version: 3.2.6
+
   packages/core:
     devDependencies:
       typescript:
