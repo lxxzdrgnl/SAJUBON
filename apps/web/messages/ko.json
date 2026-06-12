@@ -1,4 +1,34 @@
 {
   "tab": { "home": "홈", "manse": "만세력", "chat": "상담", "my": "마이" },
-  "home": { "title": "사주구리", "fortuneBanner": "오늘의 운세", "fortuneSub": "너의 하루는?" }
+  "home": {
+    "title": "사주구리",
+    "fortuneBanner": "오늘의 운세",
+    "fortuneSub": "너의 하루는?",
+    "sectionTitle": "이런 건 어때?",
+    "cards": {
+      "report": { "title": "내 사주 풀리포트", "badge": "10탭", "desc": "결론만 말해주는 AI 해설" },
+      "chat": { "title": "AI 사주 상담", "desc": "궁합도 물어봐 · 로그인 필요" },
+      "question": { "title": "한 번 물어보기", "desc": "로그인 없이 한 질문 맛보기" },
+      "soon": { "title": "작명 · 꿈해몽", "desc": "coming soon" }
+    }
+  },
+  "manse": {
+    "form": {
+      "title": "오직 당신을 위한 사주",
+      "name": "이름",
+      "birthplace": "출생지",
+      "birthplacePlaceholder": "도시명 검색 (예: 서울, 도쿄, 뉴욕)",
+      "birthplaceHint": "미입력 시 서울 기준 적용",
+      "datetime": "생년월일 · 시각",
+      "timeUnknown": "시간 모름",
+      "solar": "양력",
+      "lunar": "음력",
+      "leap": "윤달",
+      "gender": "성별",
+      "male": "남성",
+      "female": "여성",
+      "submit": "만세력 보기",
+      "guestNote": "게스트도 바로 볼 수 있어요 · 최근 입력은 이 기기에 저장됩니다"
+    }
+  }
 }

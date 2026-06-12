@@ -1,4 +1,34 @@
 {
   "tab": { "home": "Home", "manse": "Chart", "chat": "Chat", "my": "My" },
-  "home": { "title": "SajuGuri", "fortuneBanner": "Today's Fortune", "fortuneSub": "How's your day?" }
+  "home": {
+    "title": "SajuGuri",
+    "fortuneBanner": "Today's Fortune",
+    "fortuneSub": "How's your day?",
+    "sectionTitle": "What about these?",
+    "cards": {
+      "report": { "title": "My Full Saju Report", "badge": "10 tabs", "desc": "AI insights, conclusions first" },
+      "chat": { "title": "AI Saju Chat", "desc": "Ask anything, even compatibility · Sign-in required" },
+      "question": { "title": "Quick Question", "desc": "One free question, no sign-in" },
+      "soon": { "title": "Naming · Dream reading", "desc": "coming soon" }
+    }
+  },
+  "manse": {
+    "form": {
+      "title": "Your personal Saju reading",
+      "name": "Name",
+      "birthplace": "Birthplace",
+      "birthplacePlaceholder": "Search city (e.g. Seoul, Tokyo, New York)",
+      "birthplaceHint": "Defaults to Seoul if left blank",
+      "datetime": "Date of birth · Time",
+      "timeUnknown": "Time unknown",
+      "solar": "Solar",
+      "lunar": "Lunar",
+      "leap": "Leap",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "submit": "View Saju Chart",
+      "guestNote": "No sign-in needed · Recent inputs are saved on this device"
+    }
+  }
 }
