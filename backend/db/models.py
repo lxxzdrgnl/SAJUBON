@@ -121,3 +121,40 @@ class ChatReport(Base):
     advice:         Mapped[list]      = mapped_column(JSONB, nullable=False)
     topics_covered: Mapped[list]      = mapped_column(JSONB, nullable=False)
     created_at:     Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class SajuReport(Base):
+    """AI 10탭 리포트 저장 — 생성 시점의 입력·탭·올해 흐름·대운 해설 스냅샷."""
+
+    __tablename__ = "saju_reports"
+
+    id:               Mapped[int]        = mapped_column(Integer, primary_key=True)
+    user_id:          Mapped[int]        = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    profile_id:       Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("profiles.id", ondelete="SET NULL"), nullable=True
+    )
+    birth_input:      Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    request_topics:   Mapped[str | None] = mapped_column(Text, nullable=True)
+    language:         Mapped[str]        = mapped_column(String(10), default="ko", nullable=False)
+    tabs:             Mapped[list]       = mapped_column(JSONB, nullable=False)
+    year_flow:        Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    dae_un_analysis:  Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    created_at:       Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class ReportShare(Base):
+    """사주 리포트 공유 토큰 — mask_birth면 열람 시 생년월일·시각을 가린다."""
+
+    __tablename__ = "report_shares"
+
+    id:          Mapped[int]       = mapped_column(Integer, primary_key=True)
+    report_id:   Mapped[int]       = mapped_column(
+        Integer, ForeignKey("saju_reports.id", ondelete="CASCADE"), nullable=False
+    )
+    share_token: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), unique=True, index=True, default=uuid.uuid4
+    )
+    mask_birth:  Mapped[bool]      = mapped_column(Boolean, default=False, nullable=False)
+    created_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
