@@ -84,6 +84,7 @@ export default function SummaryCard({ story, onClose }: Props) {
 
       // 점수 바 6개
       const bars = calcScoreBars(story.scores, 700)
+      const BAR_H = 36
       for (const bar of bars) {
         const isLow = bar.score < BAR_LOW_THRESHOLD
 
@@ -95,14 +96,14 @@ export default function SummaryCard({ story, onClose }: Props) {
         // 바 배경
         ctx.fillStyle = 'rgba(255,255,255,0.15)'
         ctx.beginPath()
-        ctx.roundRect(bar.barX, bar.y, bar.barMaxWidth, bar.barHeight, 8)
+        ctx.roundRect(bar.barX, bar.y, bar.barMaxWidth, BAR_H, 8)
         ctx.fill()
 
         // 바 채움
         const fillW = Math.round((bar.score / 100) * bar.barMaxWidth)
         ctx.fillStyle = isLow ? SCORE_COLOR : SCORE_NORMAL
         ctx.beginPath()
-        ctx.roundRect(bar.barX, bar.y, fillW, bar.barHeight, 8)
+        ctx.roundRect(bar.barX, bar.y, fillW, BAR_H, 8)
         ctx.fill()
 
         // 점수 숫자
