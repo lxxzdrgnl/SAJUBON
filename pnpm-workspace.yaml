@@ -1,3 +1,6 @@
 packages:
   - "apps/*"
   - "packages/*"
+# vitest가 의존하는 esbuild의 postinstall(네이티브 바이너리) 허용 — frontend/와 동일 정책
+allowBuilds:
+  esbuild: true
