@@ -12,6 +12,7 @@ import DaeUnTimeline from '@/components/manse/DaeUnTimeline'
 import YeonWolUn from '@/components/manse/YeonWolUn'
 import IlJinCalendar from '@/components/manse/IlJinCalendar'
 import HapChungPanel from '@/components/manse/HapChungPanel'
+import WuxingFeatureTable from '@/components/manse/WuxingFeatureTable'
 
 export default async function ManseResult({
   searchParams,
@@ -19,6 +20,7 @@ export default async function ManseResult({
   searchParams: Promise<Record<string, string | undefined>>
 }) {
   const t = await getTranslations('manse.result')
+  const tc = await getTranslations('manse.charts.cta')
   const p = await searchParams
   let data: SajuCalcResponse | null = null
   try {
@@ -72,7 +74,27 @@ export default async function ManseResult({
       <YeonWolUn dayStem={data.day_pillar.stem} />
       <IlJinCalendar />
       <HapChungPanel data={data} />
-      <p className="text-center text-[11px] text-text-sub">{t('chartsComing')}</p>
+      <WuxingFeatureTable data={data} />
+
+      {/* CTA — 리포트·상담 라우트 미존재: 비활성 스타일 (준비 중) */}
+      <div className="mt-1 flex gap-2">
+        <button
+          type="button"
+          disabled
+          className="flex-1 cursor-not-allowed rounded-xl border-2 border-border-soft bg-surface py-3 text-center text-sm font-extrabold text-text-sub opacity-60"
+        >
+          {tc('report')}
+          <span className="ml-1 text-[10px] font-bold">· {tc('soon')}</span>
+        </button>
+        <button
+          type="button"
+          disabled
+          className="flex-1 cursor-not-allowed rounded-xl border-2 border-border-soft bg-surface py-3 text-center text-sm font-extrabold text-text-sub opacity-60"
+        >
+          {tc('chat')}
+          <span className="ml-1 text-[10px] font-bold">· {tc('soon')}</span>
+        </button>
+      </div>
     </main>
   )
 }
