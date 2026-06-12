@@ -99,7 +99,9 @@
         "lack": "결핍",
         "saeng": "상생",
         "geuk": "상극",
-        "dayLabel": "일간"
+        "dayLabel": "일간",
+        "applyHap": "합에 따른 오행 변화 적용",
+        "applyJohu": "조후와 궁성 보정값 적용"
       },
       "tenGods": {
         "title": "십성 구조",

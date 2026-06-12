@@ -5,10 +5,30 @@ import { useTranslations } from 'next-intl'
 import type { SajuCalcResponse } from '@sajuguri/api-client'
 import { ohaengColor } from '@/lib/ohaeng'
 import {
-  toPercent, judge, balanceScore, balanceLabel, balanceSummary,
+  selectWuxingPercent, judge, balanceScore, balanceLabel, balanceSummary,
   pentagramVertices, nodeRadius, pctLabelPos, arrowPath, linePath,
   SANG_SAENG_PAIRS, SANG_GEUK_PAIRS, WUXING_ORDER, type Verdict,
 } from '@/lib/manse/wuxing'
+
+function ToggleCheck({ checked, onToggle, label }: { checked: boolean; onToggle: () => void; label: string }) {
+  return (
+    <label className="flex cursor-pointer select-none items-center gap-1.5 text-[11px] font-bold text-text-sub">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`flex h-4 w-4 items-center justify-center rounded border-2 border-ink ${checked ? 'bg-yellow' : 'bg-surface'}`}
+        aria-pressed={checked}
+      >
+        {checked && (
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
+      {label}
+    </label>
+  )
+}
 
 function verdictChip(v: Verdict): string {
   if (v === '과다') return 'bg-orange-tint text-[#B34800]'
@@ -75,7 +95,9 @@ function Pentagram({ pct, dayElement, t }: { pct: Record<string, number>; dayEle
 export default function WuxingBalanceCard({ data }: { data: SajuCalcResponse }) {
   const t = useTranslations('manse.charts.wuxing')
   const [tab, setTab] = useState<'bar' | 'penta'>('bar')
-  const pct = toPercent(data.wuxing_count_hap ?? data.wuxing_count)
+  const [applyHap, setApplyHap] = useState(true)
+  const [applyJohu, setApplyJohu] = useState(false)
+  const pct = selectWuxingPercent(data, applyHap, applyJohu)
   const score = balanceScore(pct)
   const label = balanceLabel(score)
   const { over, lack } = balanceSummary(pct)
@@ -107,6 +129,12 @@ export default function WuxingBalanceCard({ data }: { data: SajuCalcResponse }) 
           {label.text}
         </span>
         <span className="text-[11px] text-text-sub">{summaryText}</span>
+      </div>
+
+      {/* 보정 토글 — 레거시 기능 보존 (G3) */}
+      <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5">
+        <ToggleCheck checked={applyHap} onToggle={() => setApplyHap(!applyHap)} label={t('applyHap')} />
+        <ToggleCheck checked={applyJohu} onToggle={() => setApplyJohu(!applyJohu)} label={t('applyJohu')} />
       </div>
 
       {tab === 'bar' ? (

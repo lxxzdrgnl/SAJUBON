@@ -102,3 +102,68 @@ export function pctLabelPos(v: Vertex[], pct: Record<string, number>, i: number)
   const offset = nodeRadius(pct[WUXING_ORDER[i]] ?? 0) + 14
   return { x: node.x + (dx / dist) * offset, y: node.y + (dy / dist) * offset + 4 }
 }
+
+// ── 궁성 가중치·합화 반영 (레거시 ResultPanel.vue 토글 로직 보존 — G3) ──────────
+
+/** 궁성(자리)별 가중치 — 월지 2.0·일간 1.5가 핵심 자리 */
+export const PALACE_WEIGHTS: Record<string, Record<string, number>> = {
+  year:  { stem: 1.0, branch: 1.0 },
+  month: { stem: 1.0, branch: 2.0 },
+  day:   { stem: 1.5, branch: 1.0 },
+  hour:  { stem: 1.0, branch: 0.8 },
+}
+
+type WuxingChar = { pillar: string; type: string; element: string }
+type HapContribution = {
+  pillar: string; type: string; hap_type: string | null
+  base_element: string; hap_element: string | null; hap_ratio: number
+}
+
+function normalize(counts: Record<Wuxing, number>): Record<Wuxing, number> {
+  const total = WUXING_ORDER.reduce((a, el) => a + counts[el], 0)
+  if (total === 0) return counts
+  const out = {} as Record<Wuxing, number>
+  for (const el of WUXING_ORDER) out[el] = Math.round((counts[el] / total) * 100)
+  return out
+}
+
+/** 조후·궁성 보정만 적용 (합 미반영) */
+export function applyPalaceWeights(chars: WuxingChar[]): Record<Wuxing, number> {
+  const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 } as Record<Wuxing, number>
+  for (const ch of chars) {
+    if (!WUXING_ORDER.includes(ch.element as Wuxing)) continue
+    counts[ch.element as Wuxing] += PALACE_WEIGHTS[ch.pillar]?.[ch.type] ?? 1
+  }
+  return normalize(counts)
+}
+
+/** 합화 ratio + 궁성 가중치 동시 적용 (이진 변환 방지) */
+export function applyPalaceWeightsWithHap(contributions: HapContribution[]): Record<Wuxing, number> {
+  const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 } as Record<Wuxing, number>
+  for (const c of contributions) {
+    const w = PALACE_WEIGHTS[c.pillar]?.[c.type] ?? 1
+    if (c.hap_element && c.hap_ratio > 0) {
+      if (WUXING_ORDER.includes(c.base_element as Wuxing)) counts[c.base_element as Wuxing] += w * (1 - c.hap_ratio)
+      if (WUXING_ORDER.includes(c.hap_element as Wuxing)) counts[c.hap_element as Wuxing] += w * c.hap_ratio
+    } else if (WUXING_ORDER.includes(c.base_element as Wuxing)) {
+      counts[c.base_element as Wuxing] += w
+    }
+  }
+  return normalize(counts)
+}
+
+/** 토글 상태 → 비율 선택 (레거시 wuxingPercent computed와 동일 분기) */
+export function selectWuxingPercent(
+  data: {
+    wuxing_count: Record<string, number>
+    wuxing_count_hap: Record<string, number>
+    wuxing_chars: WuxingChar[]
+    wuxing_hap_contributions: HapContribution[]
+  },
+  applyHap: boolean,
+  applyJohu: boolean,
+): Record<Wuxing, number> {
+  if (applyJohu && applyHap) return applyPalaceWeightsWithHap(data.wuxing_hap_contributions)
+  if (applyJohu) return applyPalaceWeights(data.wuxing_chars)
+  return toPercent(applyHap ? (data.wuxing_count_hap ?? data.wuxing_count) : data.wuxing_count)
+}

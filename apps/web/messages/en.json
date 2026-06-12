@@ -99,7 +99,9 @@
         "lack": "결핍",
         "saeng": "상생",
         "geuk": "상극",
-        "dayLabel": "일간"
+        "dayLabel": "일간",
+        "applyHap": "Apply element shifts from combinations",
+        "applyJohu": "Apply seasonal & palace weighting"
       },
       "tenGods": {
         "title": "Ten Gods Structure",
