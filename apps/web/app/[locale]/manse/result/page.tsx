@@ -9,6 +9,7 @@ import WuxingBalanceCard from '@/components/manse/WuxingBalanceCard'
 import TenGodsCard from '@/components/manse/TenGodsCard'
 import StrengthCard from '@/components/manse/StrengthCard'
 import DaeUnTimeline from '@/components/manse/DaeUnTimeline'
+import YeonWolUn from '@/components/manse/YeonWolUn'
 
 export default async function ManseResult({
   searchParams,
@@ -66,6 +67,7 @@ export default async function ManseResult({
       <TenGodsCard data={data} />
       <StrengthCard data={data} />
       <DaeUnTimeline data={data} />
+      <YeonWolUn dayStem={data.day_pillar.stem} />
       <p className="text-center text-[11px] text-text-sub">{t('chartsComing')}</p>
     </main>
   )
