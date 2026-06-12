@@ -11,6 +11,7 @@ import StrengthCard from '@/components/manse/StrengthCard'
 import DaeUnTimeline from '@/components/manse/DaeUnTimeline'
 import YeonWolUn from '@/components/manse/YeonWolUn'
 import IlJinCalendar from '@/components/manse/IlJinCalendar'
+import HapChungPanel from '@/components/manse/HapChungPanel'
 
 export default async function ManseResult({
   searchParams,
@@ -70,6 +71,7 @@ export default async function ManseResult({
       <DaeUnTimeline data={data} />
       <YeonWolUn dayStem={data.day_pillar.stem} />
       <IlJinCalendar />
+      <HapChungPanel data={data} />
       <p className="text-center text-[11px] text-text-sub">{t('chartsComing')}</p>
     </main>
   )
