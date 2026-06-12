@@ -16,6 +16,8 @@ COLLECTIONS = [
     "structure_patterns", # 구조 패턴
     "dynamics",          # 동역학 (천간합·통근·지지관계·오행흐름)
     "wuxing",            # 오행 해석
+    # Tier 2 corpus (spec §4.2)
+    "corpus_saju",       # moonmarin8 사주 해석 텍스트 코퍼스
 ]
 
 
