@@ -176,6 +176,15 @@
       "recent": "Recent Charts",
       "empty": "No charts yet. Try adding one",
       "loginHint": "Sign in to save and manage your charts"
+    },
+    "saved": {
+      "title": "Saved Charts",
+      "empty": "No saved charts yet. Save one after analyzing",
+      "representative": "Default",
+      "loginPrompt": "Tired of typing it every time? Sign in to save",
+      "save": "Save this chart",
+      "saved": "Saved",
+      "saveError": "Failed · Try again"
     }
   }
 }

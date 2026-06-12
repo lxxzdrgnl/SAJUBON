@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server'
 import { serverApi } from '@/lib/api'
-import type { SajuCalcResponse } from '@sajuguri/api-client'
+import type { SajuCalcResponse, ProfileCreateRequest } from '@sajuguri/api-client'
+import { currentUser } from '@/lib/serverAuth'
+import SaveButton from '@/components/manse/SaveButton'
 import IljuHero from '@/components/manse/IljuHero'
 import PillarCard from '@/components/manse/PillarCard'
 import TagChips from '@/components/manse/TagChips'
@@ -38,6 +40,22 @@ export default async function ManseResult({
     data = null
   }
   if (!data) return <main className="pt-10 text-center text-sm font-bold text-text-sub">{t('error')}</main>
+
+  // 로그인 상태에서만 저장 버튼 노출. 저장 스키마는 longitude(진태양시)를 쓴다.
+  const user = await currentUser()
+  const saveInput: ProfileCreateRequest | null =
+    user && p.birth_date && p.gender
+      ? {
+          name: p.name || '이름 없음',
+          birth_date: p.birth_date,
+          birth_time: p.birth_time ?? null,
+          calendar: p.calendar === 'lunar' ? 'lunar' : 'solar',
+          gender: p.gender === 'female' ? 'female' : 'male',
+          is_leap_month: p.is_leap_month === 'true',
+          ...(p.city ? { city: p.city } : {}),
+          ...(p.birth_longitude ? { longitude: Number(p.birth_longitude) } : {}),
+        }
+      : null
 
   const pillars = [
     { pillar: data.hour_pillar, key: 'hour' },
@@ -95,6 +113,8 @@ export default async function ManseResult({
           <span className="ml-1 text-[10px] font-bold">· {tc('soon')}</span>
         </button>
       </div>
+
+      {saveInput && <SaveButton input={saveInput} />}
     </main>
   )
 }
