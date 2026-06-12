@@ -33,4 +33,17 @@ describe('design tokens', () => {
     expect(css).toContain('--teal-deep: #00857D;')
     expect(css).toContain('--border-soft: #EBE3D2;')
   })
+
+  it('apps/web globals.css가 토큰 값과 드리프트하지 않는다', async () => {
+    const { readFile } = await import('node:fs/promises')
+    const css = await readFile(
+      new URL('../../../apps/web/app/globals.css', import.meta.url),
+      'utf8',
+    )
+    for (const [name, value] of Object.entries(colors)) {
+      const kebab = name.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())
+      expect(css, `globals.css에 --${kebab} 선언 누락/불일치`).toContain(`--${kebab}: ${value};`)
+      expect(css, `globals.css @theme에 --color-${kebab} 매핑 누락`).toContain(`--color-${kebab}: var(--${kebab});`)
+    }
+  })
 })
