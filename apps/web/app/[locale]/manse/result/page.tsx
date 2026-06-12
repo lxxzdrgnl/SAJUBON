@@ -84,15 +84,17 @@ export default async function ManseResult({
             <div key={key} className="flex-1 rounded-xl border-[1.5px] border-dashed border-border-soft py-3 text-center text-[10px] text-text-sub">—</div>,
         )}
       </div>
+      {/* 레거시 ResultPanel.vue 섹션 순서 정합 — 합충은 팔자 바로 아래,
+          오행 특성 참고표는 오행 밸런스 바로 위, 신살·12운성 상세는 합충 다음 */}
+      <HapChungPanel data={data} />
       <DetailAccordion data={data} />
+      <WuxingFeatureTable data={data} />
       <WuxingBalanceCard data={data} />
       <TenGodsCard data={data} />
       <StrengthCard data={data} />
       <DaeUnTimeline data={data} />
       <YeonWolUn dayStem={data.day_pillar.stem} />
       <IlJinCalendar />
-      <HapChungPanel data={data} />
-      <WuxingFeatureTable data={data} />
 
       {/* CTA — 리포트·상담 라우트 미존재: 비활성 스타일 (준비 중) */}
       <div className="mt-1 flex gap-2">
