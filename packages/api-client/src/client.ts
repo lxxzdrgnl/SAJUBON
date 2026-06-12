@@ -11,7 +11,14 @@ export class ApiError extends Error {
 }
 
 export class ApiClient {
-  constructor(private baseUrl: string) {}
+  /**
+   * @param baseUrl       API 베이스 URL
+   * @param defaultHeaders 모든 요청에 병합할 헤더 (SSR 쿠키 포워딩 등). 선택.
+   */
+  constructor(
+    private baseUrl: string,
+    private defaultHeaders?: Record<string, string>,
+  ) {}
 
   async get<T>(path: string): Promise<T> {
     return this.request<T>(path, { method: 'GET' })
@@ -28,6 +35,7 @@ export class ApiClient {
   private async request<T>(path: string, init: RequestInit): Promise<T> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       ...init,
+      headers: { ...this.defaultHeaders, ...(init.headers as Record<string, string>) },
       credentials: 'include',
     })
     if (!res.ok) {
