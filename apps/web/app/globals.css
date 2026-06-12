@@ -1,0 +1,37 @@
+@import 'tailwindcss';
+
+/* 디자인 토큰 — 원천: packages/design (docs/design.md) */
+:root {
+  --bg-base: #FFFBF2;
+  --ink: #1A1A1A;
+  --yellow: #FFD900;
+  --yellow-tint: #FFF3B0;
+  --amber: #FFB200;
+  --orange: #FF6B00;
+  --orange-tint: #FFE1CC;
+  --teal: #00C2B8;
+  --teal-deep: #00857D;
+  --teal-tint: #D7F7F4;
+  --surface: #FFFFFF;
+  --border-soft: #EBE3D2;
+  --text-sub: #8A8270;
+}
+
+@theme inline {
+  --color-bg-base: var(--bg-base);
+  --color-ink: var(--ink);
+  --color-yellow: var(--yellow);
+  --color-amber: var(--amber);
+  --color-orange: var(--orange);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-teal-tint: var(--teal-tint);
+  --color-surface: var(--surface);
+  --color-border-soft: var(--border-soft);
+  --color-text-sub: var(--text-sub);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--ink);
+}
