@@ -31,7 +31,7 @@ export default function InputForm() {
   async function submit() {
     if (!date) return
     const input = {
-      name: name || '게스트',
+      name: name || t('guestName'),
       birth_date: date,
       birth_time: timeUnknown ? null : time || null,
       gender,

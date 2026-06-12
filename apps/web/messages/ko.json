@@ -1,15 +1,33 @@
 {
-  "tab": { "home": "홈", "manse": "만세력", "chat": "상담", "my": "마이" },
+  "tab": {
+    "home": "홈",
+    "manse": "만세력",
+    "chat": "상담",
+    "my": "마이"
+  },
   "home": {
     "title": "사주구리",
     "fortuneBanner": "오늘의 운세",
     "fortuneSub": "너의 하루는?",
     "sectionTitle": "이런 건 어때?",
     "cards": {
-      "report": { "title": "내 사주 풀리포트", "badge": "10탭", "desc": "결론만 말해주는 AI 해설" },
-      "chat": { "title": "AI 사주 상담", "desc": "궁합도 물어봐 · 로그인 필요" },
-      "question": { "title": "한 번 물어보기", "desc": "로그인 없이 한 질문 맛보기" },
-      "soon": { "title": "작명 · 꿈해몽", "desc": "coming soon" }
+      "report": {
+        "title": "내 사주 풀리포트",
+        "badge": "10탭",
+        "desc": "결론만 말해주는 AI 해설"
+      },
+      "chat": {
+        "title": "AI 사주 상담",
+        "desc": "궁합도 물어봐 · 로그인 필요"
+      },
+      "question": {
+        "title": "한 번 물어보기",
+        "desc": "로그인 없이 한 질문 맛보기"
+      },
+      "soon": {
+        "title": "작명 · 꿈해몽",
+        "desc": "coming soon"
+      }
     }
   },
   "manse": {
@@ -28,13 +46,19 @@
       "male": "남성",
       "female": "여성",
       "submit": "만세력 보기",
-      "guestNote": "게스트도 바로 볼 수 있어요 · 최근 입력은 이 기기에 저장됩니다"
+      "guestNote": "게스트도 바로 볼 수 있어요 · 최근 입력은 이 기기에 저장됩니다",
+      "guestName": "게스트"
     },
     "result": {
       "myIlju": "MY 일주",
       "palja": "사주팔자",
       "detail": "12운성 · 신살 · 지장간 상세",
-      "pillars": { "hour": "생시", "day": "생일", "month": "생월", "year": "생년" },
+      "pillars": {
+        "hour": "생시",
+        "day": "생일",
+        "month": "생월",
+        "year": "생년"
+      },
       "chartsComing": "오행 밸런스 · 십성 차트는 곧 추가돼요",
       "error": "계산에 실패했어요. 입력을 확인해주세요"
     },

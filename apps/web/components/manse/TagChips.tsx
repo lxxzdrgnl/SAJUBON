@@ -1,8 +1,10 @@
 import type { SajuCalcResponse, SinSal } from '@sajuguri/api-client'
 import Chip from '@/components/ui/Chip'
 
-function sinSalVariant(s: SinSal): 'lucky' | 'unlucky' {
-  return s.type === 'lucky' ? 'lucky' : 'unlucky'
+function sinSalVariant(s: SinSal): 'lucky' | 'unlucky' | 'default' {
+  if (s.type === 'lucky') return 'lucky'
+  if (s.type === 'unlucky' || s.type === 'warning') return 'unlucky'
+  return 'default'   // neutral(역마·화개·도화 등)은 중립 화이트 — design.md §4.1
 }
 
 export default function TagChips({ data }: { data: SajuCalcResponse }) {

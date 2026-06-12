@@ -15,6 +15,7 @@ function toQuery(i: RecentBirthInput): string {
 
 export default function RecentList() {
   const t = useTranslations('manse.index')
+  const tf = useTranslations('manse.form')
   const [items, setItems] = useState<RecentBirthInput[] | null>(null)
   useEffect(() => { loadRecentInputs(webStorage).then(setItems) }, [])
   if (items === null) return null
@@ -29,7 +30,7 @@ export default function RecentList() {
             <span>
               <span className="block text-[15px] font-extrabold">{i.name}</span>
               <span className="block text-xs text-text-sub">
-                {i.birth_date} · {i.birth_time ?? '시간모름'} · {i.gender === 'male' ? '남' : '여'}
+                {i.birth_date} · {i.birth_time ?? tf('timeUnknown')} · {i.gender === 'male' ? tf('male') : tf('female')}
               </span>
             </span>
           </BrutalCard>

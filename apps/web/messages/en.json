@@ -1,15 +1,33 @@
 {
-  "tab": { "home": "Home", "manse": "Chart", "chat": "Chat", "my": "My" },
+  "tab": {
+    "home": "Home",
+    "manse": "Chart",
+    "chat": "Chat",
+    "my": "My"
+  },
   "home": {
     "title": "SajuGuri",
     "fortuneBanner": "Today's Fortune",
     "fortuneSub": "How's your day?",
     "sectionTitle": "What about these?",
     "cards": {
-      "report": { "title": "My Full Saju Report", "badge": "10 tabs", "desc": "AI insights, conclusions first" },
-      "chat": { "title": "AI Saju Chat", "desc": "Ask anything, even compatibility · Sign-in required" },
-      "question": { "title": "Quick Question", "desc": "One free question, no sign-in" },
-      "soon": { "title": "Naming · Dream reading", "desc": "coming soon" }
+      "report": {
+        "title": "My Full Saju Report",
+        "badge": "10 tabs",
+        "desc": "AI insights, conclusions first"
+      },
+      "chat": {
+        "title": "AI Saju Chat",
+        "desc": "Ask anything, even compatibility · Sign-in required"
+      },
+      "question": {
+        "title": "Quick Question",
+        "desc": "One free question, no sign-in"
+      },
+      "soon": {
+        "title": "Naming · Dream reading",
+        "desc": "coming soon"
+      }
     }
   },
   "manse": {
@@ -28,13 +46,19 @@
       "male": "Male",
       "female": "Female",
       "submit": "View Saju Chart",
-      "guestNote": "No sign-in needed · Recent inputs are saved on this device"
+      "guestNote": "No sign-in needed · Recent inputs are saved on this device",
+      "guestName": "Guest"
     },
     "result": {
       "myIlju": "MY Day Pillar",
       "palja": "Four Pillars",
       "detail": "12-stage cycle · Sinsals · Hidden stems",
-      "pillars": { "hour": "Hour", "day": "Day", "month": "Month", "year": "Year" },
+      "pillars": {
+        "hour": "Hour",
+        "day": "Day",
+        "month": "Month",
+        "year": "Year"
+      },
       "chartsComing": "Five elements balance · Ten gods chart coming soon",
       "error": "Calculation failed. Please check your input"
     },
