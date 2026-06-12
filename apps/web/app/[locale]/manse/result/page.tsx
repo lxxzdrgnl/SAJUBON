@@ -6,6 +6,7 @@ import PillarCard from '@/components/manse/PillarCard'
 import TagChips from '@/components/manse/TagChips'
 import DetailAccordion from '@/components/manse/DetailAccordion'
 import WuxingBalanceCard from '@/components/manse/WuxingBalanceCard'
+import TenGodsCard from '@/components/manse/TenGodsCard'
 
 export default async function ManseResult({
   searchParams,
@@ -60,6 +61,7 @@ export default async function ManseResult({
       </div>
       <DetailAccordion data={data} />
       <WuxingBalanceCard data={data} />
+      <TenGodsCard data={data} />
       <p className="text-center text-[11px] text-text-sub">{t('chartsComing')}</p>
     </main>
   )
