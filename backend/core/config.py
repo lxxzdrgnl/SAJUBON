@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     # 리포트 일일 생성 한도 (None = 무제한)
     report_daily_limit: int | None = None
 
+    # 운세 스토리 게스트 어뷰즈 대비 IP별 일일 한도 (None = 무제한) — 자리만, 미사용
+    daily_story_guest_limit_per_ip: int | None = None
+
     # JWT
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
