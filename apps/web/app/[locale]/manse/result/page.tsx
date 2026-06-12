@@ -8,6 +8,7 @@ import DetailAccordion from '@/components/manse/DetailAccordion'
 import WuxingBalanceCard from '@/components/manse/WuxingBalanceCard'
 import TenGodsCard from '@/components/manse/TenGodsCard'
 import StrengthCard from '@/components/manse/StrengthCard'
+import DaeUnTimeline from '@/components/manse/DaeUnTimeline'
 
 export default async function ManseResult({
   searchParams,
@@ -64,6 +65,7 @@ export default async function ManseResult({
       <WuxingBalanceCard data={data} />
       <TenGodsCard data={data} />
       <StrengthCard data={data} />
+      <DaeUnTimeline data={data} />
       <p className="text-center text-[11px] text-text-sub">{t('chartsComing')}</p>
     </main>
   )
