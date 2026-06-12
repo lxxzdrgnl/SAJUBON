@@ -29,6 +29,21 @@
       "female": "Female",
       "submit": "View Saju Chart",
       "guestNote": "No sign-in needed · Recent inputs are saved on this device"
+    },
+    "result": {
+      "myIlju": "MY Day Pillar",
+      "palja": "Four Pillars",
+      "detail": "12-stage cycle · Sinsals · Hidden stems",
+      "pillars": { "hour": "Hour", "day": "Day", "month": "Month", "year": "Year" },
+      "chartsComing": "Five elements balance · Ten gods chart coming soon",
+      "error": "Calculation failed. Please check your input"
+    },
+    "index": {
+      "title": "Saju Chart",
+      "new": "+ New Saju Chart",
+      "recent": "Recent Charts",
+      "empty": "No charts yet. Try adding one",
+      "loginHint": "Sign in to save and manage your charts"
     }
   }
 }
