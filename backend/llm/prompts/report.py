@@ -139,11 +139,11 @@ def format_user_message(
         status = "합화 성립" if eff else "합화 불성립(충·극 방해)"
         br_lines.append(f"육합 {pair}→{elem}화 ({status})")
 
-    sam_hap = br.get("sam_hap")
-    if sam_hap:
+    for sam_hap in br.get("sam_hap", []):
         branches = "·".join(sam_hap.get("branches", []))
         elem = sam_hap.get("element", "")
-        br_lines.append(f"삼합 {branches}→{elem}화")
+        label = sam_hap.get("label") or f"삼합 {branches}→{elem}화"
+        br_lines.append(label if "합" in label else f"삼합 {branches}→{elem}화 ({label})")
 
     for pair in br.get("chung", []):
         br_lines.append(f"충 {'↔'.join(pair)} (충돌·약화)")
