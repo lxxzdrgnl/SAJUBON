@@ -8,6 +8,19 @@
   "auth": {
     "signingIn": "로그인 중…"
   },
+  "my": {
+    "title": "마이",
+    "loginRequired": "로그인이 필요해요",
+    "loginWithGoogle": "구글로 로그인",
+    "logout": "로그아웃",
+    "soon": "준비 중",
+    "menu": {
+      "reports": "내 리포트",
+      "fortuneHistory": "운세 기록",
+      "shares": "공유 관리",
+      "settings": "설정"
+    }
+  },
   "home": {
     "title": "사주구리",
     "fortuneBanner": "오늘의 운세",

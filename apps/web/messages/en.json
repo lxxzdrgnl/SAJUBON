@@ -8,6 +8,19 @@
   "auth": {
     "signingIn": "Signing in…"
   },
+  "my": {
+    "title": "My",
+    "loginRequired": "Sign in to continue",
+    "loginWithGoogle": "Sign in with Google",
+    "logout": "Sign out",
+    "soon": "Coming soon",
+    "menu": {
+      "reports": "My reports",
+      "fortuneHistory": "Fortune history",
+      "shares": "Shared links",
+      "settings": "Settings"
+    }
+  },
   "home": {
     "title": "SajuGuri",
     "fortuneBanner": "Today's Fortune",
