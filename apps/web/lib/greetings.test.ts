@@ -17,7 +17,7 @@ describe('시간대별 인사말', () => {
 
   it('이름 치환 + 존댓말 어미', () => {
     const g = pickGreeting('ko', '구리', 9, () => 0)
-    expect(g).toBe('구리님, 오늘 기운 보러 갈까요?')
+    expect(g).toBe('구리님, 오늘 운세 보러 갈까요?')
     expect(g).not.toContain('{name}')
   })
 

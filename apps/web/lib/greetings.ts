@@ -17,50 +17,48 @@ export function slotForHour(hour: number): GreetingSlot {
 const POOL: Record<'ko' | 'en', Record<GreetingSlot, string[]>> = {
   ko: {
     dawn: [
-      '{name}님, 이 시간까지 깨어 계신 것도 운명일까요?',
-      '{name}님, 새벽 기운은 또 다르답니다',
+      '{name}님, 아직 안 주무셨네요',
+      '{name}님, 늦은 시간까지 고생 많으세요',
     ],
     morning: [
-      '{name}님, 오늘 기운 보러 갈까요?',
-      '좋은 아침이에요 {name}님, 오늘 일진부터 볼까요?',
-      '{name}님, 오늘은 어떤 하루가 기다릴까요?',
+      '{name}님, 오늘 운세 보러 갈까요?',
+      '좋은 아침이에요, {name}님',
+      '{name}님, 오늘 하루 어떨지 볼까요?',
     ],
     afternoon: [
-      '{name}님, 오후의 흐름도 챙겨볼까요?',
-      '{name}님, 잠깐 쉬어가며 운세 한 장 어때요?',
-      '{name}님, 남은 하루의 기운이 궁금하지 않으세요?',
+      '{name}님, 오후도 잘 보내고 계신가요?',
+      '{name}님, 오늘 운세 아직이라면 지금이에요',
     ],
     evening: [
-      '{name}님, 오늘 하루 수고했어요. 운세로 마무리할까요?',
-      '{name}님, 저녁의 기운은 차분하게 읽혀요',
+      '{name}님, 오늘 하루 어떠셨어요?',
+      '{name}님, 오늘도 수고 많았어요',
     ],
     night: [
-      '{name}님, 주무시기 전에 내일 기운 살짝 볼까요?',
-      '{name}님, 밤하늘 보며 운세 한 장 어때요?',
+      '{name}님, 내일 운세 미리 볼까요?',
+      '{name}님, 편안한 밤 보내세요',
     ],
   },
   en: {
     dawn: [
-      '{name}, still up? Maybe it’s destiny',
-      '{name}, the dawn carries a different energy',
+      '{name}, up late tonight?',
+      '{name}, burning the midnight oil?',
     ],
     morning: [
-      '{name}, shall we check today’s energy?',
-      'Good morning {name}, ready for today’s reading?',
-      '{name}, wonder what today holds?',
+      '{name}, shall we check today’s fortune?',
+      'Good morning, {name}',
+      '{name}, let’s see how today looks',
     ],
     afternoon: [
-      '{name}, how about a midday check-in?',
-      '{name}, take a break with a quick reading',
-      '{name}, curious about the rest of your day?',
+      '{name}, how’s your day going?',
+      '{name}, haven’t checked today’s fortune yet?',
     ],
     evening: [
-      '{name}, long day? Let’s wrap it up with a reading',
-      '{name}, evenings read calm and clear',
+      '{name}, how was your day?',
+      '{name}, you’ve earned a rest',
     ],
     night: [
       '{name}, a peek at tomorrow before bed?',
-      '{name}, one last reading under the night sky',
+      '{name}, have a good night',
     ],
   },
 }
