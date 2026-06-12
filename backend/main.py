@@ -22,7 +22,7 @@ from core.exceptions import AppException
 from db.models import Base
 from db.session import engine
 from core.middleware import AccessLogMiddleware
-from routers import saju, cities, auth, profiles, share, question, chat
+from routers import saju, cities, auth, profiles, share, question, chat, reports
 
 # ─── 로깅 설정 ───────────────────────────────────────────────────────────────
 
@@ -157,6 +157,8 @@ app.include_router(share.router)
 # app.include_router(daily.router)           # 구현 예정
 app.include_router(question.router)
 app.include_router(chat.router)
+app.include_router(reports.router)
+app.include_router(reports.share_router)
 
 
 @app.get("/health", tags=["상태 확인"])

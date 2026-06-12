@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     # 쿠키 보안 플래그 — prod(HTTPS)에서 COOKIE_SECURE=true
     cookie_secure: bool = False
 
+    # 리포트 일일 생성 한도 (None = 무제한)
+    report_daily_limit: int | None = None
+
     # JWT
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"

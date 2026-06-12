@@ -118,6 +118,62 @@ class UnFlowOutput(BaseModel):
     dae_un_analysis: DaeUnAnalysis
 
 
+# ─── 저장 리포트 API 계약 (POST/GET /api/reports, 공유) ──────────────────────
+
+class ReportBirthInput(SajuCalcRequest):
+    """리포트용 만세력 입력 — SajuCalcRequest + 대상 이름(목록·공유 표기용)."""
+
+    name: str | None = Field(default=None, description="대상 이름 (목록·공유에 표기)")
+
+
+class ReportCreateRequest(BaseModel):
+    """POST /api/reports — 리포트 생성+저장 요청."""
+
+    birth_input: ReportBirthInput = Field(description="만세력 입력 (SajuCalcRequest 형태 + name)")
+    request_topics: str | None = Field(
+        default=None,
+        description="추가로 보고 싶은 주제 (쉼표 구분, 각각 별도 탭). 없으면 null",
+        examples=["이직 시기, 부모님 건강"],
+    )
+    profile_id: int | None = Field(default=None, description="저장된 만세력 ID (선택)")
+    language: str = Field(default="ko", description="리포트 언어 (현재 ko 고정)")
+
+
+class ReportSummary(BaseModel):
+    """GET /api/reports — 목록 항목."""
+
+    id: int
+    first_headline: str = Field(description="첫 탭 헤드라인")
+    profile_name: str = Field(description="birth_input.name")
+    request_topics: str | None
+    created_at: str
+
+    model_config = {"from_attributes": True}
+
+
+class ReportDetail(ReportSummary):
+    """GET /api/reports/{id} — 단건 전체."""
+
+    birth_input: dict = Field(description="만세력 입력 (마스킹 시 birth_date·birth_time이 null)")
+    language: str
+    tabs: list[TabContent] = Field(description="10개 + 요청 주제 수만큼")
+    year_flow: YearFlow
+    dae_un_analysis: DaeUnAnalysis
+
+
+class ReportShareRequest(BaseModel):
+    """POST /api/reports/{id}/share — 공유 토큰 발급 요청."""
+
+    mask_birth: bool = Field(default=False, description="생년월일·시각 마스킹 여부")
+
+
+class ReportShareResponse(BaseModel):
+    """공유 토큰 발급 응답."""
+
+    share_token: UUID
+    share_url: str
+
+
 class SajuReportResponse(BaseModel):
     """사주 리포트 전체 응답."""
 
