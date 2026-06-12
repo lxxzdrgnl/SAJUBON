@@ -5,6 +5,9 @@
     "chat": "Chat",
     "my": "My"
   },
+  "auth": {
+    "signingIn": "Signing in…"
+  },
   "home": {
     "title": "SajuGuri",
     "fortuneBanner": "Today's Fortune",

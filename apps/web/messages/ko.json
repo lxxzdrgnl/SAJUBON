@@ -5,6 +5,9 @@
     "chat": "상담",
     "my": "마이"
   },
+  "auth": {
+    "signingIn": "로그인 중…"
+  },
   "home": {
     "title": "사주구리",
     "fortuneBanner": "오늘의 운세",
