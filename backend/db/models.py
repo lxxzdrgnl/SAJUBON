@@ -3,7 +3,7 @@
 from __future__ import annotations
 import uuid
 from datetime import date, time, datetime, timezone
-from sqlalchemy import String, DateTime, Date, Time, Integer, Boolean, Numeric, ForeignKey, Text
+from sqlalchemy import String, DateTime, Date, Time, Integer, Boolean, Numeric, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -158,3 +158,23 @@ class ReportShare(Base):
     )
     mask_birth:  Mapped[bool]      = mapped_column(Boolean, default=False, nullable=False)
     created_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class DailyFortuneRecord(Base):
+    """오늘의 운세 스토리 저장 — 만세력(birth_hash)별 1일 1회."""
+
+    __tablename__ = "daily_fortune_records"
+    __table_args__ = (
+        UniqueConstraint("user_id", "birth_hash", "date", name="uq_daily_record_user_birth_date"),
+    )
+
+    id:           Mapped[int]      = mapped_column(Integer, primary_key=True)
+    user_id:      Mapped[int]      = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    birth_hash:   Mapped[str]      = mapped_column(String(64), index=True, nullable=False)
+    date:         Mapped[date]     = mapped_column(Date, nullable=False)
+    profile_name: Mapped[str]      = mapped_column(String(50), nullable=False, default="")
+    keyword:      Mapped[str]      = mapped_column(String(50), nullable=False, default="")
+    payload:      Mapped[dict]     = mapped_column(JSONB, nullable=False)
+    created_at:   Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
