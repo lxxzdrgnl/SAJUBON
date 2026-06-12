@@ -251,5 +251,45 @@
       "notFound": "공유 링크를 찾을 수 없어요.",
       "notFoundDesc": "링크가 만료됐거나 잘못된 주소예요."
     }
+  },
+  "fortune": {
+    "banner": {
+      "title": "오늘의 운세",
+      "pickSheet": "누구의 운세를 볼까?"
+    },
+    "sheet": {
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 입력",
+      "directInput": "직접 입력하기",
+      "seenToday": "다시 보기",
+      "loginHint": "로그인하면 저장된 만세력을 불러올 수 있어요"
+    },
+    "story": {
+      "loading": "운세를 분석하고 있어요",
+      "error": "운세를 불러올 수 없어요. 잠시 후 다시 시도해 주세요.",
+      "closeLabel": "닫기",
+      "prev": "이전",
+      "next": "다음"
+    },
+    "summary": {
+      "headerTitle": "너의 하루 요약",
+      "keyword": "오늘의 키워드",
+      "saveImage": "이미지 저장",
+      "shareLink": "링크 공유",
+      "shareLabel": "사주구리 오늘의 운세"
+    },
+    "my": {
+      "title": "운세 기록",
+      "empty": "아직 운세 기록이 없어요",
+      "goFortune": "오늘의 운세 보러 가기"
+    },
+    "categories": {
+      "exam": "학업",
+      "money": "금전",
+      "love": "연애",
+      "career": "직업",
+      "health": "건강",
+      "social": "사교"
+    }
   }
 }

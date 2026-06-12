@@ -2,8 +2,10 @@ import Image from 'next/image'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import BrutalCard from '@/components/ui/BrutalCard'
-import { currentUser } from '@/lib/serverAuth'
+import { currentUser, serverAuthApi } from '@/lib/serverAuth'
 import { pickGreeting } from '@/lib/greetings'
+import { listProfiles, type ProfileResponse } from '@sajuguri/api-client'
+import FortuneBannerClient from '@/components/fortune/FortuneBannerClient'
 
 const ICONS = {
   doc: 'M5 3 h11 a2 2 0 0 1 2 2 v14 a2 2 0 0 1-2 2 H5 a0 0 0 0 1 0 0 V3 Z M9 8 H15 M9 12 H15 M9 16 H13',
@@ -42,20 +44,33 @@ export default async function Home() {
   const name = user?.email ? user.email.split('@')[0] : null
   const hourKST = (new Date().getUTCHours() + 9) % 24
   const fortuneSub = name ? pickGreeting(locale, name, hourKST) : t('fortuneSub')
+
+  // 저장 만세력 — 로그인 시 시트에 보여줄 목록 (비로그인 시 빈 배열)
+  let profiles: ProfileResponse[] = []
+  if (user) {
+    try {
+      profiles = await listProfiles(await serverAuthApi())
+    } catch {
+      profiles = []
+    }
+  }
+
   return (
     <main>
       <header className="mb-4 flex items-center gap-2 text-xl font-black">
         <Image src="/mascot.svg" alt="" width={26} height={26} />
         사주<span className="rounded-md bg-yellow px-1">구리</span>
       </header>
-      {/* 운세 배너 — 그라데이션 예외 (design.md §3). 스토리는 Phase 3 — 아직 미링크 */}
-      <section className="flex items-center gap-3 rounded-[18px] border-2 border-ink bg-[linear-gradient(135deg,var(--yellow),var(--orange))] p-4 shadow-[4px_4px_0_#1A1A1A]">
-        <Image src="/mascot.svg" alt="" width={44} height={44} />
-        <div>
-          <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
-          <p className="text-xs font-semibold text-[#5a4a00]">{fortuneSub}</p>
-        </div>
-      </section>
+      {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
+      <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
+        <section className="flex items-center gap-3 rounded-[18px] border-2 border-ink bg-[linear-gradient(135deg,var(--yellow),var(--orange))] p-4 shadow-[4px_4px_0_#1A1A1A]">
+          <Image src="/mascot.svg" alt="" width={44} height={44} />
+          <div>
+            <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
+            <p className="text-xs font-semibold text-[#5a4a00]">{fortuneSub}</p>
+          </div>
+        </section>
+      </FortuneBannerClient>
 
       <h3 className="mb-3 mt-5 text-[15px] font-extrabold">{t('sectionTitle')}</h3>
       <div className="flex flex-col gap-3">

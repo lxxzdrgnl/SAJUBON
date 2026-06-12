@@ -251,5 +251,45 @@
       "notFound": "Share link not found.",
       "notFoundDesc": "The link may have expired or is invalid."
     }
+  },
+  "fortune": {
+    "banner": {
+      "title": "Today's Fortune",
+      "pickSheet": "Whose fortune?"
+    },
+    "sheet": {
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Enter manually",
+      "seenToday": "See again",
+      "loginHint": "Sign in to load saved charts"
+    },
+    "story": {
+      "loading": "Analyzing your fortune",
+      "error": "Could not load fortune. Please try again later.",
+      "closeLabel": "Close",
+      "prev": "Prev",
+      "next": "Next"
+    },
+    "summary": {
+      "headerTitle": "Your day in a nutshell",
+      "keyword": "Today's keyword",
+      "saveImage": "Save image",
+      "shareLink": "Share link",
+      "shareLabel": "SajuGuri Daily Fortune"
+    },
+    "my": {
+      "title": "Fortune history",
+      "empty": "No fortune records yet",
+      "goFortune": "Check today's fortune"
+    },
+    "categories": {
+      "exam": "Study",
+      "money": "Money",
+      "love": "Love",
+      "career": "Career",
+      "health": "Health",
+      "social": "Social"
+    }
   }
 }
