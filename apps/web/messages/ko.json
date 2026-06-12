@@ -76,7 +76,8 @@
         "year": "생년"
       },
       "chartsComing": "오행 밸런스 · 십성 차트는 곧 추가돼요",
-      "error": "계산에 실패했어요. 입력을 확인해주세요"
+      "error": "계산에 실패했어요. 입력을 확인해주세요",
+      "iljuName": "{name}일주"
     },
     "charts": {
       "detail": {

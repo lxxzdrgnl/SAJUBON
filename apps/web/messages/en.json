@@ -76,7 +76,8 @@
         "year": "Year"
       },
       "chartsComing": "Five elements balance · Ten gods chart coming soon",
-      "error": "Calculation failed. Please check your input"
+      "error": "Calculation failed. Please check your input",
+      "iljuName": "{name} Day Pillar"
     },
     "charts": {
       "detail": {
