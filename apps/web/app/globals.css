@@ -18,6 +18,9 @@
 }
 
 @theme inline {
+  /* 간지 명조체 — next/font(Noto Serif KR)가 --font-serif-kr를 주입한다.
+     CJK 세리프 글리프를 확보해 PillarCard·IljuHero·운 타임라인 간지를 통일한다. */
+  --font-serif: var(--font-serif-kr), ui-serif, Georgia, 'Nanum Myeongjo', serif;
   --color-bg-base: var(--bg-base);
   --color-ink: var(--ink);
   --color-yellow: var(--yellow);
