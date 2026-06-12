@@ -1,39 +1,26 @@
 <script setup lang="ts">
-const props = defineProps<{
-  error: { statusCode: number; message?: string; url?: string }
-}>()
-
-const is404 = computed(() => props.error.statusCode === 404)
-
-const title    = computed(() => is404.value ? '페이지를 찾을 수 없어요' : '일시적인 오류가 발생했어요')
-const subtitle = computed(() =>
-  is404.value
-    ? '존재하지 않거나 삭제된 페이지입니다.'
-    : '잠시 후 다시 시도해 주세요.',
-)
-
-function goHome() {
-  clearError({ redirect: '/' })
+// Nuxt 3 SSR에서 throw createError()는 devalue 직렬화 버그를 유발함.
+// 에러 시스템을 거치지 않고 일반 페이지로 404를 처리한다.
+if (import.meta.server) {
+  setResponseStatus(useRequestEvent()!, 404, '페이지를 찾을 수 없어요')
 }
+
+useHead({ title: '404 | 사주구리' })
+
+const router = useRouter()
+function goHome() { router.push('/') }
 </script>
 
 <template>
-  <div class="error-root">
-    <div class="error-card">
-      <!-- 로고 -->
-      <NuxtLink to="/" class="error-logo ganji" @click.prevent="goHome">
+  <div class="not-found-root">
+    <div class="not-found-card">
+      <NuxtLink to="/" class="not-found-logo ganji">
         <span style="color: var(--text-primary);">사주</span><span style="color: var(--accent);">구리</span>
       </NuxtLink>
-
-      <!-- 코드 -->
-      <p class="error-code">{{ error.statusCode }}</p>
-
-      <!-- 메시지 -->
-      <h1 class="error-title">{{ title }}</h1>
-      <p class="error-sub">{{ subtitle }}</p>
-
-      <!-- 홈 버튼 -->
-      <button class="btn-primary error-btn" @click="goHome">
+      <p class="not-found-code">404</p>
+      <h1 class="not-found-title">페이지를 찾을 수 없어요</h1>
+      <p class="not-found-sub">존재하지 않거나 삭제된 페이지입니다.</p>
+      <button class="btn-primary not-found-btn" @click="goHome">
         홈으로 돌아가기
       </button>
     </div>
@@ -41,16 +28,15 @@ function goHome() {
 </template>
 
 <style scoped>
-.error-root {
+.not-found-root {
   min-height: 100dvh;
-  background: var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  background: var(--bg-base);
 }
-
-.error-card {
+.not-found-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -63,8 +49,7 @@ function goHome() {
   border-radius: 24px;
   text-align: center;
 }
-
-.error-logo {
+.not-found-logo {
   font-family: var(--font-ganji);
   font-size: 1.2rem;
   font-weight: 700;
@@ -72,8 +57,7 @@ function goHome() {
   letter-spacing: 0.05em;
   margin-bottom: 8px;
 }
-
-.error-code {
+.not-found-code {
   font-size: 4rem;
   font-weight: 900;
   color: var(--accent);
@@ -81,23 +65,20 @@ function goHome() {
   margin: 0;
   letter-spacing: -0.02em;
 }
-
-.error-title {
+.not-found-title {
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
   line-height: 1.4;
 }
-
-.error-sub {
+.not-found-sub {
   font-size: var(--fs-sub);
   color: var(--text-muted);
   margin: 0 0 8px;
   line-height: 1.6;
 }
-
-.error-btn {
+.not-found-btn {
   margin-top: 4px;
   width: 100%;
   max-width: 200px;
