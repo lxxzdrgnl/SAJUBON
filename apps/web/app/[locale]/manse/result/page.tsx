@@ -4,7 +4,7 @@ import type { SajuCalcResponse } from '@sajuguri/api-client'
 import IljuHero from '@/components/manse/IljuHero'
 import PillarCard from '@/components/manse/PillarCard'
 import TagChips from '@/components/manse/TagChips'
-import BrutalCard from '@/components/ui/BrutalCard'
+import DetailAccordion from '@/components/manse/DetailAccordion'
 
 export default async function ManseResult({
   searchParams,
@@ -57,9 +57,7 @@ export default async function ManseResult({
             <div key={key} className="flex-1 rounded-xl border-[1.5px] border-dashed border-border-soft py-3 text-center text-[10px] text-text-sub">—</div>,
         )}
       </div>
-      <BrutalCard intensity="soft" className="flex justify-between text-[13px] font-extrabold text-[#6a6250]">
-        {t('detail')} <span className="text-text-sub">▾</span>
-      </BrutalCard>
+      <DetailAccordion data={data} />
       <p className="text-center text-[11px] text-text-sub">{t('chartsComing')}</p>
     </main>
   )

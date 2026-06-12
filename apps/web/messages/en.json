@@ -62,6 +62,96 @@
       "chartsComing": "Five elements balance · Ten gods chart coming soon",
       "error": "Calculation failed. Please check your input"
     },
+    "charts": {
+      "detail": {
+        "title": "12-stage cycle · Sinsals · Hidden stems",
+        "twelveWun": "12운성",
+        "jiJangGan": "지장간",
+        "sinSal": "신살",
+        "none": "—"
+      },
+      "wuxing": {
+        "title": "Five Elements Balance",
+        "balance": "Balance score",
+        "tabBar": "Bars",
+        "tabPentagram": "Pentagram",
+        "verdictOver": "과다",
+        "verdictLack": "부족",
+        "verdictOk": "적정",
+        "balanced": "A well-balanced five-element makeup",
+        "over": "과다",
+        "lack": "결핍",
+        "saeng": "상생",
+        "geuk": "상극",
+        "dayLabel": "일간"
+      },
+      "tenGods": {
+        "title": "Ten Gods Structure",
+        "core": "Core",
+        "summary": "Structure summary",
+        "coreLabel": "핵심 구조"
+      },
+      "strength": {
+        "title": "Day Master Strength · Yongsin",
+        "score": "pts",
+        "weak": "Weak",
+        "mid": "Balanced",
+        "strong": "Strong",
+        "deukRyeong": "득령",
+        "deukJi": "득지",
+        "deukSi": "득시",
+        "deukSe": "득세",
+        "yongSin": "용신",
+        "xiSin": "희신",
+        "jiSin": "기신",
+        "gyeokGuk": "격국"
+      },
+      "daeUn": {
+        "title": "Great Luck (대운)",
+        "startAge": "Starts at {age}",
+        "age": "{age}",
+        "current": "Now"
+      },
+      "yeonWol": {
+        "title": "Yearly · Monthly Luck",
+        "tabYeon": "연운",
+        "tabWol": "월운",
+        "thisYear": "This year",
+        "thisMonth": "This month",
+        "loading": "Loading...",
+        "error": "Could not load data"
+      },
+      "ilJin": {
+        "title": "Daily Almanac (일진)",
+        "loading": "Loading almanac...",
+        "error": "Could not load almanac data",
+        "today": "Today",
+        "solarTerm": "절기",
+        "leap": "Leap",
+        "leapMark": "(윤)"
+      },
+      "hapChung": {
+        "title": "Combinations & Clashes",
+        "empty": "No matching relations",
+        "broken": "Combination broken by clash",
+        "gungSeongDesc": "Element weight varies by pillar position: month branch > day stem > hour/year > stems."
+      },
+      "feature": {
+        "title": "Five Elements Reference",
+        "colEl": "Element",
+        "colDir": "Direction · Season",
+        "colTraits": "Traits",
+        "colBody": "Body",
+        "colJobs": "Careers",
+        "over": "과다",
+        "lack": "부족"
+      },
+      "cta": {
+        "report": "Generate AI Report",
+        "chat": "Chat",
+        "soon": "Coming soon"
+      }
+    },
     "index": {
       "title": "Saju Chart",
       "new": "+ New Saju Chart",

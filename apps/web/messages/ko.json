@@ -62,6 +62,96 @@
       "chartsComing": "오행 밸런스 · 십성 차트는 곧 추가돼요",
       "error": "계산에 실패했어요. 입력을 확인해주세요"
     },
+    "charts": {
+      "detail": {
+        "title": "12운성 · 신살 · 지장간 상세",
+        "twelveWun": "12운성",
+        "jiJangGan": "지장간",
+        "sinSal": "신살",
+        "none": "—"
+      },
+      "wuxing": {
+        "title": "오행 밸런스",
+        "balance": "오행 균형도",
+        "tabBar": "막대",
+        "tabPentagram": "오각형",
+        "verdictOver": "과다",
+        "verdictLack": "부족",
+        "verdictOk": "적정",
+        "balanced": "균형 잡힌 오행 구성이에요",
+        "over": "과다",
+        "lack": "결핍",
+        "saeng": "상생",
+        "geuk": "상극",
+        "dayLabel": "일간"
+      },
+      "tenGods": {
+        "title": "십성 구조",
+        "core": "핵심 구조",
+        "summary": "십성 구조 요약",
+        "coreLabel": "핵심 구조"
+      },
+      "strength": {
+        "title": "일간 강약 · 용신",
+        "score": "점",
+        "weak": "약",
+        "mid": "중화",
+        "strong": "강",
+        "deukRyeong": "득령",
+        "deukJi": "득지",
+        "deukSi": "득시",
+        "deukSe": "득세",
+        "yongSin": "용신",
+        "xiSin": "희신",
+        "jiSin": "기신",
+        "gyeokGuk": "격국"
+      },
+      "daeUn": {
+        "title": "대운",
+        "startAge": "{age}세 시작",
+        "age": "{age}세",
+        "current": "현재"
+      },
+      "yeonWol": {
+        "title": "연운 · 월운",
+        "tabYeon": "연운",
+        "tabWol": "월운",
+        "thisYear": "올해",
+        "thisMonth": "이번달",
+        "loading": "불러오는 중...",
+        "error": "데이터를 불러올 수 없어요"
+      },
+      "ilJin": {
+        "title": "일진 달력",
+        "loading": "일진 불러오는 중...",
+        "error": "일진 데이터를 불러올 수 없어요",
+        "today": "오늘",
+        "solarTerm": "절기",
+        "leap": "윤달",
+        "leapMark": "(윤)"
+      },
+      "hapChung": {
+        "title": "합충 분석",
+        "empty": "해당하는 관계가 없어요",
+        "broken": "충으로 합 파괴됨",
+        "gungSeongDesc": "기둥 위치에 따라 오행 작용력 가중치가 달라요. 월지 > 일간 > 시지·연주 > 천간 순서예요."
+      },
+      "feature": {
+        "title": "오행 특성 참고표",
+        "colEl": "오행",
+        "colDir": "방위·계절",
+        "colTraits": "성격 특성",
+        "colBody": "관련 신체",
+        "colJobs": "어울리는 직업",
+        "over": "과다",
+        "lack": "부족"
+      },
+      "cta": {
+        "report": "AI 리포트 생성",
+        "chat": "상담하기",
+        "soon": "준비 중"
+      }
+    },
     "index": {
       "title": "만세력",
       "new": "+ 새 만세력 등록",
