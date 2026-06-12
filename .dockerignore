@@ -1,6 +1,6 @@
-node_modules
-.next
-.turbo
+**/node_modules
+**/.next
+**/.turbo
 frontend/node_modules
 backend/.venv
 .superpowers
