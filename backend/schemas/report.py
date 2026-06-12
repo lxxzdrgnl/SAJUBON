@@ -57,13 +57,22 @@ class SajuReportRequest(SajuCalcRequest):
 class TabContent(BaseModel):
     """리포트 탭 1개."""
 
+    category: str = Field(
+        default="",
+        description="짧은 태그 — '성격'·'재물'·'연애' 등 기본 카테고리명 또는 사용자가 요청한 주제명",
+        examples=["재물"],
+    )
     headline: str = Field(
         description="결론형 헤드라인 — 단순 카테고리명이 아닌 이 사람만을 위한 문장",
         examples=["30대 중반, 바위 틈에서 물이 솟구치듯 재물이 터질 팔자"],
     )
     content: str = Field(
-        description="상세 내용 (200~400자)",
+        description="상세 내용 — 비유→근거→조언 3단 구성, 문단 사이 빈 줄, 탭당 3~4문단",
         examples=["신금(辛金) 일간은 원석을 정련한 보석과 같아..."],
+    )
+    requested: bool = Field(
+        default=False,
+        description="사용자가 추가로 요청한 주제 탭이면 true",
     )
 
 
