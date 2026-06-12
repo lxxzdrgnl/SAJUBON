@@ -85,16 +85,30 @@ async def generate_report(
         HumanMessage(content=user_text),
     ]
 
-    # ── 3. LLM 호출 ──
-    try:
-        response = await llm.ainvoke(messages)
-        raw = response.content if hasattr(response, "content") else str(response)
-    except Exception as exc:
-        logger.error("Writer LLM 호출 실패: %s", exc)
-        raise
+    # ── 3. LLM 호출 + 파싱 (기본 탭 10개 미달 시 1회 재생성) ──
+    MIN_BASE_TABS = 10
+    out: WriterOutput | None = None
+    for attempt in range(2):
+        try:
+            response = await llm.ainvoke(messages)
+            raw = response.content if hasattr(response, "content") else str(response)
+        except Exception as exc:
+            logger.error("Writer LLM 호출 실패: %s", exc)
+            raise
 
-    # ── 4. 파싱 (실패 시 JSON 수정 프롬프트로 재시도) ──
-    return await _parse_with_recovery(llm, raw, parser, format_instructions)
+        out = await _parse_with_recovery(llm, raw, parser, format_instructions)
+        base_count = sum(1 for t in out.tabs if not getattr(t, "requested", False))
+        if base_count >= MIN_BASE_TABS:
+            return out
+        logger.warning("기본 탭 %d개 (<%d) — 재생성 %d/1", base_count, MIN_BASE_TABS, attempt + 1)
+        messages.append(response)
+        messages.append(HumanMessage(content=(
+            f"기본 탭이 {base_count}개뿐입니다. 지시된 10개 카테고리"
+            "(성격·직업·재물·연애·건강·학업·가족·대인관계·시기 흐름·총평)를 "
+            "각각 1개씩 모두 포함해 전체 JSON을 다시 출력하세요. 요청 주제 탭도 유지하세요."
+        )))
+    # 재시도까지 미달이면 있는 만큼이라도 반환 (graceful degrade — 빈 응답보다 낫다)
+    return out  # type: ignore[return-value]
 
 
 async def generate_consultation(
