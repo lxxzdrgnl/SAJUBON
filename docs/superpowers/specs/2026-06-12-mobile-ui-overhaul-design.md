@@ -28,8 +28,32 @@
 ### 1.3 비목표 (Non-Goals)
 - moonmarin8 ETL·RAG 보강·신규 도메인 (6/2 spec P1~P6 로드맵 그대로 유지)
 - 궁합 batch 리포트 도메인 (채팅 궁합 tool만 이번 스코프)
-- 앱 패키징 (PWA/Capacitor — 추후)
+- Expo 네이티브 앱 구현 (§1.5 모노레포의 `apps/native` — 웹 안정화 후 착수)
 - 게스트 채팅·게스트→로그인 프로필 병합 (추후)
+
+### 1.5 기술 스택 전환 — React 모노레포 (사용자 확정)
+
+**요구사항**: ① RN/Flutter급 네이티브 앱 (웹뷰 불가) ② 웹 SEO/SSR 필수.
+→ 업계 표준인 **Next.js 웹 + Expo 네이티브 모노레포**로 전환한다.
+기존 6/2 spec §7.4의 Capacitor 경로는 **폐기**.
+
+```
+모노레포 (pnpm workspace + Turborepo)
+├── apps/web      → Next.js (SSR/SEO — 이번 개편의 구현 대상)
+├── apps/native   → Expo React Native (네이티브 앱 — 웹 안정화 후)
+└── packages/
+    ├── api-client  → 백엔드 호출 + 요청/응답 타입
+    ├── core        → 비즈니스 로직 (스토리 시퀀스·점수·날짜 유틸 등)
+    └── design      → 디자인 토큰 (docs/design.md의 코드화)
+```
+
+- **공유 규율**: `packages/`는 플랫폼 무관 TS만. 브라우저 전용 API
+  (localStorage, EventSource 등)는 직접 호출 금지 — 어댑터 인터페이스로 주입
+  (웹: localStorage/EventSource, RN: AsyncStorage/fetch 스트림).
+  채팅 SSE는 RN에 EventSource가 없으므로 fetch 기반 스트림 파서로 공통화.
+- **기존 Nuxt 프론트(`frontend/`)는 레거시 동결** — 화면별로 `apps/web` 구현이
+  대체하면 제거. 비주얼 레퍼런스·기능 명세 소스로만 사용.
+- UI 코드는 웹/앱 각자 작성 (Tamagui류 유니버설 UI는 복잡도 대비 비채택).
 
 ---
 
@@ -274,12 +298,15 @@ my-profiles를 경유하던 동선 제거. **세션 title 자동 생성** 구현
 
 | 순서 | 작업 | 이유 |
 |---|---|---|
-| 1 | 디자인 토큰 + 탭 바 레이아웃 + 홈 허브 (리스킨 기반) | 모든 화면의 토대 |
+| 0 | **모노레포 스캐폴드** — pnpm workspace + `apps/web`(Next.js) + `packages/design`(토큰)·`api-client`·`core` | §1.5 전환의 토대 |
+| 1 | 디자인 토큰 + 탭 바 레이아웃 + 홈 허브 + 만세력(목록·입력폼·분석) — Next.js로 구현 | 모든 화면의 토대, 기존 기능 전량 이식 |
 | 2 | 10탭 리포트 (백엔드 보강 → 프론트) | 백엔드 거의 완성, 핵심 가치 |
 | 3 | 운세 스토리 (1일 1회 + GPT 리라이트 + 공유 카드) | 독립적, 바이럴 진입점 |
 | 4 | 채팅 개편 (첨부 하이브리드 + 인라인 컴포넌트 + 궁합 tool) | 백엔드 작업 최대 |
+| 5 | Expo 네이티브 앱 (`apps/native`) — packages 재사용, UI는 RN 작성 | 웹 안정화 후, 별도 spec |
 
 각 단계는 독립 배포 가능. 단계별 구현 계획은 별도 plan 문서로 분리한다.
+1~4의 모든 화면은 **Next.js(`apps/web`)에 구현**하며 기존 Nuxt 화면을 단계적으로 대체한다.
 
 ---
 
@@ -290,5 +317,10 @@ my-profiles를 경유하던 동선 제거. **세션 title 자동 생성** 구현
   즉시 제한 (구현은 이번에 포함)
 - **GPT 리라이트 일관성**: 반말 톤이 명리 근거를 왜곡하지 않는지 표본 검수 필요
 - **리스킨 회귀 범위**: CSS 변수 교체가 전 페이지에 미치므로 화면별 시각 QA 필수
+- **Vue→React 전환 비용**: 기존 `frontend/` 컴포넌트(차트 19개 포함)를 React로
+  재작성 — 이번 개편이 UI를 갈아엎는 시점이라 지금이 유일하게 싼 타이밍이라는
+  판단으로 확정. 전환 기간 동안 Nuxt(운영)와 Next(신규)가 일시 병행될 수 있음
+- **RN 어댑터 경계**: 채팅 SSE(EventSource 부재)·localStorage 등 플랫폼 API는
+  `packages/`에서 어댑터로 추상화하지 않으면 Expo 단계에서 재작업 발생
 - **6/2 멀티 도메인 spec과의 정합**: 본 설계의 홈 허브·탭 바가 P4~P6 도메인 추가의
   수용처가 된다 (홈 카드 + 풀스크린 페이지 패턴). §7.0 PC 2단 레이아웃은 본 문서로 대체.
