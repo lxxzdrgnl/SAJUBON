@@ -4,8 +4,8 @@ import { currentUser, serverAuthApi } from '@/lib/serverAuth'
 import { maskEmail } from '@/lib/mask'
 import BrutalCard from '@/components/ui/BrutalCard'
 import LogoutButton from '@/components/my/LogoutButton'
-import { listReports } from '@sajuguri/api-client'
-import type { ReportSummary } from '@sajuguri/api-client'
+import { listReports, listDailyRecords } from '@sajuguri/api-client'
+import type { ReportSummary, DailyRecordSummary } from '@sajuguri/api-client'
 
 // 브라우저가 직접 여는 풀 URL — next.config rewrites를 타지 않도록 백엔드 절대 주소 사용.
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -14,6 +14,7 @@ const GOOGLE_LOGIN_URL = `${API_URL}/api/auth/google?client=web`
 export default async function MyPage() {
   const t = await getTranslations('my')
   const tr = await getTranslations('report')
+  const tf = await getTranslations('fortune')
   const user = await currentUser()
 
   if (!user) {
@@ -35,17 +36,25 @@ export default async function MyPage() {
     )
   }
 
+  const authApi = await serverAuthApi()
+
   // 내 리포트 목록 (백엔드 미완성 시 빈 배열 fallback)
   let reports: ReportSummary[] = []
   try {
-    const api = await serverAuthApi()
-    reports = await listReports(api)
+    reports = await listReports(authApi)
   } catch {
     reports = []
   }
 
+  // 운세 기록 목록 (백엔드 미완성 시 빈 배열 fallback)
+  let fortuneRecords: DailyRecordSummary[] = []
+  try {
+    fortuneRecords = await listDailyRecords(authApi)
+  } catch {
+    fortuneRecords = []
+  }
+
   const menu = [
-    { key: 'fortuneHistory', soon: true },
     { key: 'shares', soon: true },
     { key: 'settings', soon: true },
   ] as const
@@ -89,6 +98,41 @@ export default async function MyPage() {
                       {r.request_topics && (
                         <span className="ml-1 text-text-sub">· {r.request_topics}</span>
                       )}
+                    </p>
+                  </BrutalCard>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* 운세 기록 목록 */}
+      <section className="mb-4">
+        <h2 className="mb-2 text-[13px] font-extrabold text-text-sub">{tf('my.title')}</h2>
+        {fortuneRecords.length === 0 ? (
+          <BrutalCard intensity="soft" className="flex flex-col gap-2 py-4 text-center">
+            <p className="text-[13px] text-text-sub">{tf('my.empty')}</p>
+            <Link
+              href="/"
+              className="mx-auto text-[13px] font-extrabold text-teal underline underline-offset-2"
+            >
+              {tf('my.goFortune')}
+            </Link>
+          </BrutalCard>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {fortuneRecords.map((r) => (
+              <li key={r.id}>
+                <Link href={`/fortune?record=${r.id}`}>
+                  <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
+                    <p className="text-[14px] font-extrabold leading-snug text-ink">
+                      {r.keyword}
+                    </p>
+                    <p className="text-[12px] text-text-sub">
+                      {new Date(r.date).toLocaleDateString('ko-KR')}
+                      {' · '}
+                      <span className="font-bold text-teal">{r.profile_name}</span>
                     </p>
                   </BrutalCard>
                 </Link>
