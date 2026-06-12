@@ -26,8 +26,14 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/api/auth/google/callback"
 
-    # Frontend URL (OAuth 완료 후 리다이렉트)
+    # Frontend URL (레거시 Nuxt — OAuth 완료 후 쿼리 토큰 리다이렉트)
     frontend_url: str = "http://localhost:3000"
+
+    # Web URL (신규 Next.js — OAuth 완료 후 httpOnly 쿠키 + 리다이렉트)
+    web_url: str = "http://localhost:3001"
+
+    # 쿠키 보안 플래그 — prod(HTTPS)에서 COOKIE_SECURE=true
+    cookie_secure: bool = False
 
     # JWT
     jwt_secret: str = "change-me-in-production"
