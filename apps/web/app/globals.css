@@ -21,8 +21,10 @@
   --color-bg-base: var(--bg-base);
   --color-ink: var(--ink);
   --color-yellow: var(--yellow);
+  --color-yellow-tint: var(--yellow-tint);
   --color-amber: var(--amber);
   --color-orange: var(--orange);
+  --color-orange-tint: var(--orange-tint);
   --color-teal: var(--teal);
   --color-teal-deep: var(--teal-deep);
   --color-teal-tint: var(--teal-tint);
