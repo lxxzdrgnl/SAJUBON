@@ -19,8 +19,9 @@ const TABS = [
 export default function TabBar() {
   const t = useTranslations('tab')
   const pathname = usePathname()
+  // 모바일=하단, 데스크탑(md+)=상단 고정 (사용자 확정)
   return (
-    <nav className="fixed bottom-3.5 left-1/2 flex w-[calc(100%-28px)] max-w-[612px] -translate-x-1/2 overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A]">
+    <nav className="fixed bottom-3.5 left-1/2 flex w-[calc(100%-28px)] max-w-[612px] -translate-x-1/2 overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A] md:bottom-auto md:top-3.5">
       {TABS.map(({ key, href }) => {
         const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
         return (

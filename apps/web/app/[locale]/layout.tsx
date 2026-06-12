@@ -21,7 +21,7 @@ export default async function LocaleLayout({
       <body>
         <NextIntlClientProvider>
           {/* 모바일 단일 컬럼 — design.md §7 */}
-          <div className="mx-auto min-h-dvh max-w-[640px] px-4 pb-24 pt-5">
+          <div className="mx-auto min-h-dvh max-w-[640px] px-4 pb-24 pt-5 md:pb-8 md:pt-24">
             {children}
           </div>
           <TabBar />
