@@ -25,6 +25,20 @@ jobs:
           chmod 600 ~/.ssh/pc_key
           ssh-keyscan -H ${{ secrets.PC_SSH_HOST }} >> ~/.ssh/known_hosts
 
+      # next build가 apps/web/.env.production을 읽으므로 (NEXT_PUBLIC_* 빌드타임 인라인 포함)
+      # git reset 이후에도 untracked로 살아남는 이 경로에 시크릿을 배치한다 (backend.env 패턴)
+      - name: Write web env
+        env:
+          WEB_ENV: ${{ secrets.WEB_ENV }}
+        run: |
+          echo "$WEB_ENV" > web.env
+          ssh -i ~/.ssh/pc_key \
+            ${{ secrets.PC_SSH_USER }}@${{ secrets.PC_SSH_HOST }} \
+            "mkdir -p ~/servers/sajuguri/repo/apps/web"
+          scp -i ~/.ssh/pc_key web.env \
+            ${{ secrets.PC_SSH_USER }}@${{ secrets.PC_SSH_HOST }}:~/servers/sajuguri/repo/apps/web/.env.production
+          rm -f web.env
+
       - name: Deploy to server
         run: |
           ssh -i ~/.ssh/pc_key \

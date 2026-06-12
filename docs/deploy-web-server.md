@@ -9,6 +9,25 @@ GitHub Actions(`deploy-web.yml`)는 main 푸시 시 서버에서 `git reset --ha
 
 ---
 
+## ⓪ GitHub 시크릿 `WEB_ENV` 등록 (env 자동 생성)
+
+워크플로가 배포 때마다 이 시크릿 내용을 서버의
+`~/servers/sajuguri/repo/apps/web/.env.production`으로 씁니다 (backend.env와 동일
+패턴). 이 파일은 도커 빌드에 COPY되어 `next build`가 자동으로 읽으므로
+**NEXT_PUBLIC_\* 빌드타임 변수도 여기서 해결**됩니다 (아래 ①의 build-arg는 불필요).
+
+레포 Settings → Secrets and variables → Actions → `WEB_ENV`:
+
+```env
+# 브라우저가 직접 여는 백엔드 공개 URL (OAuth 시작 링크 등)
+NEXT_PUBLIC_API_URL=https://api.sajuguri.example
+```
+
+런타임 변수(API_BASE 등)는 compose environment(①)가 담당 — 여기엔 빌드타임/공통
+변수만.
+
+---
+
 ## ① 서버 compose에 `sajuguri-web` 서비스 추가
 
 `~/servers/docker-compose.yml`에 아래 서비스를 추가한다. 빌드 컨텍스트는
@@ -19,10 +38,7 @@ GitHub Actions(`deploy-web.yml`)는 main 푸시 시 서버에서 `git reset --ha
     build:
       context: ./sajuguri/repo
       dockerfile: apps/web/Dockerfile
-      args:
-        # 빌드 타임 인라인 — 브라우저가 OAuth 시작을 직접 여는 백엔드 공개 URL.
-        # /api/auth/google?client=web 링크에 사용된다 (rewrites 우회).
-        NEXT_PUBLIC_API_URL: https://api.sajuguri.example   # ← 실제 백엔드 공개 도메인
+      # NEXT_PUBLIC_* 는 ⓪의 WEB_ENV(.env.production)가 빌드에 주입하므로 args 불필요
     environment:
       # SSR이 컨테이너 네트워크로 백엔드를 호출할 때 쓰는 내부 주소.
       - API_BASE=http://sajuguri-backend:8000
@@ -34,16 +50,9 @@ GitHub Actions(`deploy-web.yml`)는 main 푸시 시 서버에서 `git reset --ha
     restart: unless-stopped
 ```
 
-`apps/web/Dockerfile`이 `NEXT_PUBLIC_API_URL`을 빌드 인자로 받도록 하려면
-Dockerfile builder 스테이지에 다음을 추가한다(미적용 시 기본값 사용):
-
-```dockerfile
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-```
-
-> `NEXT_PUBLIC_*`는 빌드 시점에 번들에 박힌다. 런타임 environment로 바꿔도
-> 클라이언트 코드에는 반영되지 않으므로 반드시 **build arg**로 넘긴다.
+> `NEXT_PUBLIC_*`는 빌드 시점에 번들에 박힌다. ⓪의 `.env.production`이 빌드
+> 컨텍스트에 포함되어 `next build`가 읽으므로 별도 build-arg 없이 동작한다.
+> 런타임 compose environment로는 클라이언트 코드에 반영되지 않음에 주의.
 
 ---
 
