@@ -201,5 +201,55 @@
       "saved": "Saved",
       "saveError": "Failed · Try again"
     }
+  },
+  "report": {
+    "title": "Generate AI Report",
+    "checking": "Checking...",
+    "loginRequired": "Sign in to continue",
+    "loginDesc": "Reports can only be created and saved by signed-in users.",
+    "loginWithGoogle": "Sign in with Google",
+    "guideline": "We'll analyze your Saju and create a 10-tab headline report. You can add extra topics to include.",
+    "topicsLabel": "Additional topics (optional)",
+    "topicsPlaceholder": "Career change timing, parents' health, wealth this year",
+    "topicsHint": "Separate multiple topics with commas",
+    "submit": "Generate Report",
+    "loadingNote": "AI is analyzing your Saju. This usually takes 30–60 seconds.",
+    "errorMissingBirth": "Birth info is missing. Please try again from the Saju chart page.",
+    "errorLogin": "Please sign in to continue.",
+    "errorLimit": "You've reached today's report limit. Try again tomorrow.",
+    "errorFallback": "Report generation failed. Please try again later.",
+    "page": {
+      "summaryLabel": "Saju Info",
+      "guideText": "Click each title to expand the reading",
+      "requestedBadge": "Requested",
+      "adviceBoxLabel": "Practical Advice",
+      "yearFlowTitle": "Year Flow",
+      "firstHalf": "First Half",
+      "secondHalf": "Second Half",
+      "monthCol": "Month",
+      "keywordCol": "Keyword",
+      "memoCol": "One-line note",
+      "showMore": "Show more",
+      "daeUnTitle": "Great Luck Comparison",
+      "currentDaeUn": "Current",
+      "nextDaeUn": "Next",
+      "cautionLabel": "Caution",
+      "shareBtn": "Share",
+      "regenerateBtn": "Regenerate",
+      "maskBirthLabel": "Show birth date/time",
+      "copyUrl": "Copy URL",
+      "copied": "Copied",
+      "shareTitle": "Share Report"
+    },
+    "list": {
+      "empty": "No reports yet",
+      "generate": "Generate a report",
+      "createdAt": "Created",
+      "topics": "Topics"
+    },
+    "shared": {
+      "notFound": "Share link not found.",
+      "notFoundDesc": "The link may have expired or is invalid."
+    }
   }
 }

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { serverApi } from '@/lib/api'
 import type { SajuCalcResponse, ProfileCreateRequest } from '@sajuguri/api-client'
@@ -57,6 +58,11 @@ export default async function ManseResult({
         }
       : null
 
+  // birth 쿼리를 그대로 /report/new에 전달하기 위한 직렬화
+  const birthQuery = new URLSearchParams(
+    Object.entries(p).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, v as string]),
+  ).toString()
+
   const pillars = [
     { pillar: data.hour_pillar, key: 'hour' },
     { pillar: data.day_pillar, key: 'day' },
@@ -96,16 +102,14 @@ export default async function ManseResult({
       <YeonWolUn dayStem={data.day_pillar.stem} />
       <IlJinCalendar />
 
-      {/* CTA — 리포트·상담 라우트 미존재: 비활성 스타일 (준비 중) */}
+      {/* CTA */}
       <div className="mt-1 flex gap-2">
-        <button
-          type="button"
-          disabled
-          className="flex-1 cursor-not-allowed rounded-xl border-2 border-border-soft bg-surface py-3 text-center text-sm font-extrabold text-text-sub opacity-60"
+        <Link
+          href={`/report/new?${birthQuery}`}
+          className="flex-1 rounded-xl border-2 border-ink bg-orange py-3 text-center text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A]"
         >
           {tc('report')}
-          <span className="ml-1 text-[10px] font-bold">· {tc('soon')}</span>
-        </button>
+        </Link>
         <button
           type="button"
           disabled
