@@ -1,8 +1,9 @@
 import Image from 'next/image'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import BrutalCard from '@/components/ui/BrutalCard'
 import { currentUser } from '@/lib/serverAuth'
+import { pickGreeting } from '@/lib/greetings'
 
 const ICONS = {
   doc: 'M5 3 h11 a2 2 0 0 1 2 2 v14 a2 2 0 0 1-2 2 H5 a0 0 0 0 1 0 0 V3 Z M9 8 H15 M9 12 H15 M9 16 H13',
@@ -35,10 +36,12 @@ function CardIcon({ d, bg, color }: { d: string; bg: string; color: string }) {
 
 export default async function Home() {
   const t = await getTranslations('home')
+  const locale = (await getLocale()) === 'en' ? 'en' : 'ko'
   const user = await currentUser()
-  // 이메일 로컬파트(@ 앞)를 표시 이름으로 — 로그인 시에만 배너 서브 문구 개인화
+  // 이메일 로컬파트(@ 앞)를 표시 이름으로 — 로그인 시 시간대별 랜덤 인사말 (KST 기준)
   const name = user?.email ? user.email.split('@')[0] : null
-  const fortuneSub = name ? t('fortuneSubAuthed', { name }) : t('fortuneSub')
+  const hourKST = (new Date().getUTCHours() + 9) % 24
+  const fortuneSub = name ? pickGreeting(locale, name, hourKST) : t('fortuneSub')
   return (
     <main>
       <header className="mb-4 flex items-center gap-2 text-xl font-black">
