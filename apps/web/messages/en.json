@@ -124,7 +124,21 @@
         "yongSin": "용신",
         "xiSin": "희신",
         "jiSin": "기신",
-        "gyeokGuk": "격국"
+        "gyeokGuk": "격국",
+        "distTitle": "Strength Index",
+        "distPercentile": "{pct}% of people fall here",
+        "distUnit": "(10k)",
+        "distMe": "You",
+        "levelDesc": {
+          "극약": "The Day Master is extremely weak. It urgently needs resource/peer support; draining or controlling energy is very harmful.",
+          "태약": "The Day Master is very weak. Strong resource/peer support is needed for balance.",
+          "신약": "The Day Master is on the weak side. Resource or peer elements serve as useful gods.",
+          "중화신약": "Nearly balanced but slightly lacking. A small boost helps.",
+          "중화신강": "Close to the ideal balance. Well-rounded with no major bias.",
+          "신강": "The Day Master is on the strong side. Output/wealth/officer elements should drain the excess.",
+          "태강": "The Day Master is very strong. Draining or controlling elements are needed as useful gods.",
+          "극왕": "The Day Master is extremely strong. A dominant structure is possible; opposing energy is very inauspicious."
+        }
       },
       "daeUn": {
         "title": "Great Luck (대운)",
