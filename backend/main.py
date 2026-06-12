@@ -36,22 +36,28 @@ logger = logging.getLogger("sajubon")
 # ─── Observability (Phoenix) ─────────────────────────────────────────────────
 
 def _setup_phoenix() -> None:
-    """Arize Phoenix 연동. PHOENIX_ENABLED=true 일 때만 활성화."""
+    """IQHub(my-own-phoenix) 연동. PHOENIX_ENABLED=true 일 때만 활성화."""
     if not settings.phoenix_enabled:
         return
     try:
-        from phoenix.otel import register
+        import os
         from openinference.instrumentation.langchain import LangChainInstrumentor
-        tracer_provider = register(
-            project_name=settings.phoenix_project,
-            endpoint=settings.phoenix_endpoint,
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+
+        os.environ["PHOENIX_PROJECT_NAME"] = settings.phoenix_project_name
+
+        tracer_provider = TracerProvider()
+        tracer_provider.add_span_processor(
+            SimpleSpanProcessor(OTLPSpanExporter(endpoint=settings.phoenix_otlp_endpoint))
         )
         LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
-        logger.info("Phoenix tracing enabled → %s", settings.phoenix_endpoint)
+        logger.info("IQHub tracing enabled → %s (project: %s)", settings.phoenix_otlp_endpoint, settings.phoenix_project_name)
     except ImportError:
         logger.warning(
             "PHOENIX_ENABLED=true 지만 패키지가 없습니다. "
-            "pip install arize-phoenix-otel openinference-instrumentation-langchain"
+            "uv add openinference-instrumentation-langchain opentelemetry-exporter-otlp-proto-http opentelemetry-sdk"
         )
 
 
@@ -67,7 +73,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("DB 연결 실패 (create_all 건너뜀): %s", e)
 
-    async with await AsyncPostgresSaver.from_conn_string(settings.postgres_url) as checkpointer:
+    async with AsyncPostgresSaver.from_conn_string(settings.postgres_url) as checkpointer:
         await checkpointer.setup()
         app.state.checkpointer = checkpointer
         yield

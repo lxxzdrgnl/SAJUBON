@@ -39,8 +39,8 @@ class Settings(BaseSettings):
     # IQHub: cd /home/rheon/Desktop/projects/my-own-phoenix && docker compose up -d
     # 포트: 4318 = OTLP HTTP (트레이스 수신), 6006 = Phoenix UI, 3000 = IQHub 대시보드
     phoenix_enabled: bool = False
-    phoenix_endpoint: str = "http://localhost:4318/v1/traces"
-    phoenix_project: str = "sajuguri-chat"
+    phoenix_otlp_endpoint: str = "http://localhost:4318/v1/traces"
+    phoenix_project_name: str = "sajuguri-chat"
 
     @property
     def postgres_url(self) -> str:
