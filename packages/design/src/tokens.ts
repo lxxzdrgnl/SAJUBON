@@ -67,7 +67,7 @@ export const layout = {
   maxWidth: '640px',
 } as const
 
-/** CSS 변수 블록 생성 — apps/web globals.css에서 사용 */
+/** colors만 CSS 변수 :root 블록으로 변환 (radius·shadow 등은 대상 아님) — apps/web globals.css에서 사용 */
 export function toCssVariables(): string {
   const entries: string[] = []
   for (const [k, v] of Object.entries(colors)) {

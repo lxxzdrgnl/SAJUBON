@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { colors, ohaeng, ohaengTint, radius, shadow } from './tokens'
+import { colors, ohaeng, ohaengTint, radius, shadow, toCssVariables } from './tokens'
 
 describe('design tokens', () => {
   it('비비드 캔디 핵심 팔레트 값 (docs/design.md §2.1)', () => {
@@ -24,5 +24,13 @@ describe('design tokens', () => {
   it('브루탈 섀도와 radius 스케일', () => {
     expect(shadow.brutal).toBe('4px 4px 0 #1A1A1A')
     expect(radius.card).toBe('16px')
+  })
+
+  it('toCssVariables — colors를 kebab-case CSS 변수 :root 블록으로 변환', () => {
+    const css = toCssVariables()
+    expect(css).toMatch(/^:root \{/)
+    expect(css).toContain('--bg-base: #FFFBF2;')
+    expect(css).toContain('--teal-deep: #00857D;')
+    expect(css).toContain('--border-soft: #EBE3D2;')
   })
 })
