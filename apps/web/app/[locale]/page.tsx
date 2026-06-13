@@ -16,6 +16,19 @@ const ICONS = {
   heart: 'M12 20 C12 20 4 13.5 4 8.5 A4 4 0 0 1 12 6 A4 4 0 0 1 20 8.5 C20 13.5 12 20 12 20 Z',
 } as const
 
+// 일간(오행) 색에 맞춘 운세 배너 그라데이션 — 마스코트 색과 어우러지게.
+const DEFAULT_BANNER = 'linear-gradient(135deg,var(--yellow),var(--orange))'
+const STEM_BANNER: Record<string, string> = {
+  갑: 'linear-gradient(135deg,#9FD8D0,#5BB3A8)', 을: 'linear-gradient(135deg,#9FD8D0,#5BB3A8)', // 목
+  병: 'linear-gradient(135deg,#F4845F,#D9512E)', 정: 'linear-gradient(135deg,#F4845F,#D9512E)', // 화
+  무: 'linear-gradient(135deg,var(--yellow),var(--orange))', 기: 'linear-gradient(135deg,var(--yellow),var(--orange))', // 토
+  경: 'linear-gradient(135deg,#F2F4F6,#C7CDD4)', 신: 'linear-gradient(135deg,#F2F4F6,#C7CDD4)', // 금
+  임: 'linear-gradient(135deg,#AEB6C4,#5E6B80)', 계: 'linear-gradient(135deg,#AEB6C4,#5E6B80)', // 수 — 슬레이트 블루그레이(무채색 탈피)
+}
+function bannerGradient(stem?: string | null): string {
+  return (stem && STEM_BANNER[stem]) || DEFAULT_BANNER
+}
+
 function CardIcon({ d, bg, color }: { d: string; bg: string; color: string }) {
   return (
     <span
@@ -69,7 +82,10 @@ export default async function Home() {
       </header>
       {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
       <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
-        <section className="flex items-center gap-3 rounded-[18px] border-2 border-ink bg-[linear-gradient(135deg,var(--yellow),var(--orange))] p-4 shadow-[4px_4px_0_#1A1A1A]">
+        <section
+          className="flex items-center gap-3 rounded-[18px] border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A]"
+          style={{ background: bannerGradient(repStem) }}
+        >
           {/* 만세력 목록 아바타와 동일 규격 (h-11 rounded-xl, 마스코트 40px) */}
           <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
             <MascotTinted stem={repStem} width={40} height={40} />
