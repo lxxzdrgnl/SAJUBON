@@ -300,7 +300,8 @@
       "recentTitle": "Recent inputs",
       "directInput": "Enter manually",
       "seenToday": "See again",
-      "loginHint": "Sign in to load saved charts"
+      "loginHint": "Sign in to load saved charts",
+      "pickSheet": "Whose fortune shall we read?"
     },
     "story": {
       "loading": "Analyzing your fortune",

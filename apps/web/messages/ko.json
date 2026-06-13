@@ -300,7 +300,8 @@
       "recentTitle": "최근 입력",
       "directInput": "직접 입력하기",
       "seenToday": "다시 보기",
-      "loginHint": "로그인하면 저장된 만세력을 불러올 수 있어요"
+      "loginHint": "로그인하면 저장된 만세력을 불러올 수 있어요",
+      "pickSheet": "누구의 운세를 볼까요?"
     },
     "story": {
       "loading": "운세를 분석하고 있어요",
