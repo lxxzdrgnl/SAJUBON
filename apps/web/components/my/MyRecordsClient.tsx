@@ -6,17 +6,36 @@ import { Link } from '@/i18n/navigation'
 import { ApiClient } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
 import { RECORD_TYPES, type RecordItem, type RecordType, type Translate } from '@/lib/records/registry'
+import { mergeFeed, filterFeed } from '@/lib/records/feed'
 
 interface Props {
   /** 타입 key → 레코드 목록 (서버에서 레지스트리 fetch로 채워 전달) */
   records: Record<string, RecordItem[]>
-  /** 대표 프로필 이름 — 그룹핑 시 맨 위로 (현재 섹션 프리뷰에선 미사용, 호환용) */
+  /** 대표 프로필 이름 — 호환용(현재 미사용) */
   repProfileName?: string | null
-  /** 섹션당 미리보기 카드 수 */
+  /** 마이 허브 피드 미리보기 최대 개수 */
   previewCount?: number
 }
 
-const PREVIEW_COUNT = 3
+// 마이 허브는 미리보기 — 칩으로 거른 병합 피드에서 최신 N개만, 전체는 /my/history
+const PREVIEW_COUNT = 6
+
+// ── 필터 칩 ────────────────────────────────────────────────────────────────────
+
+function ChipButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        'shrink-0 whitespace-nowrap rounded-xl border-2 border-ink px-3 py-1.5 text-[13px] font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity ' +
+        (active ? 'bg-yellow text-ink' : 'bg-surface text-text-sub hover:opacity-80')
+      }
+    >
+      {children}
+    </button>
+  )
+}
 
 // ── 편집 토글 버튼 ─────────────────────────────────────────────────────────────
 
@@ -121,19 +140,6 @@ function DeleteIconButton({ label, onClick }: { label: string; onClick: () => vo
   )
 }
 
-// ── 빈 상태 ────────────────────────────────────────────────────────────────────
-
-function EmptyState({ message, ctaHref, ctaLabel }: { message: string; ctaHref: string; ctaLabel: string }) {
-  return (
-    <BrutalCard intensity="soft" className="flex flex-col gap-2 py-5 text-center">
-      <p className="text-[13px] text-text-sub">{message}</p>
-      <Link href={ctaHref} className="mx-auto text-[13px] font-extrabold text-orange underline underline-offset-2">
-        {ctaLabel}
-      </Link>
-    </BrutalCard>
-  )
-}
-
 // ── 카드 행 (카드 + 편집 시 삭제) ──────────────────────────────────────────────
 
 function CardRow({
@@ -157,58 +163,6 @@ function CardRow({
   )
 }
 
-// ── 종류별 섹션 미리보기 ────────────────────────────────────────────────────────
-
-function TypeSection({
-  type,
-  items,
-  editMode,
-  previewCount,
-  onDelete,
-  t,
-}: {
-  type: RecordType
-  items: RecordItem[]
-  editMode: boolean
-  previewCount: number
-  onDelete: (type: RecordType, item: RecordItem) => void
-  t: Translate
-}) {
-  const label = type.label(t)
-  const preview = items.slice(0, previewCount)
-
-  return (
-    <div className="mb-5">
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-[13px] font-extrabold text-ink">
-          {label}
-          {items.length > 0 && <span className="ml-1.5 text-[12px] text-text-sub">{items.length}</span>}
-        </h3>
-        {items.length > previewCount && (
-          <Link
-            href={{ pathname: '/my/history', query: { type: type.key } }}
-            className="text-[12px] font-extrabold text-orange transition-opacity hover:opacity-80"
-          >
-            {t('viewAllHistory')} →
-          </Link>
-        )}
-      </div>
-
-      {items.length === 0 ? (
-        <EmptyState message={type.empty.message(t)} ctaHref={type.empty.ctaHref} ctaLabel={type.empty.ctaLabel(t)} />
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {preview.map((item) => (
-            <li key={item.id}>
-              <CardRow type={type} item={item} editMode={editMode} onDelete={() => onDelete(type, item)} t={t} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
 // ── 메인 ───────────────────────────────────────────────────────────────────────
 
 interface Pending {
@@ -221,12 +175,23 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
   const t = useTranslations('my.records') as unknown as Translate
   const [records, setRecords] = useState(initial)
   const [editMode, setEditMode] = useState(false)
+  const [filter, setFilter] = useState<string>('all')
   const [pending, setPending] = useState<Pending | null>(null)
+
+  const typeByKey = useMemo(() => new Map(RECORD_TYPES.map((x) => [x.key, x])), [])
 
   const totalCount = useMemo(
     () => Object.values(records).reduce((sum, list) => sum + list.length, 0),
     [records],
   )
+
+  // 칩으로 거른 병합 피드 (최신순) — 허브는 previewCount개만, 전체는 /my/history
+  const feed = useMemo(
+    () => mergeFeed(records, RECORD_TYPES.map((x) => x.key)),
+    [records],
+  )
+  const filtered = useMemo(() => filterFeed(feed, filter), [feed, filter])
+  const preview = filtered.slice(0, previewCount)
 
   function requestDelete(type: RecordType, item: RecordItem) {
     if (!type.remove) return
@@ -263,17 +228,42 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
         </div>
       </div>
 
-      {RECORD_TYPES.map((type) => (
-        <TypeSection
-          key={type.key}
-          type={type}
-          items={records[type.key] ?? []}
-          editMode={editMode}
-          previewCount={previewCount}
-          onDelete={requestDelete}
-          t={t}
-        />
-      ))}
+      {totalCount === 0 ? (
+        <BrutalCard intensity="soft" className="py-8 text-center">
+          <p className="text-[13px] text-text-sub">{t('feedEmpty')}</p>
+        </BrutalCard>
+      ) : (
+        <>
+          {/* 가로 스크롤 필터 칩 */}
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+            <ChipButton active={filter === 'all'} onClick={() => setFilter('all')}>
+              {t('filterAll')}
+            </ChipButton>
+            {RECORD_TYPES.map((type) => (
+              <ChipButton key={type.key} active={filter === type.key} onClick={() => setFilter(type.key)}>
+                {type.label(t)}
+              </ChipButton>
+            ))}
+          </div>
+
+          {preview.length === 0 ? (
+            <BrutalCard intensity="soft" className="py-8 text-center">
+              <p className="text-[13px] text-text-sub">{t('feedEmpty')}</p>
+            </BrutalCard>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {preview.map((e) => {
+                const type = typeByKey.get(e.typeKey)!
+                return (
+                  <li key={`${e.typeKey}-${e.item.id}`}>
+                    <CardRow type={type} item={e.item} editMode={editMode} onDelete={() => requestDelete(type, e.item)} t={t} />
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </>
+      )}
 
       {pending && (
         <DeleteModal
