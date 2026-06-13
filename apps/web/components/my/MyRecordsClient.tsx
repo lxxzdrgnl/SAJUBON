@@ -215,7 +215,7 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
   return (
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-text-sub">{t('title')}</h2>
+        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-ink">{t('title')}</h2>
         {totalCount > 0 && (
           <EditToggleButton editMode={editMode} onToggle={() => setEditMode((v) => !v)} t={t} />
         )}
@@ -260,7 +260,7 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
           {filtered.length > preview.length && (
             <Link
               href="/my/history"
-              className="mt-3 block rounded-xl border-2 border-ink bg-surface py-3 text-center text-[13px] font-extrabold text-teal-deep shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+              className="mt-3 block rounded-xl border-2 border-teal bg-surface py-3 text-center text-[13px] font-extrabold text-teal-deep shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
             >
               {t('viewAllHistory')} →
             </Link>

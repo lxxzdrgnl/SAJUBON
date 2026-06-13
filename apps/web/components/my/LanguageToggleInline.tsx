@@ -17,7 +17,7 @@ export default function LanguageToggleInline() {
 
   return (
     <div className="mb-3">
-      <p className="mb-2 text-[13px] font-extrabold uppercase tracking-wide text-text-sub">
+      <p className="mb-2 text-[13px] font-extrabold uppercase tracking-wide text-ink">
         {t('title')}
       </p>
       <div className="flex gap-2">
