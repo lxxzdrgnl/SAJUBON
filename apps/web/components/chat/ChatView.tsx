@@ -18,6 +18,7 @@ import type { ChatMessage } from '@sajuguri/api-client'
 import ToolCard from './ToolCard'
 import AttachSheet from './AttachSheet'
 import InlinePartnerCard from './InlinePartnerCard'
+import Markdown from '@/components/ui/Markdown'
 
 // ── 내부 메시지 타입 (ChatMessage 확장) ─────────────────────────────────────
 
@@ -312,16 +313,22 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                     )
                   }
                   if (!block) return null
+                  if (m.role === 'human') {
+                    return (
+                      <div
+                        key={bi}
+                        className="rounded-2xl px-4 py-2.5 text-sm font-bold leading-relaxed whitespace-pre-wrap border-2 border-ink bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]"
+                      >
+                        {block}
+                      </div>
+                    )
+                  }
                   return (
                     <div
                       key={bi}
-                      className={`rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed whitespace-pre-wrap ${
-                        m.role === 'human'
-                          ? 'border-2 border-ink bg-yellow text-ink font-bold shadow-[2px_2px_0_#1A1A1A]'
-                          : 'border-2 border-teal bg-surface text-ink'
-                      }`}
+                      className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed border-2 border-teal bg-surface text-ink"
                     >
-                      {block}
+                      <Markdown>{block}</Markdown>
                     </div>
                   )
                 }

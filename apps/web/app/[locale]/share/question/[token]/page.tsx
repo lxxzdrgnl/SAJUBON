@@ -4,6 +4,7 @@ import { serverApi } from '@/lib/api'
 import { getSharedConsultation } from '@sajuguri/api-client'
 import type { ConsultationDetail } from '@sajuguri/api-client'
 import SharedCharts from './SharedCharts'
+import Markdown from '@/components/ui/Markdown'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,7 +88,7 @@ export default async function SharedConsultationPage({
           {tq('resultLabel')}
         </p>
         <p className="mb-2 text-[18px] font-black leading-snug text-ink">{detail.headline}</p>
-        <p className="text-[14px] leading-relaxed text-ink">{detail.content}</p>
+        <Markdown className="text-[14px] text-ink">{detail.content}</Markdown>
         <span className="mt-4 inline-block rounded-full border-[1.5px] border-ink bg-orange px-3 py-0.5 text-[11px] font-extrabold text-white">
           {detail.category}
         </span>

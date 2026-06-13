@@ -21,6 +21,7 @@ import type { ResultQueryInput } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
 import BrutalCard from '@/components/ui/BrutalCard'
 import ToolCard from '@/components/chat/ToolCard'
+import Markdown from '@/components/ui/Markdown'
 
 // ── 만세력 선택 시트 ──────────────────────────────────────────────────────────
 
@@ -270,7 +271,7 @@ export default function QuestionPage() {
             {t('resultLabel')}
           </p>
           <p className="mb-2 text-[18px] font-black leading-snug text-ink">{result.headline}</p>
-          <p className="text-[14px] leading-relaxed text-ink">{result.content}</p>
+          <Markdown className="text-[14px] text-ink">{result.content}</Markdown>
           <span className="mt-4 inline-block rounded-full border-[1.5px] border-ink bg-orange px-3 py-0.5 text-[11px] font-extrabold text-white">
             {result.category}
           </span>

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import type { ReportDetail, ReportTab, YearFlowMonth } from '@sajuguri/api-client'
 import ShareModal from './ShareModal'
+import Markdown from '@/components/ui/Markdown'
 
 // ── 헤드라인 아코디언 ──────────────────────────────────────────────────────────
 
@@ -56,10 +57,10 @@ function TabAccordion({ tab, t }: { tab: ReportTab; t: ReturnType<typeof useTran
             i === lastIdx ? (
               <div key={i} className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
                 <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
-                <p className="text-[14px] leading-relaxed text-ink">{para}</p>
+                <Markdown className="text-[14px] text-ink">{para}</Markdown>
               </div>
             ) : (
-              <p key={i} className="mb-3 text-[14px] leading-relaxed text-ink">{para}</p>
+              <Markdown key={i} className="mb-3 text-[14px] text-ink">{para}</Markdown>
             ),
           )}
         </div>
