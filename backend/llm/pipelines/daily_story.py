@@ -71,13 +71,13 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
         "body": data.get("basis", ""),
     })
 
-    # overall
+    # overall — headline은 짧은 한 마디로, body는 원문 풀어쓰기용 소스로 넘김
     cards.append({
         "kind": "overall",
         "category_key": None,
         "title": "오늘의 총운",
         "score": avg,
-        "headline": data.get("overall", ""),
+        "headline": "",          # 리라이트에서 avg 기반 단언형 한 마디 생성
         "body": data.get("overall", ""),
     })
 
@@ -139,7 +139,7 @@ async def _rewrite(cards: list[dict]) -> bool:
     from langchain_core.messages import HumanMessage, SystemMessage
 
     try:
-        llm = get_llm("openai", temperature=0.8, model="gpt-4.1-nano")
+        llm = get_llm("openai", temperature=0.8, model="gpt-4.1-mini")
         messages = [
             SystemMessage(content=DAILY_STORY_SYSTEM_PROMPT),
             HumanMessage(content=format_daily_story_message(cards)),
