@@ -325,6 +325,15 @@
       "deleteConfirmCancel": "Cancel"
     }
   },
+  "mansePicker": {
+    "savedTitle": "Saved charts",
+    "recentTitle": "Recently viewed",
+    "directInput": "Add new chart",
+    "backToList": "Back to list",
+    "confirmInput": "Select this person",
+    "repBadge": "Default",
+    "unknownName": "Unknown"
+  },
   "report": {
     "title": "Generate AI Report",
     "checking": "Checking...",
