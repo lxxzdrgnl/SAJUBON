@@ -25,7 +25,7 @@ export default function ChatListClient({ sessions, profiles }: Props) {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-lg font-black">{t('title')}</h1>
         <button
-          className="rounded-xl border-2 border-ink bg-yellow px-4 py-1.5 text-sm font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+          className="rounded-xl border-2 border-[#4DA8E8] bg-surface px-4 py-1.5 text-sm font-extrabold text-[#4DA8E8] shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
           onClick={() => setSheetOpen(true)}
         >
           {t('newSession')}
@@ -39,7 +39,7 @@ export default function ChatListClient({ sessions, profiles }: Props) {
           <p className="text-[15px] font-extrabold">{t('empty')}</p>
           <p className="text-sm text-text-sub">{t('emptyHint')}</p>
           <button
-            className="mt-1 rounded-xl border-2 border-ink bg-yellow px-6 py-2.5 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="mt-1 rounded-xl border-2 border-[#4DA8E8] bg-surface px-6 py-2.5 text-sm font-extrabold text-[#4DA8E8] shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
             onClick={() => setSheetOpen(true)}
           >
             {t('newSession')}
