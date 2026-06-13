@@ -255,8 +255,11 @@ apps/web/lib/records/registry.ts
   }
   RECORD_TYPES: RecordType[]     // 등록 배열
 ```
-- `MyRecordsClient` / `/my/history`는 `RECORD_TYPES`를 순회해 탭·목록·카드를 렌더. 편집 토글·"전체 보기 →"·그룹핑은 제네릭 골격에서 처리.
-- 신규 콘텐츠 추가 = `RECORD_TYPES`에 항목 1개 등록(+ 목록 fetch 함수). 허브 코드는 불변.
+**UI 패턴 — 탭 폐기, 피드+섹션 하이브리드** (콘텐츠 종류 N개여도 안 깨짐):
+- **마이 페이지(허브, `MyRecordsClient`)**: 타입별 **그룹 섹션 미리보기**. 각 섹션 = 제목+개수, 카드 2~3개, "전체 보기 →". `RECORD_TYPES` 순회로 섹션 스택. (현재의 3탭 폐기.)
+- **`/my/history`**: **통합 시간순 피드 + 가로 스크롤 필터 칩**(전체·타입별). 기본 "전체"는 모든 종류 섞어 최신순. 칩은 `RECORD_TYPES`에서 생성, 종류 늘면 가로로 스크롤.
+- 편집 토글·그룹핑은 제네릭 골격에서 처리. 카드 표현은 각 타입의 `renderCard`.
+- 신규 콘텐츠 추가 = `RECORD_TYPES`에 항목 1개 등록(+ 목록 fetch). 허브·히스토리 코드는 불변, 탭 폭증 없음.
 - 이번 작업: 기존 3종(saju·fortune·consultation)을 레지스트리로 이관 + **compatibility 항목 추가**.
 - 궁합 카드: 두 이름 + 종합 점수 뱃지(예: `이용재 ♥ 유다연 · 97`) + 생성일 → `/compatibility/[id]`. 그룹핑은 단순 목록(두 명이라 프로필 그룹 부적합).
 - 목록 조회: `GET /api/compatibility`(소유자). i18n: 탭 라벨 ko/en.
