@@ -40,7 +40,6 @@ export default async function ManseIndex() {
         </section>
       )}
 
-      <h2 className="mb-3 text-[15px] font-extrabold">{t('recent')}</h2>
       <RecentList
         isLoggedIn={!!user}
         savedKeys={profiles.map((p) => `${p.birth_date}|${p.birth_time ?? ''}|${p.gender}`)}

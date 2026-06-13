@@ -90,8 +90,9 @@ export default function RecentList({
     (i) => !savedSet.has(`${i.birth_date}|${i.birth_time ?? ''}|${i.gender}`),
   )
 
-  if (visibleItems.length === 0)
-    return <p className="py-6 text-center text-sm text-text-sub">{t('empty')}</p>
+  // 보일 최근 항목이 없으면(전부 저장됐거나 기록 없음) 섹션을 숨긴다.
+  // 저장된 만세력이 있는데 "아직 본 만세력이 없어요"는 부적절하므로 메시지 대신 null.
+  if (visibleItems.length === 0) return null
 
   function getItemState(key: string): ItemState {
     return itemStates[key] ?? { saveState: 'idle', confirmDelete: false }
@@ -140,6 +141,7 @@ export default function RecentList({
 
   return (
     <div className="flex flex-col gap-3">
+      <h2 className="text-[15px] font-extrabold">{t('recent')}</h2>
       {visibleItems.map((i) => {
         const key = itemKey(i)
         const state = getItemState(key)

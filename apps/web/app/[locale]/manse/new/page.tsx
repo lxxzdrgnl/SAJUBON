@@ -7,7 +7,6 @@ export default function NewManse() {
     <main>
       <p className="mb-4 text-center text-sm font-semibold text-text-sub">{t('title')}</p>
       <InputForm />
-      <p className="mt-3 text-center text-[11px] text-text-sub">{t('guestNote')}</p>
     </main>
   )
 }
