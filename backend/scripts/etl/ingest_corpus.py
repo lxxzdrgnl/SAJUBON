@@ -70,7 +70,7 @@ def run_ingest(
     Returns:
         {processed, skipped_short, skipped_dup, ingested, samples}
     """
-    from scripts.etl.parse_dump import list_tables, iter_table_rows
+    from scripts.etl.parse_dump import list_tables, iter_all_tables_rows
     from scripts.etl.cleanse import cleanse_text
     from scripts.etl.classify import classify_table
 
@@ -85,6 +85,11 @@ def run_ingest(
         if (c := classify_table(t)) is not None and c["domain"] == domain
     ]
     logger.info(f"대상 도메인={domain}, 테이블 수={len(target_tables)}")
+    # table → trust 매핑 (단일 패스에서 참조)
+    table_trust: dict[str, str] = {
+        t: classify_table(t)["trust"]
+        for t in target_tables
+    }
 
     # ChromaDB 컬렉션 (dry-run 시 연결 안 함)
     collection = None
@@ -126,68 +131,60 @@ def run_ingest(
 
     total_processed = 0
 
-    for table in target_tables:
-        info = classify_table(table)
-        if info is None:
-            continue
-        trust = info["trust"]
+    for table, row in iter_all_tables_rows(dump_path, set(target_tables)):
+        try:
+            trust = table_trust[table]
+            raw_text = _extract_text(row)
+            text = cleanse_text(raw_text)
 
-        for row in iter_table_rows(dump_path, table):
-            try:
-                raw_text = _extract_text(row)
-                text = cleanse_text(raw_text)
+            stats["processed"] += 1
+            total_processed += 1
 
-                stats["processed"] += 1
-                total_processed += 1
-
-                # 200자 미만 스킵
-                if len(text) < MIN_TEXT_LEN:
-                    stats["skipped_short"] += 1
-                    continue
-
-                # 중복 텍스트 스킵 (해시 기반)
-                text_hash = hashlib.md5(text.encode()).hexdigest()
-                if text_hash in seen_hashes:
-                    stats["skipped_dup"] += 1
-                    continue
-                seen_hashes.add(text_hash)
-
-                doc_id = _text_id(table, row.get("DB_num", stats["ingested"]))
-                meta = {
-                    "source": "moonmarin8",
-                    "domain": domain,
-                    "trust": trust,
-                    "table": table,
-                    "express": str(row.get("DB_express", "")),
-                }
-
-                if dry_run:
-                    if len(stats["samples"]) < 10:
-                        stats["samples"].append({
-                            "id": doc_id,
-                            "text_preview": text[:120],
-                            "meta": meta,
-                        })
-                    stats["ingested"] += 1
-                else:
-                    batch_ids.append(doc_id)
-                    batch_docs.append(text)
-                    batch_metas.append(meta)
-                    stats["ingested"] += 1
-
-                    if len(batch_ids) >= BATCH_SIZE:
-                        flush_batch()
-
-                # limit 체크
-                if limit is not None and total_processed >= limit:
-                    break
-
-            except Exception as e:
-                logger.warning(f"행 처리 실패 (테이블={table}, 스킵): {e}")
+            # 200자 미만 스킵
+            if len(text) < MIN_TEXT_LEN:
+                stats["skipped_short"] += 1
                 continue
 
-        if limit is not None and total_processed >= limit:
-            break
+            # 중복 텍스트 스킵 (해시 기반)
+            text_hash = hashlib.md5(text.encode()).hexdigest()
+            if text_hash in seen_hashes:
+                stats["skipped_dup"] += 1
+                continue
+            seen_hashes.add(text_hash)
+
+            doc_id = _text_id(table, row.get("DB_num", stats["ingested"]))
+            meta = {
+                "source": "moonmarin8",
+                "domain": domain,
+                "trust": trust,
+                "table": table,
+                "express": str(row.get("DB_express", "")),
+            }
+
+            if dry_run:
+                if len(stats["samples"]) < 10:
+                    stats["samples"].append({
+                        "id": doc_id,
+                        "text_preview": text[:120],
+                        "meta": meta,
+                    })
+                stats["ingested"] += 1
+            else:
+                batch_ids.append(doc_id)
+                batch_docs.append(text)
+                batch_metas.append(meta)
+                stats["ingested"] += 1
+
+                if len(batch_ids) >= BATCH_SIZE:
+                    flush_batch()
+
+            # limit 체크
+            if limit is not None and total_processed >= limit:
+                break
+
+        except Exception as e:
+            logger.warning(f"행 처리 실패 (테이블={table}, 스킵): {e}")
+            continue
 
     # 남은 배치 플러시
     flush_batch()

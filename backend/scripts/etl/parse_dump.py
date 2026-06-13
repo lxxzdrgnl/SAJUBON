@@ -148,6 +148,79 @@ def _split_value_rows(values_clause: str) -> Iterator[str]:
 
 # ─── 메인 API ────────────────────────────────────────────────────
 
+def iter_all_tables_rows(
+    dump_path: str | Path,
+    table_names: set[str],
+) -> Iterator[tuple[str, dict]]:
+    """
+    덤프 파일을 단일 패스로 읽어 target_tables에 속하는 모든 테이블의 행을
+    (table_name, row_dict) 튜플로 순서대로 yield한다.
+
+    iter_table_rows를 N번 호출하는 대신 이 함수를 사용하면
+    파일을 1번만 읽으므로 O(N×filesize) → O(filesize)로 성능이 개선된다.
+    """
+    dump_path = Path(dump_path)
+    table_names_upper = {t.upper(): t for t in table_names}
+
+    columns: dict[str, list[str]] = {}   # table -> column list
+    current_table: str | None = None
+    in_create = False
+    create_buf: list[str] = []
+    paren_depth = 0
+
+    with open(dump_path, encoding="utf-8", errors="replace") as f:
+        for raw_line in f:
+            line = raw_line.rstrip("\n")
+
+            # ── CREATE TABLE 블록 수집 ──────────────────────────────────
+            m_create = re.match(r"CREATE\s+TABLE\s+`(\w+)`", line, re.IGNORECASE)
+            if m_create:
+                tname = m_create.group(1)
+                if tname.upper() in table_names_upper:
+                    in_create = True
+                    current_table = table_names_upper[tname.upper()]
+                    create_buf = [line]
+                    paren_depth = line.count("(") - line.count(")")
+                else:
+                    in_create = False
+                    current_table = None
+                continue
+
+            if in_create:
+                create_buf.append(line)
+                paren_depth += line.count("(") - line.count(")")
+                if paren_depth <= 0:
+                    full_create = "\n".join(create_buf)
+                    first = full_create.index("(")
+                    last = full_create.rindex(")")
+                    inner = full_create[first + 1:last]
+                    columns[current_table] = _parse_columns(inner)
+                    in_create = False
+                continue
+
+            # ── INSERT 처리 ──────────────────────────────────────────────
+            stripped = line.strip()
+            m_insert = re.match(r"INSERT\s+INTO\s+`(\w+)`\s+VALUES", stripped, re.IGNORECASE)
+            if not m_insert:
+                continue
+            tname = m_insert.group(1)
+            if tname.upper() not in table_names_upper:
+                continue
+            canonical = table_names_upper[tname.upper()]
+            cols = columns.get(canonical)
+            if cols is None:
+                continue
+
+            values_start = stripped.upper().index("VALUES") + len("VALUES")
+            values_part = stripped[values_start:].rstrip(";")
+            for row_str in _split_value_rows(values_part):
+                vals = _parse_row(row_str)
+                if len(vals) == len(cols):
+                    yield canonical, dict(zip(cols, vals))
+                elif vals:
+                    yield canonical, dict(zip(cols[:len(vals)], vals))
+
+
 def iter_table_rows(
     dump_path: str | Path,
     table_name: str,
