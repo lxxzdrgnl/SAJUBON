@@ -91,22 +91,8 @@ export default async function MyPage() {
 
   return (
     <main>
-      {/* ── 상단 히어로: 프로필 + 대표 만세력 카드 ─── */}
+      {/* ── 상단 히어로: 대표 만세력 카드 (이메일 포함) ─── */}
       <section className="mb-6">
-        {/* 유저 프로필 행 */}
-        <BrutalCard className="mb-3 flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
-            <MascotTinted stem={repProfile?.day_stem} width={40} height={40} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[15px] font-extrabold">{maskEmail(user.email)}</p>
-            {repProfile && (
-              <p className="text-[12px] text-text-sub">{repProfile.name}</p>
-            )}
-          </div>
-        </BrutalCard>
-
-        {/* 대표 만세력 히어로 카드 */}
         {repProfile ? (
           <div
             className={`rounded-2xl border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A] ${repCardBg(repProfile.day_stem)}`}
@@ -128,27 +114,35 @@ export default async function MyPage() {
                 <p className="mt-1 text-[12px] font-semibold text-ink opacity-60">
                   {t('repCard.born')} {formatDate(repProfile.birth_date)}
                 </p>
+                <p className="mt-1 text-[11px] text-text-sub">
+                  {maskEmail(user.email)}
+                </p>
               </div>
               {/* 대표 뱃지 */}
               <span className="shrink-0 rounded-full border-2 border-ink bg-surface px-2 py-0.5 text-[10px] font-extrabold shadow-[2px_2px_0_#1A1A1A]">
-                대표
+                {t('repCard.badge')}
               </span>
             </div>
           </div>
         ) : (
-          <Link href="/manse">
-            <BrutalCard intensity="soft" className="flex items-center gap-3 border-dashed">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-border-soft">
-                <MascotTinted width={40} height={40} />
-              </span>
-              <div>
-                <p className="text-[14px] font-extrabold text-orange">
-                  {t('repCard.noProfile')}
-                </p>
-                <p className="text-[12px] text-text-sub">{t('repCard.noProfileDesc')}</p>
-              </div>
-            </BrutalCard>
-          </Link>
+          <BrutalCard intensity="soft" className="flex flex-col items-center gap-3 py-6 text-center">
+            <MascotTinted width={56} height={56} />
+            <div>
+              <p className="text-[14px] font-extrabold text-ink">
+                {t('repCard.noProfile')}
+              </p>
+              <p className="mt-1 text-[12px] text-text-sub">{t('repCard.noProfileDesc')}</p>
+            </div>
+            <Link
+              href="/manse"
+              className="rounded-xl border-2 border-ink bg-yellow px-4 py-2 text-[13px] font-extrabold shadow-[3px_3px_0_#1A1A1A]"
+            >
+              {t('repCard.goManse')}
+            </Link>
+            <p className="text-[11px] text-text-sub">
+              {maskEmail(user.email)}
+            </p>
+          </BrutalCard>
         )}
       </section>
 
