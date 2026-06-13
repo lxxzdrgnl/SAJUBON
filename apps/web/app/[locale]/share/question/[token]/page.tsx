@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { serverApi } from '@/lib/api'
 import { getSharedConsultation } from '@sajuguri/api-client'
 import type { ConsultationDetail } from '@sajuguri/api-client'
+import SharedCharts from './SharedCharts'
 
 export const dynamic = 'force-dynamic'
 
@@ -91,6 +92,9 @@ export default async function SharedConsultationPage({
           {detail.category}
         </span>
       </div>
+
+      {/* 사주 분석 차트 (저장본) */}
+      <SharedCharts charts={detail.charts ?? []} more={detail.more ?? []} />
 
       {/* 나도 한줄상담 받기 CTA */}
       <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
