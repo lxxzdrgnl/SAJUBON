@@ -1,21 +1,11 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { serverApi } from '@/lib/api'
-import type { SajuCalcResponse, ProfileCreateRequest } from '@sajuguri/api-client'
+import type { SajuCalcResponse, ProfileCreateRequest, SajuCalcRequest } from '@sajuguri/api-client'
 import { currentUser } from '@/lib/serverAuth'
 import SaveButton from '@/components/manse/SaveButton'
-import IljuHero from '@/components/manse/IljuHero'
-import PillarCard from '@/components/manse/PillarCard'
-import TagChips from '@/components/manse/TagChips'
-import DetailAccordion from '@/components/manse/DetailAccordion'
-import WuxingBalanceCard from '@/components/manse/WuxingBalanceCard'
-import TenGodsCard from '@/components/manse/TenGodsCard'
-import StrengthCard from '@/components/manse/StrengthCard'
-import DaeUnTimeline from '@/components/manse/DaeUnTimeline'
-import YeonWolUn from '@/components/manse/YeonWolUn'
-import IlJinCalendar from '@/components/manse/IlJinCalendar'
-import HapChungPanel from '@/components/manse/HapChungPanel'
-import WuxingFeatureTable from '@/components/manse/WuxingFeatureTable'
+import ShareButton from '@/components/manse/ShareButton'
+import ResultView from '@/components/manse/ResultView'
 import RecentEnricher from '@/components/manse/RecentEnricher'
 
 export default async function ManseResult({
@@ -59,17 +49,26 @@ export default async function ManseResult({
         }
       : null
 
+  // 공유용 birth_input — 비로그인/프로필 미지정 시 calc_snapshot과 함께 전송.
+  const shareBirthInput: SajuCalcRequest | undefined =
+    p.birth_date && p.gender
+      ? {
+          ...(p.name ? { name: p.name } : {}),
+          birth_date: p.birth_date,
+          birth_time: p.birth_time ?? null,
+          gender: p.gender === 'female' ? 'female' : 'male',
+          calendar: p.calendar === 'lunar' ? 'lunar' : 'solar',
+          is_leap_month: p.is_leap_month === 'true',
+          ...(p.birth_longitude ? { birth_longitude: Number(p.birth_longitude) } : {}),
+          ...(p.birth_utc_offset ? { birth_utc_offset: Number(p.birth_utc_offset) } : {}),
+          ...(p.city ? { city: p.city } : {}),
+        }
+      : undefined
+
   // birth 쿼리를 그대로 /report/new에 전달하기 위한 직렬화
   const birthQuery = new URLSearchParams(
     Object.entries(p).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, v as string]),
   ).toString()
-
-  const pillars = [
-    { pillar: data.hour_pillar, key: 'hour' },
-    { pillar: data.day_pillar, key: 'day' },
-    { pillar: data.month_pillar, key: 'month' },
-    { pillar: data.year_pillar, key: 'year' },
-  ] as const
 
   return (
     <main className="flex flex-col gap-3">
@@ -81,35 +80,7 @@ export default async function ManseResult({
         calendar={p.calendar ?? 'solar'}
         day_stem={data.day_pillar.stem}
       />
-      <IljuHero dayPillar={data.day_pillar} label={t('myIlju')} />
-      <TagChips data={data} />
-      <h3 className="mt-1 text-[15px] font-extrabold">{t('palja')}</h3>
-      <div className="flex gap-1.5">
-        {pillars.map(({ pillar, key }) =>
-          pillar ? (
-            <PillarCard key={key} pillar={pillar} kind="stem" label={t(`pillars.${key}`)} isDay={key === 'day'} />
-          ) : (
-            <div key={key} className="flex-1 rounded-xl border-[1.5px] border-dashed border-border-soft py-2 text-center text-[10px] text-text-sub">{t(`pillars.${key}`)}<br />—</div>
-          ),
-        )}
-      </div>
-      <div className="flex gap-1.5">
-        {pillars.map(({ pillar, key }) =>
-          pillar ? <PillarCard key={key} pillar={pillar} kind="branch" isDay={key === 'day'} /> :
-            <div key={key} className="flex-1 rounded-xl border-[1.5px] border-dashed border-border-soft py-3 text-center text-[10px] text-text-sub">—</div>,
-        )}
-      </div>
-      {/* 레거시 ResultPanel.vue 섹션 순서 정합 — 합충은 팔자 바로 아래,
-          오행 특성 참고표는 오행 밸런스 바로 위, 신살·12운성 상세는 합충 다음 */}
-      <HapChungPanel data={data} />
-      <DetailAccordion data={data} />
-      <WuxingFeatureTable data={data} />
-      <WuxingBalanceCard data={data} />
-      <TenGodsCard data={data} />
-      <StrengthCard data={data} />
-      <DaeUnTimeline data={data} />
-      <YeonWolUn dayStem={data.day_pillar.stem} />
-      <IlJinCalendar />
+      <ResultView data={data} />
 
       {/* CTA */}
       <div className="mt-1 flex gap-2">
@@ -128,6 +99,8 @@ export default async function ManseResult({
           <span className="ml-1 text-[10px] font-bold">· {tc('soon')}</span>
         </button>
       </div>
+
+      <ShareButton calcSnapshot={data} birthInput={shareBirthInput} />
 
       {saveInput && <SaveButton input={saveInput} />}
     </main>

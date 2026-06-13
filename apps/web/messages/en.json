@@ -157,7 +157,24 @@
       },
       "chartsComing": "Five elements balance · Ten gods chart coming soon",
       "error": "Calculation failed. Please check your input",
-      "iljuName": "{name} Day Pillar"
+      "iljuName": "{name} Day Pillar",
+      "shareBtn": {
+        "label": "Share",
+        "loading": "Creating link...",
+        "copied": "Link copied",
+        "shareTitle": "My Saju chart",
+        "error": "Failed to create the share link. Please try again."
+      },
+      "shared": {
+        "metaTitle": "{name}'s Saju chart · {ilju}",
+        "metaTitleFallback": "SajuGuri",
+        "metaDescription": "Check out {name}'s Saju chart.",
+        "notFoundTitle": "Share link not found.",
+        "notFoundBody": "The link has expired or the address is invalid.",
+        "ctaTitle": "Curious about your own Saju?",
+        "ctaBody": "Just enter your birth date and time to see your Saju chart for free.",
+        "ctaButton": "See my own Saju"
+      }
     },
     "charts": {
       "detail": {
