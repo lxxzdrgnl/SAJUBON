@@ -151,6 +151,41 @@ class ReportShare(Base):
     created_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
 
 
+class CompatibilityReport(Base):
+    """궁합 리포트 저장 — 생성 시점의 두 사람 입력·점수·synastry·탭 스냅샷."""
+
+    __tablename__ = "compatibility_reports"
+
+    id:               Mapped[int]        = mapped_column(Integer, primary_key=True)
+    user_id:          Mapped[int]        = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    person_a:         Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    person_b:         Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    request_topics:   Mapped[str | None] = mapped_column(Text, nullable=True)
+    language:         Mapped[str]        = mapped_column(String(10), default="ko", nullable=False)
+    score:            Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    synastry:         Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    tabs:             Mapped[list]       = mapped_column(JSONB, nullable=False)
+    created_at:       Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class CompatibilityShare(Base):
+    """궁합 리포트 공유 토큰 — mask_birth면 열람 시 생년월일·시각을 가린다."""
+
+    __tablename__ = "compatibility_shares"
+
+    id:          Mapped[int]       = mapped_column(Integer, primary_key=True)
+    report_id:   Mapped[int]       = mapped_column(
+        Integer, ForeignKey("compatibility_reports.id", ondelete="CASCADE"), nullable=False
+    )
+    share_token: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), unique=True, index=True, default=uuid.uuid4
+    )
+    mask_birth:  Mapped[bool]      = mapped_column(Boolean, default=False, nullable=False)
+    created_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
 class DailyFortuneRecord(Base):
     """오늘의 운세 스토리 저장 — 만세력(birth_hash)별 1일 1회."""
 
