@@ -199,6 +199,29 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
     return idx >= 0 ? idx + 1 : null
   })()
 
+  // [Fix 1] 현재 카드 배경색(solid base)을 body/html에 동기화 — iOS Safari 상하 safe-area
+  // 영역이 기본 앱 배경(크림)이 아닌 카드 색으로 채워지도록 한다.
+  useEffect(() => {
+    const prev = document.body.style.background
+    const prevHtml = document.documentElement.style.background
+    document.body.style.background = palette.base
+    document.documentElement.style.background = palette.base
+    // theme-color 메타 — iOS 상단 브라우저 틴트
+    let metaTheme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    const prevTheme = metaTheme?.content ?? ''
+    if (!metaTheme) {
+      metaTheme = document.createElement('meta')
+      metaTheme.name = 'theme-color'
+      document.head.appendChild(metaTheme)
+    }
+    metaTheme.content = palette.base
+    return () => {
+      document.body.style.background = prev
+      document.documentElement.style.background = prevHtml
+      if (metaTheme) metaTheme.content = prevTheme
+    }
+  }, [palette.base])
+
   return (
     /* 풀스크린 오버레이 — fixed inset-0, max-w 640px 중앙 정렬 */
     <div

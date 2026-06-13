@@ -253,7 +253,10 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   // 탭 전파를 막지 않는다 — 다른 카드처럼 좌측 1/3 탭=뒤로가 동작.
   // 버튼만 개별적으로 전파 차단(아래 CTA).
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-4 select-none">
+    <div
+      className="flex flex-1 flex-col overflow-y-auto px-6 pt-4 select-none"
+      style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+    >
       {/* 브랜드 헤더 — 너구리 마크 + 사주구리 + 날짜 */}
       <div className="mb-4 flex items-center justify-between" style={rise(0)}>
         <div className="flex items-center gap-2.5">
