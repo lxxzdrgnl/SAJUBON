@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { ProfileResponse } from '@sajuguri/api-client'
 import MansePickerSheet, { type MansePick } from '@/components/manse/MansePickerSheet'
+import MascotTinted from '@/components/ui/MascotTinted'
 
 // ── PersonPick 타입 ──────────────────────────────────────────────────────────
 
@@ -22,6 +23,7 @@ export interface PersonPick {
   calendar: 'solar' | 'lunar'
   is_leap_month: boolean
   birth_longitude?: number
+  day_stem?: string | null
 }
 
 // ── Props ────────────────────────────────────────────────────────────────────
@@ -41,6 +43,7 @@ function toPersonPick(pick: MansePick, fallbackName: string): PersonPick {
     gender: pick.gender,
     calendar: pick.calendar,
     is_leap_month: pick.is_leap_month,
+    day_stem: pick.day_stem ?? null,
     ...(pick.birth_longitude != null ? { birth_longitude: pick.birth_longitude } : {}),
   }
 }
@@ -48,49 +51,37 @@ function toPersonPick(pick: MansePick, fallbackName: string): PersonPick {
 // ── 슬롯 카드 ─────────────────────────────────────────────────────────────────
 
 interface SlotCardProps {
-  label: string
   pick: PersonPick | null
   onOpen: () => void
   t: ReturnType<typeof useTranslations>
 }
 
-function SlotCard({ label, pick, onOpen, t }: SlotCardProps) {
-  if (pick) {
-    return (
-      <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-yellow text-lg font-black">
-          {label}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[14px] font-extrabold">{pick.name}</span>
-          <span className="block text-xs text-text-sub">
-            {pick.birth_date}
-            {pick.birth_time ? ` · ${pick.birth_time}` : ''}
-          </span>
-        </span>
-        <button
-          type="button"
-          className="shrink-0 rounded-lg border-[1.5px] border-border-soft px-3 py-1.5 text-[12px] font-extrabold text-text-sub transition-colors hover:border-ink hover:text-ink"
-          onClick={onOpen}
-        >
-          {t('slot.reselect')}
-        </button>
-      </div>
-    )
-  }
-
+function SlotCard({ pick, onOpen, t }: SlotCardProps) {
   return (
     <button
       type="button"
-      className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
       onClick={onOpen}
+      className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-surface p-3 text-center shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-yellow text-lg font-black">
-        {label}
-      </span>
-      <span className="text-[14px] font-extrabold text-text-sub">
-        {t('slot.selectOrInput')}
-      </span>
+      {pick ? (
+        <>
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-ink bg-surface">
+            <MascotTinted stem={pick.day_stem ?? null} width={58} height={58} />
+          </span>
+          <span className="w-full min-w-0">
+            <span className="block truncate text-[14px] font-extrabold">{pick.name}</span>
+            <span className="block text-[11px] text-text-sub">{pick.birth_date}</span>
+          </span>
+          <span className="text-[11px] font-extrabold text-teal-deep">{t('slot.reselect')}</span>
+        </>
+      ) : (
+        <>
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-ink text-3xl font-black text-ink">
+            +
+          </span>
+          <span className="text-[13px] font-extrabold text-text-sub">{t('slot.selectOrInput')}</span>
+        </>
+      )}
     </button>
   )
 }
@@ -115,6 +106,7 @@ export default function PersonSlotPicker({ profiles, onComplete }: Props) {
         gender: rep.gender as 'male' | 'female',
         calendar: rep.calendar as 'solar' | 'lunar',
         is_leap_month: rep.is_leap_month,
+        day_stem: rep.day_stem,
         ...(rep.longitude != null ? { birth_longitude: rep.longitude } : {}),
       })
     }
@@ -129,26 +121,21 @@ export default function PersonSlotPicker({ profiles, onComplete }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 슬롯 레이블 */}
-      <div className="flex flex-col gap-2">
-        <p className="text-[12px] font-extrabold uppercase tracking-widest text-text-sub">
-          {t('slot.labelA')}
-        </p>
-        <SlotCard label="A" pick={slotA} onOpen={() => setOpenSheet('a')} t={t} />
-      </div>
-
-      {/* 구분선 */}
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border-soft" />
-        <span className="text-[13px] font-extrabold text-text-sub">♥</span>
-        <div className="h-px flex-1 bg-border-soft" />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-[12px] font-extrabold uppercase tracking-widest text-text-sub">
-          {t('slot.labelB')}
-        </p>
-        <SlotCard label="B" pick={slotB} onOpen={() => setOpenSheet('b')} t={t} />
+      {/* 좌우 정사각형 슬롯 — 사람1 ♥ 사람2 */}
+      <div className="flex items-center gap-2">
+        <div className="flex flex-1 flex-col gap-2">
+          <p className="text-center text-[12px] font-extrabold uppercase tracking-widest text-ink">
+            {t('slot.labelA')}
+          </p>
+          <SlotCard pick={slotA} onOpen={() => setOpenSheet('a')} t={t} />
+        </div>
+        <span className="shrink-0 self-center pt-6 text-2xl text-orange">♥</span>
+        <div className="flex flex-1 flex-col gap-2">
+          <p className="text-center text-[12px] font-extrabold uppercase tracking-widest text-ink">
+            {t('slot.labelB')}
+          </p>
+          <SlotCard pick={slotB} onOpen={() => setOpenSheet('b')} t={t} />
+        </div>
       </div>
 
       {/* 궁합 보기 버튼 */}
