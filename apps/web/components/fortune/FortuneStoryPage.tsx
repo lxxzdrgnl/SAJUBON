@@ -21,6 +21,7 @@ import {
   calcSegmentFills,
   slideDirection,
   cardPalette,
+  paletteFromBase,
   hashSeed,
   scatterDots,
   hexToRgba,
@@ -192,9 +193,12 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
   const colorSeed = story
     ? hashSeed(`${story.date}|${story.profile_name ?? ''}|${JSON.stringify(story.scores)}`)
     : 0
+  // 로딩/폴백은 시드 셔플 POOL색(청록 가능)이 아니라 앱 중립 크림으로 고정한다.
+  // iOS Safari는 첫 페인트 색으로 상하 크롬을 동결하므로, 로딩이 청록이면 카드가
+  // 주황이어도 크롬이 청록으로 남는다. 첫 페인트를 SSR theme-color(크림)와 맞춘다.
   const palette = currentCard
     ? cardPalette(currentCard.kind, (currentCard as { category_key?: string }).category_key, colorSeed)
-    : cardPalette('fallback', undefined, colorSeed)
+    : paletteFromBase('#FFFBF2')
 
   // 카테고리 랭킹 번호 (오늘의 TOP 01·02…) — category 카드들 사이 순서
   const categoryRank = (() => {
