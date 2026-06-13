@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { currentUser, serverAuthApi } from '@/lib/serverAuth'
-import { listReports, listDailyRecords, listProfiles } from '@sajuguri/api-client'
-import type { ReportSummary, DailyRecordSummary } from '@sajuguri/api-client'
+import { listReports, listDailyRecords, listProfiles, listConsultations } from '@sajuguri/api-client'
+import type { ReportSummary, DailyRecordSummary, ConsultationHistoryItem } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
 import MyRecordsClient from '@/components/my/MyRecordsClient'
@@ -59,6 +59,13 @@ export default async function HistoryPage() {
     fortuneRecords = []
   }
 
+  let consultations: ConsultationHistoryItem[] = []
+  try {
+    consultations = await listConsultations(authApi)
+  } catch {
+    consultations = []
+  }
+
   return (
     <main>
       <div className="mb-4 flex items-center gap-2">
@@ -74,6 +81,7 @@ export default async function HistoryPage() {
       <MyRecordsClient
         reports={reports}
         fortuneRecords={fortuneRecords}
+        consultations={consultations}
         repProfileName={repProfile?.name ?? null}
         limit={undefined}
       />

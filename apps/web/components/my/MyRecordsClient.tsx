@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { ApiClient, deleteReport, deleteDailyRecord } from '@sajuguri/api-client'
-import type { ReportSummary, DailyRecordSummary } from '@sajuguri/api-client'
+import { useRouter } from '@/i18n/navigation'
+import { ApiClient, deleteReport, deleteDailyRecord, deleteConsultation, shareConsultation } from '@sajuguri/api-client'
+import type { ReportSummary, DailyRecordSummary, ConsultationHistoryItem } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
 
 interface Props {
   reports: ReportSummary[]
   fortuneRecords: DailyRecordSummary[]
+  consultations: ConsultationHistoryItem[]
   /** 대표 프로필 이름 — 더보기 그룹핑 시 맨 위로 올린다. */
   repProfileName: string | null
   /**
@@ -20,7 +22,7 @@ interface Props {
   limit?: number
 }
 
-type Tab = 'reports' | 'fortune'
+type Tab = 'reports' | 'fortune' | 'question'
 
 const PREVIEW_COUNT = 3
 
@@ -168,18 +170,23 @@ function groupByProfile<T extends { profile_name: string }>(
 type Pending =
   | { kind: 'report'; id: number; label: string }
   | { kind: 'fortune'; id: number; label: string }
+  | { kind: 'question'; id: number; label: string }
 
 export default function MyRecordsClient({
   reports: initialReports,
   fortuneRecords: initialFortune,
+  consultations: initialConsultations,
   repProfileName,
   limit = PREVIEW_COUNT,
 }: Props) {
   const t = useTranslations('my.records')
+  const router = useRouter()
   const [tab, setTab] = useState<Tab>('reports')
   const [reports, setReports] = useState(initialReports)
   const [fortune, setFortune] = useState(initialFortune)
+  const [consultations, setConsultations] = useState(initialConsultations)
   const [pending, setPending] = useState<Pending | null>(null)
+  const [opening, setOpening] = useState<number | null>(null)
 
   const reportGroups = useMemo(
     () => groupByProfile(reports, repProfileName),
@@ -189,6 +196,31 @@ export default function MyRecordsClient({
     () => groupByProfile(fortune, repProfileName),
     [fortune, repProfileName],
   )
+  const consultationGroups = useMemo(
+    () => groupByProfile(consultations, repProfileName),
+    [consultations, repProfileName],
+  )
+
+  // 상담 항목 클릭 → 공유 페이지로 이동. 토큰 없으면 먼저 발급.
+  async function openConsultation(c: ConsultationHistoryItem) {
+    if (opening !== null) return
+    let token = c.share_token
+    if (!token) {
+      setOpening(c.id)
+      try {
+        const res = await shareConsultation(new ApiClient(''), c.id)
+        token = res.share_token
+        setConsultations((cs) =>
+          cs.map((x) => (x.id === c.id ? { ...x, share_token: token } : x)),
+        )
+      } catch {
+        setOpening(null)
+        return
+      }
+      setOpening(null)
+    }
+    router.push(`/share/question/${token}`)
+  }
 
   async function confirmDelete() {
     if (!pending) return
@@ -202,7 +234,7 @@ export default function MyRecordsClient({
       } catch {
         setReports(prev)
       }
-    } else {
+    } else if (target.kind === 'fortune') {
       const prev = fortune
       setFortune((fs) => fs.filter((f) => f.id !== target.id))
       try {
@@ -210,10 +242,18 @@ export default function MyRecordsClient({
       } catch {
         setFortune(prev)
       }
+    } else {
+      const prev = consultations
+      setConsultations((cs) => cs.filter((c) => c.id !== target.id))
+      try {
+        await deleteConsultation(new ApiClient(''), target.id)
+      } catch {
+        setConsultations(prev)
+      }
     }
   }
 
-  const activeList = tab === 'reports' ? reports : fortune
+  const activeList = tab === 'reports' ? reports : tab === 'fortune' ? fortune : consultations
   // limit undefined = 전체; 숫자면 슬라이스
   const isLimited = limit !== undefined && limit < activeList.length
   const hasMore = isLimited
@@ -232,24 +272,33 @@ export default function MyRecordsClient({
         <TabButton active={tab === 'fortune'} onClick={() => setTab('fortune')}>
           {t('tabFortune')}
         </TabButton>
+        <TabButton active={tab === 'question'} onClick={() => setTab('question')}>
+          {t('tabQuestion')}
+        </TabButton>
       </div>
 
       {/* 본문 */}
-      {tab === 'reports'
-        ? (
-            reports.length === 0
-              ? <EmptyState message={t('emptyReports')} ctaHref="/manse" ctaLabel={t('goReport')} ctaTone="orange" />
-              : limit !== undefined
-                ? <PreviewReports items={reports.slice(0, limit)} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
-                : <GroupedReports groups={reportGroups} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
-          )
-        : (
-            fortune.length === 0
-              ? <EmptyState message={t('emptyFortune')} ctaHref="/" ctaLabel={t('goFortune')} ctaTone="teal" />
-              : limit !== undefined
-                ? <PreviewFortune items={fortune.slice(0, limit)} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
-                : <GroupedFortune groups={fortuneGroups} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
-          )}
+      {tab === 'reports' && (
+        reports.length === 0
+          ? <EmptyState message={t('emptyReports')} ctaHref="/manse" ctaLabel={t('goReport')} ctaTone="orange" />
+          : limit !== undefined
+            ? <PreviewReports items={reports.slice(0, limit)} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
+            : <GroupedReports groups={reportGroups} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
+      )}
+      {tab === 'fortune' && (
+        fortune.length === 0
+          ? <EmptyState message={t('emptyFortune')} ctaHref="/" ctaLabel={t('goFortune')} ctaTone="teal" />
+          : limit !== undefined
+            ? <PreviewFortune items={fortune.slice(0, limit)} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
+            : <GroupedFortune groups={fortuneGroups} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
+      )}
+      {tab === 'question' && (
+        consultations.length === 0
+          ? <EmptyState message={t('emptyQuestion')} ctaHref="/question" ctaLabel={t('goQuestion')} ctaTone="orange" />
+          : limit !== undefined
+            ? <PreviewConsultations items={consultations.slice(0, limit)} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
+            : <GroupedConsultations groups={consultationGroups} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
+      )}
 
       {/* 더보기 → /my/history 링크 */}
       {activeList.length > 0 && hasMore && (
@@ -389,6 +438,54 @@ function GroupedFortune({ groups, onDelete, t }: { groups: Group<DailyRecordSumm
           <ul className="flex flex-col gap-2">
             {g.items.map((f) => (
               <li key={f.id}><FortuneRow f={f} onDelete={() => onDelete(f)} t={t} /></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ConsultationRow({ c, opening, onOpen, onDelete, t }: { c: ConsultationHistoryItem; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
+  const busy = opening === c.id
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onOpen(c)}
+        disabled={busy}
+        className="min-w-0 flex-1 text-left disabled:opacity-60"
+      >
+        <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
+          <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{c.headline}</p>
+          <p className="truncate text-[12px] text-text-sub">{c.question}</p>
+          <p className="text-[12px] text-text-sub">{new Date(c.created_at).toLocaleDateString('ko-KR')}</p>
+        </BrutalCard>
+      </button>
+      <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />
+    </div>
+  )
+}
+
+function PreviewConsultations({ items, opening, onOpen, onDelete, t }: { items: ConsultationHistoryItem[]; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
+  return (
+    <ul className="flex flex-col gap-2">
+      {items.map((c) => (
+        <li key={c.id}><ConsultationRow c={c} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
+      ))}
+    </ul>
+  )
+}
+
+function GroupedConsultations({ groups, opening, onOpen, onDelete, t }: { groups: Group<ConsultationHistoryItem>[]; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
+  return (
+    <div className="flex flex-col">
+      {groups.map((g) => (
+        <div key={g.profileName || '—'}>
+          <GroupHeader name={g.profileName} />
+          <ul className="flex flex-col gap-2">
+            {g.items.map((c) => (
+              <li key={c.id}><ConsultationRow c={c} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
             ))}
           </ul>
         </div>

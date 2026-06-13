@@ -7,8 +7,8 @@ import MascotTinted from '@/components/ui/MascotTinted'
 import LogoutButton from '@/components/my/LogoutButton'
 import MyRecordsClient from '@/components/my/MyRecordsClient'
 import LanguageToggleInline from '@/components/my/LanguageToggleInline'
-import { listReports, listDailyRecords, listProfiles } from '@sajuguri/api-client'
-import type { ReportSummary, DailyRecordSummary, ProfileResponse } from '@sajuguri/api-client'
+import { listReports, listDailyRecords, listProfiles, listConsultations } from '@sajuguri/api-client'
+import type { ReportSummary, DailyRecordSummary, ProfileResponse, ConsultationHistoryItem } from '@sajuguri/api-client'
 import { STEM_BG } from '@/lib/manse/ganjiNickname'
 
 // 브라우저가 직접 여는 풀 URL — next.config rewrites를 타지 않도록 백엔드 절대 주소 사용.
@@ -84,6 +84,14 @@ export default async function MyPage() {
     fortuneRecords = []
   }
 
+  // 한줄상담 기록 목록
+  let consultations: ConsultationHistoryItem[] = []
+  try {
+    consultations = await listConsultations(authApi)
+  } catch {
+    consultations = []
+  }
+
   return (
     <main>
       {/* ── 상단 히어로: 대표 만세력 카드 (이메일 포함) ─── */}
@@ -145,6 +153,7 @@ export default async function MyPage() {
       <MyRecordsClient
         reports={reports}
         fortuneRecords={fortuneRecords}
+        consultations={consultations}
         repProfileName={repProfile?.name ?? null}
       />
 

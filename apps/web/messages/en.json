@@ -24,13 +24,16 @@
       "title": "My Records",
       "tabReports": "Reports",
       "tabFortune": "Fortune",
+      "tabQuestion": "Quick Reading",
       "viewMore": "View more",
       "collapse": "Collapse",
       "viewAllHistory": "View all records",
       "emptyReports": "No reports yet",
       "emptyFortune": "No fortune records yet",
+      "emptyQuestion": "No quick readings yet",
       "goReport": "Generate a report",
       "goFortune": "Check today's fortune",
+      "goQuestion": "Get a quick reading",
       "delete": {
         "confirm": "Delete this record?",
         "cancel": "Cancel",
@@ -368,7 +371,18 @@
       "repBadge": "Default"
     },
     "chartsTitle": "Saju Analysis",
-    "moreLabel": "More"
+    "moreLabel": "More",
+    "share": "Share",
+    "sharing": "Creating link...",
+    "shareCopied": "Link copied",
+    "shareFailed": "Failed to create share link",
+    "shared": {
+      "notFoundTitle": "Share link not found.",
+      "notFoundBody": "The link may have expired or is invalid.",
+      "ctaTitle": "Want your own quick reading?",
+      "ctaBody": "Just enter your birth info and question — AI answers right away.",
+      "ctaButton": "Get my quick reading"
+    }
   },
   "chat": {
     "title": "AI Saju Chat",

@@ -24,13 +24,16 @@
       "title": "내 기록",
       "tabReports": "리포트",
       "tabFortune": "운세",
+      "tabQuestion": "한줄상담",
       "viewMore": "더보기",
       "collapse": "접기",
       "viewAllHistory": "전체 기록 보기",
       "emptyReports": "아직 생성한 리포트가 없어요",
       "emptyFortune": "아직 운세 기록이 없어요",
+      "emptyQuestion": "아직 한줄상담 기록이 없어요",
       "goReport": "리포트 생성하러 가기",
       "goFortune": "오늘의 운세 보러 가기",
+      "goQuestion": "한줄상담 받으러 가기",
       "delete": {
         "confirm": "이 기록을 삭제할까요?",
         "cancel": "취소",
@@ -473,7 +476,18 @@
       "repBadge": "대표"
     },
     "chartsTitle": "사주 분석",
-    "moreLabel": "더 보기"
+    "moreLabel": "더 보기",
+    "share": "공유하기",
+    "sharing": "링크 만드는 중...",
+    "shareCopied": "링크를 복사했어요",
+    "shareFailed": "공유 링크 생성에 실패했어요",
+    "shared": {
+      "notFoundTitle": "공유 링크를 찾을 수 없어요.",
+      "notFoundBody": "링크가 만료됐거나 잘못된 주소예요.",
+      "ctaTitle": "나도 한줄상담 받아볼까?",
+      "ctaBody": "생년월일시와 고민만 입력하면 AI가 바로 답해줘요.",
+      "ctaButton": "나도 한줄상담 받기"
+    }
   },
   "fortune": {
     "banner": {
