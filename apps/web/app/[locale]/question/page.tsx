@@ -1,0 +1,322 @@
+'use client'
+
+/**
+ * /question — 한 번 물어보기 페이지.
+ * 질문 입력 + 프로필/최근 입력 선택 → POST /api/question → 결과 카드.
+ */
+import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
+import type { ProfileResponse, QuestionRequest } from '@sajuguri/api-client'
+import { askQuestion } from '@sajuguri/api-client'
+import type { RecentBirthInput } from '@sajuguri/core'
+import { loadRecentInputs } from '@sajuguri/core'
+import { api } from '@/lib/api'
+import { webStorage } from '@/lib/storage'
+import { toResultQuery, profileToQueryInput } from '@/lib/manse/query'
+import type { ResultQueryInput } from '@/lib/manse/query'
+import MascotTinted from '@/components/ui/MascotTinted'
+import BrutalCard from '@/components/ui/BrutalCard'
+
+// ── 프로필 선택 인라인 시트 ─────────────────────────────────────────────────
+
+interface ProfilePickSheetProps {
+  open: boolean
+  onClose: () => void
+  profiles: ProfileResponse[]
+  onSelect: (input: ResultQueryInput | RecentBirthInput, label: string) => void
+}
+
+function ProfilePickSheet({ open, onClose, profiles, onSelect }: ProfilePickSheetProps) {
+  const t = useTranslations('question')
+  const router = useRouter()
+  const [recentInputs, setRecentInputs] = useState<RecentBirthInput[]>([])
+
+  useEffect(() => {
+    if (open) {
+      loadRecentInputs(webStorage).then(setRecentInputs)
+    }
+  }, [open])
+
+  if (!open) return null
+
+  const savedKeys = new Set(
+    profiles.map((p) => `${p.birth_date}|${p.birth_time ?? ''}|${p.gender}`)
+  )
+  const filteredRecent = recentInputs.filter(
+    (r) => !savedKeys.has(`${r.birth_date}|${r.birth_time ?? ''}|${r.gender}`)
+  )
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-[22px] border-2 border-ink bg-surface shadow-[0_-4px_0_#1A1A1A]"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-border-soft" />
+        </div>
+        <div className="max-h-[75dvh] overflow-y-auto px-5 pb-8 pt-3">
+          <h2 className="mb-4 text-[17px] font-extrabold text-ink">{t('pickSheet.title')}</h2>
+
+          {profiles.length > 0 && (
+            <section className="mb-4">
+              <p className="mb-2 text-[12px] font-extrabold uppercase tracking-widest text-text-sub">
+                {t('pickSheet.savedTitle')}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {profiles.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+                      onClick={() => { onSelect(profileToQueryInput(p), p.name); onClose() }}
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+                        <MascotTinted stem={p.day_stem} width={38} height={38} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="truncate text-[14px] font-extrabold">{p.name}</span>
+                          {p.is_representative && (
+                            <span className="shrink-0 rounded-full border-[1.5px] border-ink bg-yellow px-2 py-0.5 text-[10px] font-extrabold">
+                              {t('pickSheet.repBadge')}
+                            </span>
+                          )}
+                        </span>
+                        <span className="block text-xs text-text-sub">
+                          {p.birth_date}
+                          {p.birth_time ? ` · ${p.birth_time}` : ''}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {filteredRecent.length > 0 && (
+            <section className="mb-4">
+              <p className="mb-2 text-[12px] font-extrabold uppercase tracking-widest text-text-sub">
+                {t('pickSheet.recentTitle')}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {filteredRecent.map((r) => {
+                  const q = toResultQuery(r)
+                  return (
+                    <li key={q}>
+                      <button
+                        className="flex w-full items-center gap-3 rounded-2xl border-[1.5px] border-border-soft bg-surface p-4 text-left hover:border-ink hover:shadow-[2px_2px_0_#1A1A1A] transition-all"
+                        onClick={() => { onSelect(r, r.name); onClose() }}
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+                          <MascotTinted stem={r.day_stem} width={38} height={38} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="truncate text-[14px] font-extrabold">{r.name}</span>
+                          <span className="block text-xs text-text-sub">
+                            {r.birth_date}
+                            {r.birth_time ? ` · ${r.birth_time}` : ''}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )}
+
+          <button
+            className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-[4px_4px_0_#1A1A1A] font-extrabold transition-opacity hover:opacity-80"
+            onClick={() => { onClose(); router.push('/manse/new') }}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface text-lg">
+              +
+            </span>
+            <span className="text-[14px] font-extrabold">{t('pickSheet.directInput')}</span>
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ── 메인 페이지 ──────────────────────────────────────────────────────────────
+
+export default function QuestionPage() {
+  const t = useTranslations('question')
+
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [selectedInput, setSelectedInput] = useState<ResultQueryInput | RecentBirthInput | null>(null)
+  const [selectedLabel, setSelectedLabel] = useState('')
+  const [question, setQuestion] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState<{ id: number; headline: string; content: string; category: string } | null>(null)
+
+  // 프로필 목록 — 클라이언트에서 로드 (SSR 없음, 게스트 허용 페이지)
+  const [profiles, setProfiles] = useState<ProfileResponse[]>([])
+
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((user) => {
+        if (!user) return
+        return fetch('/api/profiles', { credentials: 'include' })
+          .then((r) => r.ok ? r.json() : [])
+          .then(setProfiles)
+      })
+      .catch(() => {})
+  }, [])
+
+  function handleSelect(input: ResultQueryInput | RecentBirthInput, label: string) {
+    setSelectedInput(input)
+    setSelectedLabel(label)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedInput) {
+      setError(t('errorNoBirth'))
+      return
+    }
+    const q = question.trim()
+    if (q.length < 10) {
+      setError(t('errorQuestionShort'))
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const body: QuestionRequest = {
+        birth_date: selectedInput.birth_date,
+        birth_time: selectedInput.birth_time ?? null,
+        gender: (selectedInput.gender as 'male' | 'female'),
+        calendar: (selectedInput.calendar ?? 'solar') as 'solar' | 'lunar',
+        is_leap_month: selectedInput.is_leap_month ?? false,
+        ...(('birth_longitude' in selectedInput && selectedInput.birth_longitude != null)
+          ? { birth_longitude: selectedInput.birth_longitude as number }
+          : {}),
+        name: ('name' in selectedInput ? (selectedInput as { name?: string }).name : undefined) ?? undefined,
+        question: q,
+      }
+      const res = await askQuestion(api, body)
+      setResult(res)
+    } catch {
+      setError(t('errorFallback'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 결과 화면
+  if (result) {
+    return (
+      <main className="flex flex-col gap-5">
+        <h1 className="text-lg font-black">{t('title')}</h1>
+
+        <div className="rounded-2xl border-2 border-ink bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+          <p className="mb-3 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
+            {t('resultLabel')}
+          </p>
+          <p className="mb-2 text-[18px] font-black leading-snug text-ink">{result.headline}</p>
+          <p className="text-[14px] leading-relaxed text-ink">{result.content}</p>
+          <span className="mt-4 inline-block rounded-full border-[1.5px] border-ink bg-orange px-3 py-0.5 text-[11px] font-extrabold text-white">
+            {result.category}
+          </span>
+        </div>
+
+        <button
+          className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
+          onClick={() => { setResult(null); setQuestion('') }}
+        >
+          {t('askAgain')}
+        </button>
+      </main>
+    )
+  }
+
+  return (
+    <main className="flex flex-col gap-5">
+      <h1 className="text-lg font-black">{t('title')}</h1>
+      <p className="text-[13px] text-text-sub">{t('desc')}</p>
+
+      <ProfilePickSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        profiles={profiles}
+        onSelect={handleSelect}
+      />
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* 사주 선택 */}
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[13px] font-extrabold">{t('birthLabel')}</p>
+          <button
+            type="button"
+            className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            onClick={() => setSheetOpen(true)}
+          >
+            {selectedInput ? (
+              <>
+                <MascotTinted
+                  stem={'day_stem' in selectedInput ? (selectedInput as RecentBirthInput).day_stem ?? null : null}
+                  width={36}
+                  height={36}
+                />
+                <span className="flex-1">
+                  <span className="block text-[14px] font-extrabold">{selectedLabel}</span>
+                  <span className="block text-xs text-text-sub">{selectedInput.birth_date}</span>
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-border-soft bg-surface text-text-sub">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+                  </svg>
+                </span>
+                <span className="text-[14px] text-text-sub">{t('birthPlaceholder')}</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* 질문 입력 */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="question" className="text-[13px] font-extrabold">
+            {t('questionLabel')}
+          </label>
+          <textarea
+            id="question"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder={t('questionPlaceholder')}
+            className="w-full resize-none rounded-xl border-2 border-border-soft bg-surface px-4 py-3 text-sm leading-relaxed outline-none focus:border-ink"
+            rows={3}
+            minLength={10}
+            maxLength={200}
+          />
+          <p className="text-right text-[11px] text-text-sub">{question.length}/200</p>
+        </div>
+
+        {error && (
+          <p className="rounded-xl border-[1.5px] border-orange bg-orange-tint px-4 py-3 text-[13px] font-bold text-orange">
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] transition-opacity disabled:opacity-60 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
+        >
+          {loading ? t('submitting') : t('submit')}
+        </button>
+      </form>
+    </main>
+  )
+}
