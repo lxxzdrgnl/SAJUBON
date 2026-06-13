@@ -248,14 +248,19 @@ export default function FortuneStoryPage() {
           from { transform: scale(0) rotate(-12deg); opacity: 0; }
           to   { transform: scale(1) rotate(0deg); opacity: 1; }
         }
-        .story-card-anim.story-dir-next { animation: story-slide-next 360ms cubic-bezier(0.22,1,0.36,1) both; }
-        .story-card-anim.story-dir-prev { animation: story-slide-prev 360ms cubic-bezier(0.22,1,0.36,1) both; }
-        .story-card-anim.story-dir-none { animation: story-fade-in 360ms ease-out both; }
-        .story-stagger > * { animation: story-rise 460ms cubic-bezier(0.22,1,0.36,1) both; }
-        .story-stagger > *:nth-child(1) { animation-delay: 80ms; }
-        .story-stagger > *:nth-child(2) { animation-delay: 180ms; }
-        .story-stagger > *:nth-child(3) { animation-delay: 280ms; }
-        .story-stagger > *:nth-child(4) { animation-delay: 360ms; }
+        @keyframes caution-pulse {
+          0%,100% { opacity: 0.55; }
+          50%     { opacity: 0.85; }
+        }
+        .story-card-anim.story-dir-next { animation: story-slide-next 380ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-card-anim.story-dir-prev { animation: story-slide-prev 380ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-card-anim.story-dir-none { animation: story-fade-in 320ms ease-out both; }
+        /* stagger: 카드 전환(380ms)이 끝난 직후부터 콘텐츠가 순차 등장 */
+        .story-stagger > * { animation: story-rise 480ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-stagger > *:nth-child(1) { animation-delay: 120ms; }
+        .story-stagger > *:nth-child(2) { animation-delay: 230ms; }
+        .story-stagger > *:nth-child(3) { animation-delay: 330ms; }
+        .story-stagger > *:nth-child(4) { animation-delay: 420ms; }
         @media (prefers-reduced-motion: reduce) {
           .story-card-anim,
           .story-card-anim.story-dir-next,
@@ -263,7 +268,8 @@ export default function FortuneStoryPage() {
           .story-card-anim.story-dir-none,
           .story-stagger > * { animation: none !important; }
           [style*="score-pulse"],
-          [style*="badge-pop"] { animation: none !important; }
+          [style*="badge-pop"],
+          [style*="caution-pulse"] { animation: none !important; }
         }
       `}</style>
       {/* 중앙 정렬 컨테이너 */}

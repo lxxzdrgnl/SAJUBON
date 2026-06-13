@@ -205,12 +205,12 @@ export default function SummaryCard({ story, onClose }: Props) {
   // 탭 전파를 막지 않는다 — 다른 카드처럼 좌측 1/3 탭=뒤로가 동작.
   // 스크롤·버튼만 개별적으로 전파 차단(아래 CTA).
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-4 pt-3 select-none">
-      {/* 브랜드 헤더 — 공유용 카드 느낌 */}
-      <div className="mb-5">
-        <div className="mb-3 flex items-center gap-2">
+    <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-6 pt-4 select-none">
+      {/* 브랜드 헤더 — 공유용 카드 느낌, 한 줄 수평 배치 */}
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/mascot.svg" alt="" width={36} height={36} />
+          <img src="/mascot.svg" alt="" width={32} height={32} />
           <span
             className="text-[13px] font-black tracking-widest uppercase"
             style={{ color: '#FFD900' }}
@@ -218,39 +218,41 @@ export default function SummaryCard({ story, onClose }: Props) {
             사주구리
           </span>
         </div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-white/40 mb-1">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-white/40">
           {story.date}
         </p>
-        <h2 className="text-[26px] font-black text-white leading-tight">
-          {t('headerTitle')}
-        </h2>
       </div>
 
       {/* 총점 히어로 블록 — 공유 카드의 핵심 */}
       {avgScore !== undefined && (
         <div
-          className="mb-5 flex items-end gap-3 rounded-2xl border border-white/15 px-5 py-4"
+          className="mb-4 rounded-2xl border border-white/15 px-5 py-4"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,138,46,0.18) 0%, rgba(255,217,0,0.08) 100%)',
-            boxShadow: `0 0 32px rgba(255,138,46,0.15)`,
+            background: 'linear-gradient(135deg, rgba(255,138,46,0.2) 0%, rgba(255,217,0,0.07) 100%)',
+            boxShadow: '0 0 36px rgba(255,138,46,0.18)',
             opacity: revealed ? 1 : 0,
             transform: revealed ? 'translateY(0)' : 'translateY(8px)',
             transition: 'opacity 500ms ease-out, transform 500ms cubic-bezier(0.22,1,0.36,1)',
           }}
         >
-          <span
-            className="font-black leading-none tabular-nums"
-            style={{ color: SCORE_COLOR, fontSize: '72px' }}
-          >
-            {avgScore}
-          </span>
-          <div className="mb-2 flex flex-col">
-            <span className="text-[14px] text-white/50">/ 100</span>
-            {story.profile_name && (
-              <span className="text-[15px] font-bold text-white/80">
-                {story.profile_name}
-              </span>
-            )}
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-white/40">
+            {t('headerTitle')}
+          </p>
+          <div className="flex items-end gap-3">
+            <span
+              className="font-black leading-none tabular-nums"
+              style={{ color: SCORE_COLOR, fontSize: '76px' }}
+            >
+              {avgScore}
+            </span>
+            <div className="mb-2 flex flex-col gap-0.5">
+              <span className="text-[14px] text-white/50">/ 100</span>
+              {story.profile_name && (
+                <span className="text-[15px] font-bold text-white/85">
+                  {story.profile_name}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -258,20 +260,22 @@ export default function SummaryCard({ story, onClose }: Props) {
       {/* 오늘의 키워드 */}
       {story.keyword && (
         <div
-          className="mb-5 rounded-2xl border border-white/20 bg-white/8 px-5 py-4"
+          className="mb-4 rounded-2xl border border-white/20 px-5 py-4"
           style={{
+            background: 'rgba(255,217,0,0.06)',
+            borderColor: 'rgba(255,217,0,0.3)',
             opacity: revealed ? 1 : 0,
             transform: revealed ? 'translateY(0)' : 'translateY(8px)',
             transition: 'opacity 500ms ease-out, transform 500ms cubic-bezier(0.22,1,0.36,1)',
             transitionDelay: '100ms',
           }}
         >
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-white/40 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-1.5">
             {t('keyword')}
           </p>
           <p
-            className="text-[28px] font-black leading-tight"
-            style={{ color: '#FFD900' }}
+            className="text-[26px] font-black leading-tight"
+            style={{ color: '#FFD900', wordBreak: 'keep-all' }}
           >
             {story.keyword}
           </p>
@@ -279,7 +283,7 @@ export default function SummaryCard({ story, onClose }: Props) {
       )}
 
       {/* 점수 바 6개 — 스태거 리빌 */}
-      <div className="mb-5 flex flex-col gap-2.5">
+      <div className="mb-4 flex flex-col gap-2">
         {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
@@ -287,11 +291,11 @@ export default function SummaryCard({ story, onClose }: Props) {
           const barColor = isLow ? SCORE_COLOR : SCORE_NORMAL
           return (
             <div key={key} className="flex items-center gap-3">
-              <span className="w-12 shrink-0 text-[12px] font-extrabold text-white/75">
+              <span className="w-10 shrink-0 text-[11px] font-extrabold tracking-wide text-white/70">
                 {CATEGORY_LABELS[key]}
               </span>
               <div
-                className="relative h-5 flex-1 overflow-hidden rounded-full"
+                className="relative h-4 flex-1 overflow-hidden rounded-full"
                 style={{
                   background: 'rgba(255,255,255,0.1)',
                   boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)',
@@ -304,16 +308,16 @@ export default function SummaryCard({ story, onClose }: Props) {
                     background: isPeak
                       ? `linear-gradient(90deg, ${barColor} 0%, #FFFFFF 100%)`
                       : barColor,
-                    transition: 'width 700ms cubic-bezier(0.22,1,0.36,1)',
-                    transitionDelay: `${i * 80 + 200}ms`,
+                    transition: 'width 750ms cubic-bezier(0.22,1,0.36,1)',
+                    transitionDelay: `${i * 90 + 200}ms`,
                     boxShadow: `0 0 ${isPeak ? 12 : 5}px ${barColor}99`,
                   }}
                 />
                 {/* 상단 하이라이트 — 입체감 */}
-                <div className="pointer-events-none absolute inset-0 h-1/2 rounded-full bg-white/20" />
+                <div className="pointer-events-none absolute inset-0 h-1/2 rounded-full bg-white/15" />
               </div>
               <span
-                className="w-9 shrink-0 text-right text-[17px] font-black tabular-nums"
+                className="w-8 shrink-0 text-right text-[15px] font-black tabular-nums"
                 style={{ color: isLow ? SCORE_COLOR : '#FFFFFF' }}
               >
                 {score}
@@ -326,31 +330,35 @@ export default function SummaryCard({ story, onClose }: Props) {
       {/* 요약 헤드라인 */}
       {summaryCard && (
         <div
-          className="mb-5"
+          className="mb-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-4"
           style={{
             opacity: revealed ? 1 : 0,
-            transition: 'opacity 600ms ease-out',
-            transitionDelay: `${orderedKeys.length * 80 + 350}ms`,
+            transform: revealed ? 'translateY(0)' : 'translateY(6px)',
+            transition: 'opacity 600ms ease-out, transform 600ms cubic-bezier(0.22,1,0.36,1)',
+            transitionDelay: `${orderedKeys.length * 90 + 350}ms`,
           }}
         >
-          <p className="text-[20px] font-black text-white leading-snug">
+          <p
+            className="font-black text-white leading-snug"
+            style={{ fontSize: 'clamp(18px, 4.8vw, 21px)', wordBreak: 'keep-all' }}
+          >
             {summaryCard.headline}
           </p>
-          <p className="mt-2 text-[14px] text-white/70 leading-relaxed">
+          <p className="mt-2 text-[14px] text-white/70 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
             {summaryCard.body}
           </p>
         </div>
       )}
 
       {/* CTA 버튼 — 공유 동선 강조 */}
-      <div className="mt-auto flex gap-3 pt-2">
+      <div className="mt-auto flex gap-3 pt-3">
         {/* 이미지 저장 (옐로 필) */}
         <button
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-yellow py-3 text-[14px] font-extrabold text-ink shadow-[4px_4px_0_#1A1A1A] disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-yellow py-3.5 text-[14px] font-extrabold text-ink shadow-[3px_3px_0_#1A1A1A] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] disabled:opacity-50 transition-all duration-100"
           onClick={(e) => { e.stopPropagation(); handleSaveImage() }}
           disabled={saving}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
           </svg>
           {saving ? '저장 중...' : t('saveImage')}
@@ -358,11 +366,12 @@ export default function SummaryCard({ story, onClose }: Props) {
 
         {/* 링크 공유 (고스트) */}
         <button
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-white/50 py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-white/40 py-3.5 text-[14px] font-extrabold text-white disabled:opacity-50"
+          style={{ background: copied ? 'rgba(255,255,255,0.12)' : undefined, transition: 'background 200ms ease' }}
           onClick={(e) => { e.stopPropagation(); handleShareLink() }}
           disabled={sharing}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
           </svg>
           {copied ? t('copied') : t('shareLink')}
