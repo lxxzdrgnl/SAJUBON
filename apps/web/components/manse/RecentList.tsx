@@ -64,7 +64,14 @@ interface ItemState {
   confirmDelete: boolean
 }
 
-export default function RecentList({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
+export default function RecentList({
+  isLoggedIn = false,
+  savedKeys = [],
+}: {
+  isLoggedIn?: boolean
+  /** 저장된 만세력 키 목록(`birth_date|birth_time|gender`) — 중복 항목은 최근에서 숨김 */
+  savedKeys?: string[]
+}) {
   const t = useTranslations('manse.index')
   const tf = useTranslations('manse.form')
   const router = useRouter()
@@ -76,7 +83,14 @@ export default function RecentList({ isLoggedIn = false }: { isLoggedIn?: boolea
   }, [])
 
   if (items === null) return null
-  if (items.length === 0)
+
+  // 저장된 만세력과 중복되는 최근 항목은 숨긴다 (저장 후 router.refresh() 시 사라짐)
+  const savedSet = new Set(savedKeys)
+  const visibleItems = items.filter(
+    (i) => !savedSet.has(`${i.birth_date}|${i.birth_time ?? ''}|${i.gender}`),
+  )
+
+  if (visibleItems.length === 0)
     return <p className="py-6 text-center text-sm text-text-sub">{t('empty')}</p>
 
   function getItemState(key: string): ItemState {
@@ -126,7 +140,7 @@ export default function RecentList({ isLoggedIn = false }: { isLoggedIn?: boolea
 
   return (
     <div className="flex flex-col gap-3">
-      {items.map((i) => {
+      {visibleItems.map((i) => {
         const key = itemKey(i)
         const state = getItemState(key)
         const saveLabel =
