@@ -102,6 +102,10 @@
       "soon": {
         "title": "작명 · 꿈해몽",
         "desc": "coming soon"
+      },
+      "compatibility": {
+        "title": "궁합 리포트",
+        "desc": "두 사람 사주로 보는 케미"
       }
     }
   },

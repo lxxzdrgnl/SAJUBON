@@ -13,6 +13,7 @@ const ICONS = {
   chat: 'M4 6 a3 3 0 0 1 3-3 h10 a3 3 0 0 1 3 3 v7 a3 3 0 0 1-3 3 H10 l-4.5 4 v-4 H7 a3 3 0 0 1-3-3 Z',
   bolt: 'M13 2 L5 13 H11 L9 22 L19 10 H12 Z',
   moon: 'M20 13 A8 8 0 1 1 11 4 A6.5 6.5 0 0 0 20 13 Z',
+  heart: 'M12 20 C12 20 4 13.5 4 8.5 A4 4 0 0 1 12 6 A4 4 0 0 1 20 8.5 C20 13.5 12 20 12 20 Z',
 } as const
 
 function CardIcon({ d, bg, color }: { d: string; bg: string; color: string }) {
@@ -115,6 +116,17 @@ export default async function Home() {
             <div>
               <p className="text-sm font-extrabold">{t('cards.question.title')}</p>
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.question.desc')}</p>
+            </div>
+          </BrutalCard>
+        </Link>
+
+        {/* 궁합 리포트 — /compatibility/new */}
+        <Link href="/compatibility/new">
+          <BrutalCard className="flex items-center gap-3">
+            <CardIcon d={ICONS.heart} bg="#4DA8E8" color="#FFFFFF" />
+            <div>
+              <p className="text-sm font-extrabold">{t('cards.compatibility.title')}</p>
+              <p className="mt-0.5 text-xs text-text-sub">{t('cards.compatibility.desc')}</p>
             </div>
           </BrutalCard>
         </Link>
