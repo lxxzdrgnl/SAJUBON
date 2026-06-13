@@ -11,8 +11,8 @@ interface Props {
 // Grey/silver day-stem body colors — these become "dead" if used directly.
 // Map to a deeper, more saturated variant that reads clearly.
 const GREY_BODY_REMAP: Record<string, string> = {
-  '#D7D9DD': '#8C919C',  // 경·신: steel blue-grey, clearly visible
-  '#B9C4CC': '#7A8A97',  // 임·계: slate grey, clearly visible
+  '#D7D9DD': '#7E93AD',  // 경·신: 푸른빛 도는 스틸 그레이
+  '#B9C4CC': '#5F7A95',  // 임·계: 푸른계열 슬레이트 그레이
 }
 
 function isGreyStem(color: string): boolean {
