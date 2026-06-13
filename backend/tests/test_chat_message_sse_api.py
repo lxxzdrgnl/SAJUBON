@@ -34,7 +34,8 @@ class _FakeGraph:
 
 
 def _token(text):
-    return {"event": "on_chat_model_stream", "data": {"chunk": AIMessageChunk(content=text)}}
+    return {"event": "on_chat_model_stream", "data": {"chunk": AIMessageChunk(content=text)},
+            "metadata": {"langgraph_node": "agent"}}
 
 
 def _tool_end(name, output):

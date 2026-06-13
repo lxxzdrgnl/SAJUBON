@@ -8,13 +8,23 @@ from llm.chat_sse import map_stream_event, sse
 from llm.tools.saju_tools import REQUEST_PARTNER_SIGNAL, _envelope
 
 
+_AGENT_META = {"metadata": {"langgraph_node": "agent"}}
+
+
 def test_token_event():
-    ev = {"event": "on_chat_model_stream", "data": {"chunk": AIMessageChunk(content="안녕")}}
+    ev = {"event": "on_chat_model_stream", "data": {"chunk": AIMessageChunk(content="안녕")}, **_AGENT_META}
     assert map_stream_event(ev) == {"type": "token", "content": "안녕"}
 
 
 def test_empty_token_ignored():
-    ev = {"event": "on_chat_model_stream", "data": {"chunk": AIMessageChunk(content="")}}
+    ev = {"event": "on_chat_model_stream", "data": {"chunk": AIMessageChunk(content="")}, **_AGENT_META}
+    assert map_stream_event(ev) is None
+
+
+def test_guard_node_token_excluded():
+    """guard 노드 LLM('OK|general' 분류) 토큰은 스트리밍 제외."""
+    ev = {"event": "on_chat_model_stream", "data": {"chunk": AIMessageChunk(content="OK|general")},
+          "metadata": {"langgraph_node": "guard"}}
     assert map_stream_event(ev) is None
 
 

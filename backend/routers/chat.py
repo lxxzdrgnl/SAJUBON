@@ -157,8 +157,12 @@ async def get_history(
     from langchain_core.messages import HumanMessage as HM, AIMessage as AM
     result = []
     for m in messages:
-        role = "human" if isinstance(m, HM) else "ai"
+        # ToolMessage(도구 봉투 JSON)·tool_calls만 있는 중간 AIMessage는 히스토리에서 제외 —
+        # 사용자에게 보일 텍스트(Human·AI 응답)만 반환한다.
+        if not isinstance(m, (HM, AM)):
+            continue
         if hasattr(m, "content") and m.content:
+            role = "human" if isinstance(m, HM) else "ai"
             result.append(ChatHistoryMessage(role=role, content=m.content))
 
     return ChatHistoryResponse(session_id=session_id, messages=result)

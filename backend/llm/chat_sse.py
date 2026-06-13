@@ -37,6 +37,10 @@ def map_stream_event(event: dict) -> dict | None:
     etype = event.get("event")
 
     if etype == "on_chat_model_stream":
+        # agent 노드의 LLM만 스트리밍. guard(분류 "OK|general") 등 다른 노드 LLM 제외.
+        node = event.get("metadata", {}).get("langgraph_node")
+        if node != "agent":
+            return None
         chunk = event.get("data", {}).get("chunk")
         content = getattr(chunk, "content", None)
         if content:
