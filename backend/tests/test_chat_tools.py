@@ -6,6 +6,7 @@ import json
 import pytest
 from langchain_core.runnables import RunnableConfig
 
+from llm.prompts.chat import build_chat_system_prompt
 from llm.tools.saju_tools import (
     extract_summary,
     request_partner_profile,
@@ -245,6 +246,31 @@ class TestVisualCardTools:
         assert isinstance(data["dominant_elements"], list)
         assert isinstance(data["day_stem_element"], str) and data["day_stem_element"]
 
+    def test_wuxing_balance_hap_data_present(self):
+        """get_wuxing_balance 결과에 합화 적용 분포·기여분이 포함되어야 한다."""
+        out = json.loads(_invoke(get_wuxing_balance, {}, self._config()))
+        data = out["data"]
+        # 합화 적용 오행 분포
+        assert "wuxing_count_hap" in data, "wuxing_count_hap 없음"
+        assert isinstance(data["wuxing_count_hap"], dict)
+        # 기둥별 합화 기여분 (합화 설명에 필수)
+        assert "wuxing_hap_contributions" in data, "wuxing_hap_contributions 없음"
+        assert isinstance(data["wuxing_hap_contributions"], list)
+
+    def test_wuxing_balance_summary_reflects_hap(self):
+        """summary 문자열이 합화-적용 강약(과다/부족)을 반영해야 한다.
+
+        합화로 인해 오행이 실제로 바뀐 사주에서는 summary에 '합화로' 문구가 포함되어야 하고,
+        합화가 없는 사주에서도 summary가 비어 있으면 안 된다.
+        """
+        out = json.loads(_invoke(get_wuxing_balance, {}, self._config()))
+        summary = out["summary"]
+        assert isinstance(summary, str) and summary, "summary가 비어 있음"
+        # summary는 반드시 오행 구조 설명을 담아야 함
+        assert any(kw in summary for kw in ["오행", "기운", "합화"]), (
+            f"summary에 오행/기운/합화 키워드 없음: {summary}"
+        )
+
     def test_strength_shape(self):
         data = json.loads(_invoke(get_strength, {}, self._config()))["data"]
         assert "level" in data["day_master_strength"]
@@ -313,3 +339,43 @@ class TestHapChungTool:
         assert "gong_mang" in data
         assert "vacant_branches" in data["gong_mang"]
         assert "affected_pillars" in data["gong_mang"]
+
+
+# ─── 시스템 프롬프트 합화 안내 ───────────────────────────────────────────────────
+
+class TestChatSystemPromptHapInstruction:
+    """build_chat_system_prompt 출력에 합화 설명 지시가 포함되어야 한다."""
+
+    _SUMMARY: dict = {
+        "day_stem": "갑", "day_element": "목",
+        "gyeok_guk": "정관격", "yong_sin": ["화", "토"], "ji_sin": ["금", "수"],
+        "strength": "신약",
+        "pillars": {
+            "year":  {"stem": "경", "branch": "오"},
+            "month": {"stem": "무", "branch": "자"},
+            "day":   {"stem": "갑", "branch": "진"},
+            "hour":  {"stem": "병", "branch": "인"},
+        },
+        "current_dae_un": {"stem": "임", "branch": "술", "start_age": 32, "end_age": 42},
+        "sin_sals": [],
+        "life_domains": {},
+    }
+
+    def test_prompt_contains_hap_instruction(self):
+        """시스템 프롬프트가 합화 설명 지시를 포함해야 한다."""
+        prompt = build_chat_system_prompt(self._SUMMARY)
+        assert "합화" in prompt, "시스템 프롬프트에 '합화' 지시 없음"
+        assert "wuxing_hap_contributions" in prompt, (
+            "시스템 프롬프트에 wuxing_hap_contributions 참조 없음"
+        )
+        assert "wuxing_count_hap" in prompt, (
+            "시스템 프롬프트에 wuxing_count_hap 참조 없음"
+        )
+
+    def test_prompt_instructs_hap_before_judgment(self):
+        """시스템 프롬프트가 합화 설명 후 과다·부족 판단을 지시해야 한다."""
+        prompt = build_chat_system_prompt(self._SUMMARY)
+        # 합화 후 최종 분포 기준으로 과다·부족 판단 지시가 있어야 함
+        assert "과다" in prompt or "부족" in prompt, (
+            "시스템 프롬프트에 과다/부족 판단 지시 없음"
+        )

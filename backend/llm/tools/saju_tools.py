@@ -225,14 +225,37 @@ async def get_wuxing_balance(config: RunnableConfig = None) -> str:
     """오행(목화토금수) 기운 균형 분석. '오행', '기운 균형', '부족한 기운' 질문에 사용."""
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
-    dominant = saju.get("dominant_elements", [])
-    weak = saju.get("weak_elements", [])
+
+    # 합화(合化) 적용 오행 분포로 강/약 재계산
+    # saju["dominant_elements"] / saju["weak_elements"] 는 합화 미적용 raw 값이므로
+    # wuxing_count_hap(합화 반영 퍼센트)를 직접 사용해 과다·결핍 판정
+    hap_pct: dict[str, float] = saju.get("wuxing_count_hap", {})
+    if hap_pct:
+        avg_pct = sum(hap_pct.values()) / 5  # 5 오행 평균
+        dominant_hap = [e for e, v in hap_pct.items() if v > avg_pct * 1.5]
+        weak_hap = [e for e, v in hap_pct.items() if v == 0 or v < avg_pct * 0.5]
+    else:
+        # fallback: raw dominant/weak (합화 정보 없을 때)
+        dominant_hap = saju.get("dominant_elements", [])
+        weak_hap = saju.get("weak_elements", [])
+
+    # 합화로 바뀐 글자가 있는지 요약 (wuxing_hap_contributions 활용)
+    hap_contributions = saju.get("wuxing_hap_contributions", [])
+    changed = [
+        f"{c['pillar']}주 {'천간' if c['type'] == 'stem' else '지지'} "
+        f"{c['base_element']}→{c['hap_element']}({round(c['hap_ratio']*100)}%)"
+        for c in hap_contributions
+        if c.get("hap_element") and c["hap_element"] != c["base_element"]
+    ]
+    hap_note = f" 합화로 {', '.join(changed)} 변환됨." if changed else ""
+
     parts = []
-    if dominant:
-        parts.append(f"{'·'.join(dominant)} 기운이 강하고")
-    if weak:
-        parts.append(f"{'·'.join(weak)} 기운이 약한")
-    summary = f"오행 분포는 {' '.join(parts)} 구조입니다." if parts else "오행 분포 데이터입니다."
+    if dominant_hap:
+        parts.append(f"{'·'.join(dominant_hap)} 기운이 강하고")
+    if weak_hap:
+        parts.append(f"{'·'.join(weak_hap)} 기운이 약한")
+    base_summary = f"오행 분포는 {' '.join(parts)} 구조입니다." if parts else "오행 분포 데이터입니다."
+    summary = base_summary + hap_note
     return _envelope(summary, payload_wuxing_balance(saju))
 
 
