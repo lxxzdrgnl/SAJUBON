@@ -34,6 +34,11 @@ CHART_TOOL_NAMES = frozenset({
     "get_daily_fortune",
     "get_il_jin",
     "get_compatibility_detail",
+    "get_wuxing_balance",
+    "get_ten_gods",
+    "get_sin_sal",
+    "get_palja",
+    "get_strength",
 })
 
 
@@ -195,6 +200,98 @@ async def convert_calendar(
         to_calendar=to_calendar,
     )
     return json.dumps(result, ensure_ascii=False)
+
+
+# ─── 원국 시각 카드 tool — 만세력 분석 데이터를 차트로 띄운다 ──────────────────────
+# 각 tool은 handle_calculate_saju 전체 결과 중 해당 카드가 쓰는 필드만 추려
+# _envelope(summary, data)로 반환한다. data 키는 SajuCalcResponse 필드와 동일.
+
+
+@tool
+async def get_wuxing_balance(config: RunnableConfig = None) -> str:
+    """오행(목화토금수) 기운 균형 분석. '오행', '기운 균형', '부족한 기운' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    dominant = saju.get("dominant_elements", [])
+    weak = saju.get("weak_elements", [])
+    parts = []
+    if dominant:
+        parts.append(f"{'·'.join(dominant)} 기운이 강하고")
+    if weak:
+        parts.append(f"{'·'.join(weak)} 기운이 약한")
+    summary = f"오행 분포는 {' '.join(parts)} 구조입니다." if parts else "오행 분포 데이터입니다."
+    data = {
+        "wuxing_count_hap":          saju["wuxing_count_hap"],
+        "wuxing_count":              saju["wuxing_count"],
+        "wuxing_chars":              saju["wuxing_chars"],
+        "wuxing_hap_contributions":  saju["wuxing_hap_contributions"],
+        "dominant_elements":         dominant,
+        "weak_elements":             weak,
+        "day_stem_element":          saju["day_pillar"]["stem_element"],
+    }
+    return _envelope(summary, data)
+
+
+@tool
+async def get_ten_gods(config: RunnableConfig = None) -> str:
+    """십성(비겁·식상·재성·관성·인성) 분포 분석. '십성', '관성/재성' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    dist = saju.get("ten_gods_distribution", {})
+    top = max(dist, key=dist.get) if dist else ""
+    summary = f"십성 분포에서 {top}이(가) 가장 두드러집니다." if top else "십성 분포 데이터입니다."
+    data = {
+        "ten_gods_distribution": dist,
+        "structure_patterns":    saju["structure_patterns"],
+    }
+    return _envelope(summary, data)
+
+
+@tool
+async def get_sin_sal(config: RunnableConfig = None) -> str:
+    """신살(神殺) 목록 분석. '신살', '도화살/역마살/천을귀인' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    sin_sals = saju.get("sin_sals", [])
+    names = "·".join(s["name"] for s in sin_sals)
+    summary = f"사주에 {names} 신살이 있습니다." if names else "별다른 신살은 없습니다."
+    return _envelope(summary, {"sin_sals": sin_sals})
+
+
+@tool
+async def get_palja(config: RunnableConfig = None) -> str:
+    """사주팔자 원국(8글자) 분석. '사주팔자', '원국', '내 사주가 뭐야' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    day = saju["day_pillar"]
+    summary = f"일간 {day['stem']}({day['stem_element']})을 중심으로 한 사주팔자 원국입니다."
+    data = {
+        "year_pillar":  saju["year_pillar"],
+        "month_pillar": saju["month_pillar"],
+        "day_pillar":   day,
+        "hour_pillar":  saju["hour_pillar"],
+        "day_stem":     day["stem"],
+        "gyeok_guk":    saju["gyeok_guk"],
+    }
+    return _envelope(summary, data)
+
+
+@tool
+async def get_strength(config: RunnableConfig = None) -> str:
+    """일간 강약과 용신·기신 분석. '신강/신약', '용신', '내 기운이 강한가' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    strength = saju["day_master_strength"]
+    yong = saju["yong_sin"]
+    summary = (
+        f"일간은 {strength.get('level_8', strength.get('level', ''))}이며 "
+        f"용신은 {yong.get('primary', '')}입니다."
+    )
+    data = {
+        "day_master_strength": strength,
+        "yong_sin":            yong,
+    }
+    return _envelope(summary, data)
 
 
 # ─── Domain-to-ten-god mapping ─────────────────────────────────────────────

@@ -16,6 +16,11 @@ from llm.tools.saju_tools import (
     _compute_find_favorable_periods,
     _compute_evaluate_specific_date,
     _compute_check_current_sin_sal_timing,
+    get_wuxing_balance,
+    get_ten_gods,
+    get_sin_sal,
+    get_palja,
+    get_strength,
 )
 
 
@@ -176,3 +181,71 @@ class TestCompatibilityDetail:
     def test_in_chart_whitelist(self):
         assert "get_compatibility_detail" in CHART_TOOL_NAMES
         assert "request_partner_profile" not in CHART_TOOL_NAMES
+
+
+# ─── 원국 시각 카드 tool ──────────────────────────────────────────────────────
+
+_CARD_TOOLS = {
+    "get_wuxing_balance": get_wuxing_balance,
+    "get_ten_gods":       get_ten_gods,
+    "get_sin_sal":        get_sin_sal,
+    "get_palja":          get_palja,
+    "get_strength":       get_strength,
+}
+
+_CARD_DATA_KEYS = {
+    "get_wuxing_balance": [
+        "wuxing_count_hap", "wuxing_count", "wuxing_chars",
+        "wuxing_hap_contributions", "dominant_elements", "weak_elements",
+        "day_stem_element",
+    ],
+    "get_ten_gods":  ["ten_gods_distribution", "structure_patterns"],
+    "get_sin_sal":   ["sin_sals"],
+    "get_palja":     ["year_pillar", "month_pillar", "day_pillar", "hour_pillar", "day_stem", "gyeok_guk"],
+    "get_strength":  ["day_master_strength", "yong_sin"],
+}
+
+
+class TestVisualCardTools:
+    def _config(self) -> RunnableConfig:
+        return {"configurable": {"birth_info": _BIRTH_SELF}}
+
+    def test_all_registered_in_whitelist(self):
+        for name in _CARD_TOOLS:
+            assert name in CHART_TOOL_NAMES, f"{name} not whitelisted"
+
+    def test_tool_names(self):
+        for name, tool in _CARD_TOOLS.items():
+            assert tool.name == name
+
+    def test_returns_envelope_with_summary_and_data(self):
+        config = self._config()
+        for name, tool in _CARD_TOOLS.items():
+            parsed = json.loads(_invoke(tool, {}, config))
+            assert "summary" in parsed, f"{name}: missing summary"
+            assert isinstance(parsed["summary"], str) and parsed["summary"], f"{name}: empty summary"
+            assert "data" in parsed and isinstance(parsed["data"], dict), f"{name}: missing data dict"
+
+    def test_data_contains_expected_keys(self):
+        config = self._config()
+        for name, tool in _CARD_TOOLS.items():
+            data = json.loads(_invoke(tool, {}, config))["data"]
+            for key in _CARD_DATA_KEYS[name]:
+                assert key in data, f"{name}: data missing '{key}'"
+
+    def test_wuxing_balance_shape(self):
+        data = json.loads(_invoke(get_wuxing_balance, {}, self._config()))["data"]
+        assert isinstance(data["wuxing_count"], dict)
+        assert isinstance(data["dominant_elements"], list)
+        assert isinstance(data["day_stem_element"], str) and data["day_stem_element"]
+
+    def test_strength_shape(self):
+        data = json.loads(_invoke(get_strength, {}, self._config()))["data"]
+        assert "level" in data["day_master_strength"]
+        assert "primary" in data["yong_sin"]
+
+    def test_palja_pillars_present(self):
+        data = json.loads(_invoke(get_palja, {}, self._config()))["data"]
+        for p in ("year_pillar", "month_pillar", "day_pillar"):
+            assert "stem" in data[p] and "branch" in data[p]
+        assert data["day_stem"] == data["day_pillar"]["stem"]

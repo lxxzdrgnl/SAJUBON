@@ -19,6 +19,7 @@ from llm.tools.saju_tools import (
     get_current_luck_overview, find_favorable_periods,
     evaluate_specific_date, explain_past_event, check_current_sin_sal_timing,
     get_compatibility_detail, request_partner_profile,
+    get_wuxing_balance, get_ten_gods, get_sin_sal, get_palja, get_strength,
 )
 
 CHAT_TOOLS = [
@@ -27,6 +28,7 @@ CHAT_TOOLS = [
     get_current_luck_overview, find_favorable_periods,
     evaluate_specific_date, explain_past_event, check_current_sin_sal_timing,
     get_compatibility_detail, request_partner_profile,
+    get_wuxing_balance, get_ten_gods, get_sin_sal, get_palja, get_strength,
 ]
 
 
