@@ -24,9 +24,32 @@
     "menu": {
       "reports": "내 리포트",
       "fortuneHistory": "운세 기록",
-      "shares": "공유 관리",
       "settings": "설정"
+    },
+    "history": {
+      "title": "내 기록",
+      "tabReports": "리포트",
+      "tabFortune": "운세",
+      "viewAll": "전체 보기",
+      "emptyReports": "아직 생성한 리포트가 없어요",
+      "emptyFortune": "아직 운세 기록이 없어요",
+      "goReport": "리포트 생성하러 가기",
+      "goFortune": "오늘의 운세 보러 가기"
     }
+  },
+  "settings": {
+    "title": "설정",
+    "language": "언어",
+    "langKo": "한국어",
+    "langEn": "English",
+    "contact": "문의하기",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "version": "버전",
+    "notifications": "알림 설정",
+    "deleteAccount": "회원 탈퇴",
+    "soon": "준비 중",
+    "logout": "로그아웃"
   },
   "home": {
     "title": "사주구리",
@@ -297,6 +320,13 @@
       "createdAt": "생성일",
       "topics": "요청 주제"
     },
+    "entrySheet": {
+      "title": "누구의 사주로 볼까요?",
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 입력",
+      "directInput": "직접 입력하기",
+      "repBadge": "대표"
+    },
     "shared": {
       "notFound": "공유 링크를 찾을 수 없어요.",
       "notFoundDesc": "링크가 만료됐거나 잘못된 주소예요."
@@ -403,6 +433,28 @@
         "twelveUnSeong": "12운성 = 각 기둥의 기운이 어느 생애 단계에 있는지",
         "hapChung": "합충 = 기둥끼리 끌어당기거나(합) 부딪히는(충) 관계"
       }
+    }
+  },
+  "question": {
+    "title": "한 번 물어보기",
+    "desc": "사주 정보와 고민을 입력하면 AI가 단답형으로 답해드려요.",
+    "birthLabel": "사주 선택",
+    "birthPlaceholder": "만세력을 선택하거나 직접 입력해요",
+    "questionLabel": "고민을 입력해 주세요",
+    "questionPlaceholder": "올해 이직 운이 있을까요? (10자 이상)",
+    "submit": "물어보기",
+    "submitting": "분석 중...",
+    "resultLabel": "AI 상담 결과",
+    "askAgain": "다시 물어보기",
+    "errorNoBirth": "사주 정보를 먼저 선택해 주세요.",
+    "errorQuestionShort": "고민은 10자 이상 입력해 주세요.",
+    "errorFallback": "상담 요청에 실패했어요. 잠시 후 다시 시도해 주세요.",
+    "pickSheet": {
+      "title": "누구의 사주로 물어볼까요?",
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 입력",
+      "directInput": "직접 입력하기",
+      "repBadge": "대표"
     }
   },
   "fortune": {

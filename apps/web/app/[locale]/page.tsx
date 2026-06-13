@@ -6,6 +6,7 @@ import { currentUser, serverAuthApi } from '@/lib/serverAuth'
 import { pickGreeting } from '@/lib/greetings'
 import { listProfiles, type ProfileResponse } from '@sajuguri/api-client'
 import FortuneBannerClient from '@/components/fortune/FortuneBannerClient'
+import ReportEntryButton from '@/components/report/ReportEntryButton'
 
 const ICONS = {
   doc: 'M5 3 h11 a2 2 0 0 1 2 2 v14 a2 2 0 0 1-2 2 H5 a0 0 0 0 1 0 0 V3 Z M9 8 H15 M9 12 H15 M9 16 H13',
@@ -81,7 +82,8 @@ export default async function Home() {
 
       <h3 className="mb-3 mt-5 text-[15px] font-extrabold">{t('sectionTitle')}</h3>
       <div className="flex flex-col gap-3">
-        <Link href="/manse">
+        {/* 사주 풀리포트 — 프로필 선택 시트 → /report/new */}
+        <ReportEntryButton profiles={profiles} isLoggedIn={!!user}>
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.doc} bg="#FFD900" color="var(--ink)" />
             <div>
@@ -94,7 +96,8 @@ export default async function Home() {
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.report.desc')}</p>
             </div>
           </BrutalCard>
-        </Link>
+        </ReportEntryButton>
+
         <Link href="/chat">
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.chat} bg="#00C2B8" color="#FFFFFF" />
@@ -104,13 +107,18 @@ export default async function Home() {
             </div>
           </BrutalCard>
         </Link>
-        <BrutalCard intensity="soft" className="flex items-center gap-3">
-          <CardIcon d={ICONS.bolt} bg="#F5F0E2" color="var(--text-sub)" />
-          <div>
-            <p className="text-sm font-extrabold text-text-sub">{t('cards.question.title')}</p>
-            <p className="mt-0.5 text-xs text-text-sub">{t('cards.question.desc')}</p>
-          </div>
-        </BrutalCard>
+
+        {/* 한 번 물어보기 — 활성 카드 → /question */}
+        <Link href="/question">
+          <BrutalCard className="flex items-center gap-3">
+            <CardIcon d={ICONS.bolt} bg="#FFB200" color="#FFFFFF" />
+            <div>
+              <p className="text-sm font-extrabold">{t('cards.question.title')}</p>
+              <p className="mt-0.5 text-xs text-text-sub">{t('cards.question.desc')}</p>
+            </div>
+          </BrutalCard>
+        </Link>
+
         <BrutalCard intensity="soft" className="flex items-center gap-3 opacity-55">
           <CardIcon d={ICONS.moon} bg="#F5F0E2" color="var(--text-sub)" />
           <div>

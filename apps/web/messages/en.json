@@ -24,9 +24,32 @@
     "menu": {
       "reports": "My reports",
       "fortuneHistory": "Fortune history",
-      "shares": "Shared links",
       "settings": "Settings"
+    },
+    "history": {
+      "title": "My Records",
+      "tabReports": "Reports",
+      "tabFortune": "Fortune",
+      "viewAll": "View all",
+      "emptyReports": "No reports yet",
+      "emptyFortune": "No fortune records yet",
+      "goReport": "Generate a report",
+      "goFortune": "Check today's fortune"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "langKo": "한국어",
+    "langEn": "English",
+    "contact": "Contact us",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy",
+    "version": "Version",
+    "notifications": "Notifications",
+    "deleteAccount": "Delete account",
+    "soon": "Coming soon",
+    "logout": "Sign out"
   },
   "home": {
     "title": "SajuGuri",
@@ -297,9 +320,38 @@
       "createdAt": "Created",
       "topics": "Topics"
     },
+    "entrySheet": {
+      "title": "Whose Saju to use?",
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Enter manually",
+      "repBadge": "Default"
+    },
     "shared": {
       "notFound": "Share link not found.",
       "notFoundDesc": "The link may have expired or is invalid."
+    }
+  },
+  "question": {
+    "title": "Quick Question",
+    "desc": "Enter your birth info and question — AI answers in one insight.",
+    "birthLabel": "Select Saju",
+    "birthPlaceholder": "Select a saved chart or enter manually",
+    "questionLabel": "Your question",
+    "questionPlaceholder": "Is this a good year to change jobs? (10+ chars)",
+    "submit": "Ask",
+    "submitting": "Analyzing...",
+    "resultLabel": "AI Answer",
+    "askAgain": "Ask again",
+    "errorNoBirth": "Please select or enter your birth info first.",
+    "errorQuestionShort": "Question must be at least 10 characters.",
+    "errorFallback": "Request failed. Please try again later.",
+    "pickSheet": {
+      "title": "Whose Saju to ask about?",
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Enter manually",
+      "repBadge": "Default"
     }
   },
   "chat": {
