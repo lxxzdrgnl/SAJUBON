@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     # 쿠키 보안 플래그 — prod(HTTPS)에서 COOKIE_SECURE=true
     cookie_secure: bool = False
 
+    # 쿠키 도메인 — web(sajuguri.rheon.kr)과 api(api-sajuguri.rheon.kr)가
+    # 쿠키를 공유하도록 prod에서 COOKIE_DOMAIN=.rheon.kr 로 설정.
+    # None(dev)이면 호스트 전용 쿠키.
+    cookie_domain: str | None = None
+
     # 리포트 일일 생성 한도 (None = 무제한)
     report_daily_limit: int | None = None
 

@@ -7,6 +7,8 @@ const intlMiddleware = createMiddleware(routing)
 // 서버 사이드에서 백엔드를 직접 부른다 (rewrites 우회).
 const API_BASE = process.env.API_BASE ?? 'http://localhost:8000'
 const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true'
+// prod에선 .rheon.kr 로 web·api 서브도메인이 쿠키를 공유. 미설정(dev)이면 호스트 전용.
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || undefined
 
 // 쿠키 max_age는 백엔드 토큰 만료 정책과 일치시킨다 (core.config).
 const ACCESS_MAX_AGE = 15 * 60 // jwt_expire_minutes
@@ -50,7 +52,7 @@ export default async function middleware(request: NextRequest) {
 
   // 갱신됐으면 브라우저 쿠키도 회전시킨다 (백엔드 _set_auth_cookies와 동일 속성).
   if (rotated) {
-    const opts = { httpOnly: true, sameSite: 'lax' as const, secure: COOKIE_SECURE, path: '/' }
+    const opts = { httpOnly: true, sameSite: 'lax' as const, secure: COOKIE_SECURE, path: '/', domain: COOKIE_DOMAIN }
     response.cookies.set('access_token', rotated.access, { ...opts, maxAge: ACCESS_MAX_AGE })
     response.cookies.set('refresh_token', rotated.refresh, { ...opts, maxAge: REFRESH_MAX_AGE })
   }
