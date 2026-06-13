@@ -12,6 +12,12 @@ interface Props {
   fortuneRecords: DailyRecordSummary[]
   /** 대표 프로필 이름 — 더보기 그룹핑 시 맨 위로 올린다. */
   repProfileName: string | null
+  /**
+   * 탭당 표시할 최대 항목 수.
+   * undefined = 전체 표시 (history 페이지용).
+   * 기본값 3 (마이 페이지 프리뷰).
+   */
+  limit?: number
 }
 
 type Tab = 'reports' | 'fortune'
@@ -167,19 +173,13 @@ export default function MyRecordsClient({
   reports: initialReports,
   fortuneRecords: initialFortune,
   repProfileName,
+  limit = PREVIEW_COUNT,
 }: Props) {
   const t = useTranslations('my.records')
   const [tab, setTab] = useState<Tab>('reports')
-  const [expanded, setExpanded] = useState(false)
   const [reports, setReports] = useState(initialReports)
   const [fortune, setFortune] = useState(initialFortune)
   const [pending, setPending] = useState<Pending | null>(null)
-
-  // 탭 전환 시 펼침 상태 초기화
-  function switchTab(next: Tab) {
-    setTab(next)
-    setExpanded(false)
-  }
 
   const reportGroups = useMemo(
     () => groupByProfile(reports, repProfileName),
@@ -214,7 +214,9 @@ export default function MyRecordsClient({
   }
 
   const activeList = tab === 'reports' ? reports : fortune
-  const hasMore = activeList.length > PREVIEW_COUNT
+  // limit undefined = 전체; 숫자면 슬라이스
+  const isLimited = limit !== undefined && limit < activeList.length
+  const hasMore = isLimited
 
   return (
     <section className="mb-6">
@@ -224,10 +226,10 @@ export default function MyRecordsClient({
 
       {/* 탭 */}
       <div className="mb-3 flex gap-2">
-        <TabButton active={tab === 'reports'} onClick={() => switchTab('reports')}>
+        <TabButton active={tab === 'reports'} onClick={() => setTab('reports')}>
           {t('tabReports')}
         </TabButton>
-        <TabButton active={tab === 'fortune'} onClick={() => switchTab('fortune')}>
+        <TabButton active={tab === 'fortune'} onClick={() => setTab('fortune')}>
           {t('tabFortune')}
         </TabButton>
       </div>
@@ -237,27 +239,26 @@ export default function MyRecordsClient({
         ? (
             reports.length === 0
               ? <EmptyState message={t('emptyReports')} ctaHref="/manse" ctaLabel={t('goReport')} ctaTone="orange" />
-              : expanded
-                ? <GroupedReports groups={reportGroups} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
-                : <PreviewReports items={reports.slice(0, PREVIEW_COUNT)} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
+              : limit !== undefined
+                ? <PreviewReports items={reports.slice(0, limit)} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
+                : <GroupedReports groups={reportGroups} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
           )
         : (
             fortune.length === 0
               ? <EmptyState message={t('emptyFortune')} ctaHref="/" ctaLabel={t('goFortune')} ctaTone="teal" />
-              : expanded
-                ? <GroupedFortune groups={fortuneGroups} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
-                : <PreviewFortune items={fortune.slice(0, PREVIEW_COUNT)} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
+              : limit !== undefined
+                ? <PreviewFortune items={fortune.slice(0, limit)} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
+                : <GroupedFortune groups={fortuneGroups} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
           )}
 
-      {/* 더보기 / 접기 */}
+      {/* 더보기 → /my/history 링크 */}
       {activeList.length > 0 && hasMore && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-2 w-full rounded-xl border-2 border-ink bg-surface py-2.5 text-[13px] font-extrabold text-orange shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+        <Link
+          href="/my/history"
+          className="mt-2 block w-full rounded-xl border-2 border-ink bg-surface py-2.5 text-center text-[13px] font-extrabold text-orange shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
         >
-          {expanded ? t('collapse') : t('viewMore')}
-        </button>
+          {t('viewAllHistory')}
+        </Link>
       )}
 
       {pending && (
