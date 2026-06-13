@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ganjiNickname } from './ganjiNickname'
+import { ganjiNickname, stemToMascotBody } from './ganjiNickname'
 
 describe('ganjiNickname — 천간 색 + 지지 동물', () => {
   it('임자 = 회색 쥐, 배경 #8B8178', () => {
@@ -56,5 +56,26 @@ describe('ganjiNickname — 천간 색 + 지지 동물', () => {
     expect(r.ko).toBe('')
     expect(r.en).toBe('')
     expect(r.bg).toBe('#FFD900')
+  })
+})
+
+describe('stemToMascotBody — 너구리 몸통색 + 회색 보정', () => {
+  it('무(황금) = 옐로, 비회색', () => {
+    expect(stemToMascotBody('무')).toEqual({ color: '#FFD900', grey: false })
+  })
+  it('갑(푸른) = 그린', () => {
+    expect(stemToMascotBody('갑')).toEqual({ color: '#8FD6A8', grey: false })
+  })
+  it('임(회색) = 슬레이트로 보정 + grey=true', () => {
+    expect(stemToMascotBody('임')).toEqual({ color: '#5F7A95', grey: true })
+  })
+  it('계(회색)도 동일 보정', () => {
+    expect(stemToMascotBody('계')).toEqual({ color: '#5F7A95', grey: true })
+  })
+  it('일간 미상(null/빈/미지) = 기본 옐로, 비회색', () => {
+    expect(stemToMascotBody(null)).toEqual({ color: '#FFD900', grey: false })
+    expect(stemToMascotBody(undefined)).toEqual({ color: '#FFD900', grey: false })
+    expect(stemToMascotBody('')).toEqual({ color: '#FFD900', grey: false })
+    expect(stemToMascotBody('?')).toEqual({ color: '#FFD900', grey: false })
   })
 })
