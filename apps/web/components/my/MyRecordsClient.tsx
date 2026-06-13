@@ -215,7 +215,7 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
   return (
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-text-sub">{t('title')}</h2>
+        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-teal-deep">{t('title')}</h2>
         {totalCount > 0 && (
           <EditToggleButton editMode={editMode} onToggle={() => setEditMode((v) => !v)} t={t} />
         )}
