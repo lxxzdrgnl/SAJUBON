@@ -284,7 +284,7 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
                 )}
                 {isHighScore && (
                   <span
-                    className="mb-5 rounded-full px-2.5 py-1 text-[11px] font-black tracking-wider"
+                    className="mb-5 shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-black tracking-wider"
                     style={{
                       background: accent,
                       color: palette.inkLight ? '#15233A' : '#FFFFFF',
@@ -296,7 +296,7 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
                 )}
                 {isLowScore && (
                   <span
-                    className="mb-5 rounded-full px-2.5 py-1 text-[11px] font-black tracking-wider"
+                    className="mb-5 shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-black tracking-wider"
                     style={{ background: hexToRgba(ink, 0.9), color: palette.inkLight ? '#15233A' : '#FFFFFF' }}
                   >
                     주의

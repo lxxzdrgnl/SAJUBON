@@ -17,7 +17,7 @@ import type { DailyStoryResponse } from '@sajuguri/api-client'
 import { createFortuneShare } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import { calcScoreBars } from '@/lib/fortune/canvas'
-import { hexToRgba, type CardPalette } from '@/lib/fortune/story'
+import { hexToRgba, scatterDots, type CardPalette } from '@/lib/fortune/story'
 
 const BAR_LOW_THRESHOLD = 60
 
@@ -46,6 +46,9 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   const [copied, setCopied] = useState(false)
 
   const { ink, inkSoft, accent, base } = palette
+
+  // 요약 제목 — 이름이 있으면 "{이름}의 하루 요약", 없으면 기본 문구
+  const summaryTitle = story.profile_name ? `${story.profile_name}의 하루 요약` : t('headerTitle')
 
   // 마운트 시 점수 바 0 → 차오름 (DOM 전용). reduced-motion 시 즉시 채움.
   const [revealed, setRevealed] = useState(false)
@@ -89,6 +92,30 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       ctx.fillStyle = base
       ctx.fillRect(0, 0, 1080, 1920)
 
+      // 화면과 동일한 거품(점) 장식 — 잉크색 저투명 원
+      for (const d of scatterDots(16)) {
+        ctx.beginPath()
+        ctx.fillStyle = hexToRgba(ink, 0.07)
+        ctx.arc((d.x / 100) * 1080, (d.y / 100) * 1920, d.r * 5, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // 하단 물결 (화면과 동일) — 잉크색 저투명
+      {
+        const wt = 1730
+        ctx.fillStyle = hexToRgba(ink, 0.06)
+        ctx.beginPath()
+        ctx.moveTo(0, wt + 110)
+        ctx.quadraticCurveTo(135, wt + 47, 270, wt + 110)
+        ctx.quadraticCurveTo(405, wt + 173, 540, wt + 110)
+        ctx.quadraticCurveTo(675, wt + 47, 810, wt + 110)
+        ctx.quadraticCurveTo(945, wt + 173, 1080, wt + 110)
+        ctx.lineTo(1080, 1920)
+        ctx.lineTo(0, 1920)
+        ctx.closePath()
+        ctx.fill()
+      }
+
       const PAD = 90
       ctx.textBaseline = 'top'
 
@@ -105,11 +132,11 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       // 제목
       ctx.fillStyle = ink
       ctx.font = '900 78px "Pretendard", "Noto Sans KR", sans-serif'
-      ctx.fillText(t('headerTitle'), PAD, PAD + 120)
+      ctx.fillText(summaryTitle, PAD, PAD + 120)
 
-      // 총점 초대형 히어로
+      // 총점 초대형 히어로 — 점수는 악센트색
       if (avgScore !== undefined) {
-        ctx.fillStyle = ink
+        ctx.fillStyle = accent
         ctx.font = '900 280px "Pretendard", "Noto Sans KR", sans-serif'
         ctx.fillText(String(avgScore), PAD - 10, PAD + 210)
         ctx.fillStyle = hexToRgba(ink, 0.5)
@@ -245,12 +272,12 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       {avgScore !== undefined && (
         <div className="mb-2" style={rise(80)}>
           <p className="text-[12px] font-extrabold uppercase tracking-[0.18em]" style={{ color: inkSoft }}>
-            {t('headerTitle')}
+            {summaryTitle}
           </p>
           <div className="flex items-end gap-2">
             <span
               className="font-black leading-[0.8] tabular-nums"
-              style={{ color: ink, fontSize: 'clamp(96px, 30vw, 132px)', letterSpacing: '-0.04em' }}
+              style={{ color: accent, fontSize: 'clamp(96px, 30vw, 132px)', letterSpacing: '-0.04em' }}
             >
               {avgScore}
             </span>
