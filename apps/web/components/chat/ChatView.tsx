@@ -281,9 +281,9 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                   return (
                     <div
                       key={bi}
-                      className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                      className={`rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed whitespace-pre-wrap ${
                         m.role === 'human'
-                          ? 'border-2 border-ink bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]'
+                          ? 'border-2 border-ink bg-yellow text-ink font-bold shadow-[2px_2px_0_#1A1A1A]'
                           : 'border-2 border-teal bg-surface text-ink'
                       }`}
                     >
