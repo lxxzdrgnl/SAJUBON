@@ -193,56 +193,32 @@ function lighten(hex: string, amount: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
-/** hex → HSL([h0~360, s0~1, l0~1]). */
-function hexToHsl(hex: string): [number, number, number] {
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
-  if (!m) return [0, 0, 0]
-  const int = parseInt(m[1], 16)
-  const r = ((int >> 16) & 255) / 255
-  const g = ((int >> 8) & 255) / 255
-  const b = (int & 255) / 255
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const l = (max + min) / 2
-  let h = 0
-  let s = 0
-  const d = max - min
-  if (d !== 0) {
-    s = d / (1 - Math.abs(2 * l - 1))
-    if (max === r) h = ((g - b) / d) % 6
-    else if (max === g) h = (b - r) / d + 2
-    else h = (r - g) / d + 4
-    h *= 60
-    if (h < 0) h += 360
-  }
-  return [h, s, l]
+// 배경색 → 포인트 악센트(랭킹 번호·키워드·바). Spotify Wrapped식으로 색마다 직접 페어를 큐레이트.
+// 보색 로직 대신 손으로 정한 고대비 조합 — 노랑/라임/핑크/퍼플/네이비 팝.
+const ACCENT_FOR: Record<string, string> = {
+  '#FF2D78': '#FFD900', // 핫핑크 → 옐로
+  '#00C2B8': '#FF2D78', // 민트틸 → 핫핑크
+  '#7B3FE4': '#FFD900', // 퍼플 → 옐로
+  '#C6F432': '#7B3FE4', // 라임 → 퍼플
+  '#FFD900': '#FF2D78', // 옐로 → 핫핑크
+  '#FF6B00': '#FF2D78', // 오렌지 → 핫핑크
+  '#1B2A6B': '#FFD900', // 네이비 → 옐로
+  '#FF5A4D': '#FFD900', // 코랄 → 옐로
+  '#3DA5FF': '#FFD900', // 스카이 → 옐로
+  '#E8489B': '#C6F432', // 마젠타 → 라임
+  '#2EA86B': '#FFD900', // 그래스 → 옐로
+  '#3B49B0': '#C6F432', // 인디고 → 라임
+  '#00A3A3': '#FFD900', // 틸딥 → 옐로
+  '#F25C2A': '#FFD900', // 탠저린 → 옐로
+  '#9D4EDD': '#FFD900', // 바이올렛 → 옐로
+  '#2BB673': '#FFD900', // 에메랄드 → 옐로
+  '#FF8A1E': '#FF2D78', // 앰버 → 핫핑크
+  '#E63946': '#FFD900', // 레드 → 옐로
+  '#1FA2C9': '#FFD900', // 시안블루 → 옐로
+  '#6A4FE0': '#C6F432', // 인디고바이올렛 → 라임
 }
-
-/** HSL → hex. */
-function hslToHex(h: number, s: number, l: number): string {
-  const c = (1 - Math.abs(2 * l - 1)) * s
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
-  const mm = l - c / 2
-  let r = 0
-  let g = 0
-  let b = 0
-  if (h < 60) [r, g, b] = [c, x, 0]
-  else if (h < 120) [r, g, b] = [x, c, 0]
-  else if (h < 180) [r, g, b] = [0, c, x]
-  else if (h < 240) [r, g, b] = [0, x, c]
-  else if (h < 300) [r, g, b] = [x, 0, c]
-  else [r, g, b] = [c, 0, x]
-  const to = (v: number) => Math.round((v + mm) * 255).toString(16).padStart(2, '0')
-  return `#${to(r)}${to(g)}${to(b)}`
-}
-
-/** 보색 악센트 — 색상환 180° 회전 + 가독 위해 명도 대비(어두운 배경엔 밝게, 밝은 배경엔 어둡게). 색 이론 기반이라 항상 어울린다. */
-function complementAccent(base: string): string {
-  const [h, s, l] = hexToHsl(base)
-  const h2 = (h + 180) % 360
-  const l2 = l < 0.5 ? Math.min(0.72, l + 0.3) : Math.max(0.32, l - 0.28)
-  const s2 = Math.min(1, Math.max(0.6, s))
-  return hslToHex(h2, s2, l2)
+function popAccent(base: string): string {
+  return ACCENT_FOR[base.toUpperCase()] ?? (inkFor(base).inkLight ? '#FFD900' : '#14224D')
 }
 
 /** 단색 비비드 배경 — 같은 색조로 위가 살짝 밝은 미세 grad (뭉갠 다크 grad 아님). */
@@ -279,8 +255,8 @@ function shuffledPool(seed: number): readonly string[] {
  *  accent 미지정 시 잉크 밝기 기반 기본값(옐로/네이비). */
 export function paletteFromBase(base: string, accent?: string): CardPalette {
   const { ink, inkLight } = inkFor(base)
-  // 기본 악센트 = 보색(확 대비되는 포인트). 명시 지정 시 그 값 사용.
-  const acc = accent ?? complementAccent(base)
+  // 기본 악센트 = 고대비 팝색(보라→옐로, 노랑→핫핑크 식). 명시 지정 시 그 값 사용.
+  const acc = accent ?? popAccent(base)
   return { bg: vividBg(base), base, ink, inkSoft: softInk(ink), accent: acc, inkLight }
 }
 
