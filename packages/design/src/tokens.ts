@@ -14,6 +14,8 @@ export const colors = {
   surface: '#FFFFFF',
   borderSoft: '#EBE3D2',
   textSub: '#8A8270',
+  sky: '#4DA8E8',
+  skyTint: '#DCEFFB',
 } as const
 
 /** 오행 5색 — 전통 5색 대체, 팔레트 파생 (design.md §2.2) */

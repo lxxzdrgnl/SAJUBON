@@ -15,6 +15,8 @@
   --surface: #FFFFFF;
   --border-soft: #EBE3D2;
   --text-sub: #8A8270;
+  --sky: #4DA8E8;
+  --sky-tint: #DCEFFB;
 }
 
 @theme inline {
@@ -34,6 +36,8 @@
   --color-surface: var(--surface);
   --color-border-soft: var(--border-soft);
   --color-text-sub: var(--text-sub);
+  --color-sky: var(--sky);
+  --color-sky-tint: var(--sky-tint);
 }
 
 body {

@@ -10,6 +10,8 @@ describe('design tokens', () => {
     expect(colors.orange).toBe('#FF6B00')
     expect(colors.teal).toBe('#00C2B8')
     expect(colors.tealDeep).toBe('#00857D')
+    expect(colors.sky).toBe('#4DA8E8')
+    expect(colors.skyTint).toBe('#DCEFFB')
   })
 
   it('오행 5색은 팔레트 파생값 (docs/design.md §2.2)', () => {
