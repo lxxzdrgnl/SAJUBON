@@ -9,7 +9,7 @@
  * 이모지 없음 (G2).
  * B4: 이미지 저장 — Canvas API, document.fonts.ready 대기 후 한글 렌더.
  */
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import { calcScoreBars } from '@/lib/fortune/canvas'
@@ -38,6 +38,22 @@ export default function SummaryCard({ story, onClose }: Props) {
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  // 마운트 시 점수 바 0 → 점수 차오름 (DOM 전용, 캔버스는 정적 최종값 사용).
+  // reduced-motion 시 즉시 채움.
+  const [revealed, setRevealed] = useState(false)
+  useEffect(() => {
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) {
+      setRevealed(true)
+      return
+    }
+    const id = requestAnimationFrame(() => setRevealed(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   const orderedKeys = Object.keys(CATEGORY_LABELS).filter((k) => k in story.scores)
   const summaryCard = story.cards.find((c) => c.kind === 'summary')
@@ -167,9 +183,9 @@ export default function SummaryCard({ story, onClose }: Props) {
         </h2>
       </div>
 
-      {/* 점수 바 6개 */}
+      {/* 점수 바 6개 — 마운트 시 0→점수 차오름 (stagger 100ms). 캔버스는 정적 최종값. */}
       <div className="mb-5 flex flex-col gap-3">
-        {orderedKeys.map((key) => {
+        {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
           return (
@@ -181,8 +197,10 @@ export default function SummaryCard({ story, onClose }: Props) {
                 <div
                   className="h-full rounded-full"
                   style={{
-                    width: `${score}%`,
+                    width: revealed ? `${score}%` : '0%',
                     background: isLow ? SCORE_COLOR : SCORE_NORMAL,
+                    transition: 'width 700ms cubic-bezier(0.22,1,0.36,1)',
+                    transitionDelay: `${i * 100}ms`,
                   }}
                 />
               </div>
@@ -197,9 +215,17 @@ export default function SummaryCard({ story, onClose }: Props) {
         })}
       </div>
 
-      {/* 오늘의 키워드 */}
+      {/* 오늘의 키워드 — 바 다음에 살짝 늦게 떠오름 */}
       {story.keyword && (
-        <div className="mb-5 rounded-2xl border border-white/20 bg-white/10 px-5 py-4">
+        <div
+          className="mb-5 rounded-2xl border border-white/20 bg-white/10 px-5 py-4"
+          style={{
+            opacity: revealed ? 1 : 0,
+            transform: revealed ? 'translateY(0)' : 'translateY(10px)',
+            transition: 'opacity 600ms ease-out, transform 600ms cubic-bezier(0.22,1,0.36,1)',
+            transitionDelay: `${orderedKeys.length * 100 + 120}ms`,
+          }}
+        >
           <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mb-1">
             {t('keyword')}
           </p>
