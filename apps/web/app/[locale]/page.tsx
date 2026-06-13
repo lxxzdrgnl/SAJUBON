@@ -1,7 +1,7 @@
-import Image from 'next/image'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import BrutalCard from '@/components/ui/BrutalCard'
+import MascotTinted from '@/components/ui/MascotTinted'
 import { currentUser, serverAuthApi } from '@/lib/serverAuth'
 import { pickGreeting } from '@/lib/greetings'
 import { listProfiles, type ProfileResponse } from '@sajuguri/api-client'
@@ -54,19 +54,26 @@ export default async function Home() {
   // 대표 만세력 이름 → 없으면 이메일 로컬파트 폴백 — 로그인 시 시간대별 랜덤 인사말 (KST 기준)
   const repProfile = profiles.find((p) => p.is_representative)
   const name = repProfile?.name ?? (user?.email ? user.email.split('@')[0] : null)
+
+  const STEM_BG: Record<string, string> = {
+    갑: '#8FD6A8', 을: '#8FD6A8', 병: '#FF9466', 정: '#FF9466',
+    무: '#FFD900', 기: '#FFD900', 경: '#D7D9DD', 신: '#D7D9DD',
+    임: '#B9C4CC', 계: '#B9C4CC',
+  }
+  const stemBg = repProfile?.day_stem ? (STEM_BG[repProfile.day_stem] ?? null) : null
   const hourKST = (new Date().getUTCHours() + 9) % 24
   const fortuneSub = name ? pickGreeting(locale, name, hourKST) : t('fortuneSub')
 
   return (
     <main>
       <header className="mb-4 flex items-center gap-2 text-xl font-black">
-        <Image src="/mascot.svg" alt="" width={26} height={26} />
+        <MascotTinted stemBg={stemBg} width={26} height={26} />
         사주<span className="rounded-md bg-yellow px-1">구리</span>
       </header>
       {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
       <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
         <section className="flex items-center gap-3 rounded-[18px] border-2 border-ink bg-[linear-gradient(135deg,var(--yellow),var(--orange))] p-4 shadow-[4px_4px_0_#1A1A1A]">
-          <Image src="/mascot.svg" alt="" width={44} height={44} />
+          <MascotTinted stemBg={stemBg} width={44} height={44} />
           <div>
             <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
             <p className="text-xs font-semibold text-[#5a4a00]">{fortuneSub}</p>
