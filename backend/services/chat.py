@@ -91,7 +91,8 @@ async def _resolve_partner_birth(
         profile = await get_profile_or_404(db, req.profile_id, user_id)
         return {
             "birth_date": str(profile.birth_date),
-            "birth_time": str(profile.birth_time) if profile.birth_time else None,
+            # time(23,0) → "23:00" — str()는 "23:00:00"이라 엔진의 HH:MM 검증 실패(422)
+            "birth_time": profile.birth_time.strftime("%H:%M") if profile.birth_time else None,
             "gender": profile.gender,
             "calendar": profile.calendar,
             "is_leap_month": profile.is_leap_month,
