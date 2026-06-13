@@ -18,7 +18,7 @@ export default function Accordion({
       className={`overflow-hidden rounded-2xl bg-surface ${
         open
           ? 'border-2 border-orange shadow-[4px_4px_0_#FF6B00]'
-          : 'border-[1.5px] border-border-soft'
+          : 'border-2 border-ink'
       }`}
     >
       <button
@@ -35,7 +35,7 @@ export default function Accordion({
           <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
-      {open && <div className="border-t-[1.5px] border-dashed border-border-soft px-4 py-3">{children}</div>}
+      {open && <div className="border-t-[1.5px] border-dashed border-ink px-4 py-3">{children}</div>}
     </div>
   )
 }
