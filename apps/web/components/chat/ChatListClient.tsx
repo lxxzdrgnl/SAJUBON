@@ -7,6 +7,7 @@ import { ApiClient, deleteSession } from '@sajuguri/api-client'
 import type { ChatSession, ProfileResponse } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
 import ChatEntrySheet from './ChatEntrySheet'
+import PageHeading from '@/components/ui/PageHeading'
 
 interface Props {
   sessions: ChatSession[]
@@ -114,8 +115,8 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-black">{t('title')}</h1>
+      <div className="mb-4 flex items-start justify-between">
+        <PageHeading title={t('title')} accent="teal" />
         <div className="flex items-center gap-2">
           {sessions.length > 0 && (
             <button

@@ -4,6 +4,7 @@ import { listSessions, listProfiles } from '@sajuguri/api-client'
 import type { ChatSession, ProfileResponse } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
 import ChatListClient from '@/components/chat/ChatListClient'
+import PageHeading from '@/components/ui/PageHeading'
 
 // 백엔드 직결 URL — 서버 컴포넌트는 next.config rewrites를 안 탄다
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -16,7 +17,9 @@ export default async function ChatPage() {
   if (!user) {
     return (
       <main>
-        <h1 className="mb-4 text-lg font-black">{t('title')}</h1>
+        <div className="mb-4">
+          <PageHeading title={t('title')} accent="teal" />
+        </div>
         <BrutalCard className="flex flex-col items-center gap-4 py-8 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/mascot.svg" alt="" width={72} height={72} />

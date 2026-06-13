@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { api } from '@/lib/api'
 import { createReport } from '@sajuguri/api-client'
 import type { SajuCalcRequest } from '@sajuguri/api-client'
+import PageHeading from '@/components/ui/PageHeading'
 
 const LOADING_PHRASES = [
   '사주를 읽고 있어요...',
@@ -137,7 +138,7 @@ export default function ReportNewPage() {
   // 로그인 상태 — 생성 폼
   return (
     <main className="flex flex-col gap-5">
-      <h1 className="text-lg font-black">{t('title')}</h1>
+      <PageHeading title={t('title')} accent="orange" />
 
       <p className="text-[13px] leading-relaxed text-text-sub">{t('guideline')}</p>
 

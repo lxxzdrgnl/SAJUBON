@@ -4,6 +4,7 @@ import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
 import HistoryFeedClient from '@/components/my/HistoryFeedClient'
 import BackButton from '@/components/my/BackButton'
+import PageHeading from '@/components/ui/PageHeading'
 import { fetchAllRecords } from '@/lib/records/registry'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -21,9 +22,9 @@ export default async function HistoryPage({
   if (!user) {
     return (
       <main>
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex items-start gap-2">
           <BackButton fallback="/my" label={t('history.back')} />
-          <h1 className="text-lg font-black">{t('history.title')}</h1>
+          <PageHeading title={t('history.title')} accent="orange" />
         </div>
         <BrutalCard className="flex flex-col items-center gap-4 py-8 text-center">
           <MascotTinted width={72} height={72} />
