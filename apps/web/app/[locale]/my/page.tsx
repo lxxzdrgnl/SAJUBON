@@ -81,8 +81,8 @@ export default async function MyPage() {
             className={`rounded-2xl border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A] ${repCardBg(repProfile.day_stem)}`}
           >
             <div className="flex items-center gap-3">
-              {/* 마스코트 아바타 — 하늘색 배경에 크게 */}
-              <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-ink bg-teal-tint">
+              {/* 마스코트 아바타 — 중립 배경에 크게 (색은 마스코트 자체 틴팅) */}
+              <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-ink bg-surface">
                 <MascotTinted stem={repProfile.day_stem} width={72} height={72} />
               </span>
               <div className="min-w-0 flex-1">
