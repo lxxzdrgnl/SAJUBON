@@ -319,7 +319,7 @@
       "title": "Saved Charts",
       "empty": "No saved charts yet. Save one after analyzing",
       "representative": "Default",
-      "loginPrompt": "Tired of typing it every time? Sign in to save",
+      "loginPrompt": "Sign in to save with a name and access from any device",
       "save": "Save this chart",
       "saved": "Saved",
       "saveError": "Failed · Try again",
