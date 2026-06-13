@@ -152,7 +152,7 @@ export default function ReportNewPage() {
             value={topics}
             onChange={e => setTopics(e.target.value)}
             placeholder={t('topicsPlaceholder')}
-            className="w-full rounded-xl border-2 border-border-soft bg-surface px-4 py-3 text-sm outline-none focus:border-ink"
+            className="w-full rounded-xl border-2 border-ink bg-surface px-4 py-3 text-sm outline-none shadow-[4px_4px_0_#1A1A1A]"
             maxLength={100}
           />
           <p className="text-[12px] text-text-sub">{t('topicsHint')}</p>

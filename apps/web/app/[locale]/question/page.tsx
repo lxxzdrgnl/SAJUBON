@@ -399,7 +399,7 @@ export default function QuestionPage() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder={t('questionPlaceholder')}
-              className="w-full resize-none rounded-xl border-2 border-border-soft bg-surface px-4 py-3 text-sm leading-relaxed outline-none focus:border-ink"
+              className="w-full resize-none rounded-xl border-2 border-ink bg-surface px-4 py-3 text-sm leading-relaxed outline-none shadow-[4px_4px_0_#1A1A1A]"
               rows={3}
               minLength={10}
               maxLength={200}
