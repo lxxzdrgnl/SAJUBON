@@ -4,6 +4,7 @@ import {
   slideDirection,
   countUpValue,
   categoryColor,
+  extractColorSwatches,
   hexToRgba,
 } from './story'
 
@@ -73,6 +74,27 @@ describe('categoryColor', () => {
   })
   it('미지정 카테고리는 null', () => {
     expect(categoryColor('unknown')).toBeNull()
+  })
+})
+
+describe('extractColorSwatches', () => {
+  it('한글 색 이름을 hex로 추출한다', () => {
+    expect(extractColorSwatches('오늘은 남색 옷이 좋아')).toEqual(['#1E3A8A'])
+  })
+  it('여러 색을 추출한다', () => {
+    const out = extractColorSwatches('파랑과 노랑 조합')
+    expect(out).toContain('#2F7DE2')
+    expect(out).toContain('#FFD900')
+  })
+  it('최대 3개까지만', () => {
+    const out = extractColorSwatches('빨강 주황 노랑 초록 파랑')
+    expect(out.length).toBeLessThanOrEqual(3)
+  })
+  it('색이 없으면 빈 배열', () => {
+    expect(extractColorSwatches('오늘은 무난한 하루')).toEqual([])
+  })
+  it('빈 문자열은 빈 배열', () => {
+    expect(extractColorSwatches('')).toEqual([])
   })
 })
 

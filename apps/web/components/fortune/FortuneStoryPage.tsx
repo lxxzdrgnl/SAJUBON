@@ -17,6 +17,7 @@ import { createDailyStory, getDailyRecord } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import { webStorage } from '@/lib/storage'
 import { buildBirthKey, loadCachedStory, saveCachedStory } from '@/lib/fortune/cache'
+import { calcSegmentFills, slideDirection, type SlideDirection } from '@/lib/fortune/story'
 import StoryCard from '@/components/fortune/StoryCard'
 import SummaryCard from '@/components/fortune/SummaryCard'
 
@@ -34,6 +35,8 @@ export default function FortuneStoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [cardIndex, setCardIndex] = useState(0)
+  // 전환 방향 — 카드 슬라이드 인 방향 결정 (next=오른쪽에서, prev=왼쪽에서)
+  const [direction, setDirection] = useState<SlideDirection>('none')
 
   // 카드 인터랙션 — 좌 1/3 탭=뒤로, 우 2/3 탭=다음 (터치·클릭 공용)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -44,11 +47,19 @@ export default function FortuneStoryPage() {
 
   const goNext = useCallback(() => {
     if (!story) return
-    setCardIndex((i) => Math.min(i + 1, story.cards.length - 1))
+    setCardIndex((i) => {
+      const next = Math.min(i + 1, story.cards.length - 1)
+      setDirection(slideDirection(i, next))
+      return next
+    })
   }, [story])
 
   const goPrev = useCallback(() => {
-    setCardIndex((i) => Math.max(i - 1, 0))
+    setCardIndex((i) => {
+      const next = Math.max(i - 1, 0)
+      setDirection(slideDirection(i, next))
+      return next
+    })
   }, [])
 
   const handleTap = useCallback(
@@ -146,7 +157,7 @@ export default function FortuneStoryPage() {
   }, [params, t])
 
   const totalCards = story?.cards.length ?? 0
-  const progress = totalCards > 0 ? (cardIndex + 1) / totalCards : 0
+  const segments = calcSegmentFills(totalCards, cardIndex)
   const currentCard = story?.cards[cardIndex]
   const isSummary = currentCard?.kind === 'summary'
 
@@ -156,17 +167,63 @@ export default function FortuneStoryPage() {
       className="fixed inset-0 z-50 flex flex-col"
       style={{ background: 'linear-gradient(180deg, #00857D 0%, #04332F 100%)' }}
     >
+      {/* 스토리 전환·등장 애니메이션 (Tailwind + CSS keyframe, 외부 라이브러리 없음).
+          prefers-reduced-motion 존중 — 애니메이션 끔. */}
+      <style>{`
+        @keyframes story-slide-next {
+          from { opacity: 0; transform: translateX(7%); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes story-slide-prev {
+          from { opacity: 0; transform: translateX(-7%); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes story-fade-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes story-rise {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .story-card-anim.story-dir-next { animation: story-slide-next 360ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-card-anim.story-dir-prev { animation: story-slide-prev 360ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-card-anim.story-dir-none { animation: story-fade-in 360ms ease-out both; }
+        .story-stagger > * { animation: story-rise 460ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-stagger > *:nth-child(1) { animation-delay: 80ms; }
+        .story-stagger > *:nth-child(2) { animation-delay: 180ms; }
+        .story-stagger > *:nth-child(3) { animation-delay: 280ms; }
+        .story-stagger > *:nth-child(4) { animation-delay: 360ms; }
+        @media (prefers-reduced-motion: reduce) {
+          .story-card-anim,
+          .story-card-anim.story-dir-next,
+          .story-card-anim.story-dir-prev,
+          .story-card-anim.story-dir-none,
+          .story-stagger > * { animation: none !important; }
+        }
+      `}</style>
       {/* 중앙 정렬 컨테이너 */}
       <div className="relative mx-auto flex h-full w-full max-w-[640px] flex-col">
 
-        {/* 상단 프로그레스 바 + 닫기 */}
+        {/* 상단 세그먼트 프로그레스 바 (인스타 스토리식) + 닫기 */}
         <div className="flex shrink-0 items-center gap-3 px-4 pt-4 pb-2">
-          {/* 프로그레스 바 (채움: 옐로) */}
-          <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/20">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${progress * 100}%`, background: '#FFD900' }}
-            />
+          {/* 카드 개수만큼 세그먼트 — 지난·현재=옐로 꽉 참, 이후=반투명 흰색 */}
+          <div className="flex flex-1 items-center gap-1">
+            {segments.length === 0 ? (
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/20" />
+            ) : (
+              segments.map((fill, i) => (
+                <div
+                  key={i}
+                  className="h-1 flex-1 overflow-hidden rounded-full bg-white/25"
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${fill * 100}%`, background: '#FFD900' }}
+                  />
+                </div>
+              ))
+            )}
           </div>
           {/* ✕ 닫기 */}
           <button
@@ -206,19 +263,27 @@ export default function FortuneStoryPage() {
             </div>
           )}
 
-          {!loading && !error && story && currentCard && !isSummary && (
-            <StoryCard
-              card={currentCard}
-              dayGanji={story.day_ganji}
-              profileName={story.profile_name}
-            />
-          )}
-
-          {!loading && !error && story && currentCard && isSummary && (
-            <SummaryCard
-              story={story}
-              onClose={handleClose}
-            />
+          {!loading && !error && story && currentCard && (
+            /* 전환 애니메이션 — key 변경 시 슬라이드+페이드 인 재생.
+               prefers-reduced-motion 시 애니메이션 제거 (아래 <style>). */
+            <div
+              key={cardIndex}
+              className={`flex flex-1 flex-col overflow-hidden story-card-anim story-dir-${direction}`}
+            >
+              {!isSummary && (
+                <StoryCard
+                  card={currentCard}
+                  dayGanji={story.day_ganji}
+                  profileName={story.profile_name}
+                />
+              )}
+              {isSummary && (
+                <SummaryCard
+                  story={story}
+                  onClose={handleClose}
+                />
+              )}
+            </div>
           )}
         </div>
 
