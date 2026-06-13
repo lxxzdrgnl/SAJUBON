@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createDailyStory, listDailyRecords, getDailyRecord } from './daily'
+import { createDailyStory, listDailyRecords, getDailyRecord, deleteDailyRecord } from './daily'
 import type { ApiClient } from './client'
 
 function mockApi(data: unknown): ApiClient {
   return {
     get: vi.fn().mockResolvedValue(data),
     post: vi.fn().mockResolvedValue(data),
+    delete: vi.fn().mockResolvedValue(undefined),
   } as unknown as ApiClient
 }
 
@@ -57,5 +58,13 @@ describe('getDailyRecord', () => {
     const result = await getDailyRecord(api, 42)
     expect(api.get).toHaveBeenCalledWith('/api/daily/records/42')
     expect(result.keyword).toBe('균형')
+  })
+})
+
+describe('deleteDailyRecord', () => {
+  it('DELETE /api/daily/records/{id} 호출', async () => {
+    const api = mockApi(undefined)
+    await deleteDailyRecord(api, 42)
+    expect(api.delete).toHaveBeenCalledWith('/api/daily/records/42')
   })
 })

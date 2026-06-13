@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ApiClient } from './client'
-import { createReport, listReports, getReport, shareReport, getSharedReport } from './reports'
+import { createReport, listReports, getReport, deleteReport, shareReport, getSharedReport } from './reports'
 
 const mockFetch = vi.fn()
 beforeEach(() => { vi.stubGlobal('fetch', mockFetch); mockFetch.mockReset() })
@@ -56,6 +56,17 @@ describe('getReport', () => {
     const r = await getReport(api, 1)
     expect(mockFetch.mock.calls[0][0]).toBe('http://x/api/reports/1')
     expect(r.language).toBe('ko')
+  })
+})
+
+describe('deleteReport', () => {
+  it('DELETE /api/reports/{id} — 204 No Content', async () => {
+    mockFetch.mockResolvedValue(new Response(null, { status: 204 }))
+    const api = new ApiClient('http://x')
+    await deleteReport(api, 7)
+    const [url, init] = mockFetch.mock.calls[0]
+    expect(url).toBe('http://x/api/reports/7')
+    expect(init.method).toBe('DELETE')
   })
 })
 

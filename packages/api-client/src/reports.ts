@@ -77,6 +77,11 @@ export function getReport(api: ApiClient, id: number): Promise<ReportDetail> {
   return api.get<ReportDetail>(`/api/reports/${id}`)
 }
 
+/** DELETE /api/reports/{id} — 리포트 삭제 (소유자). 204 No Content */
+export function deleteReport(api: ApiClient, id: number): Promise<void> {
+  return api.delete(`/api/reports/${id}`)
+}
+
 /** POST /api/reports/{id}/share — 공유 토큰 발급 (소유자). */
 export function shareReport(
   api: ApiClient,

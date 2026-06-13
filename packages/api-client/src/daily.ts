@@ -59,3 +59,8 @@ export function listDailyRecords(api: ApiClient): Promise<DailyRecordSummary[]> 
 export function getDailyRecord(api: ApiClient, id: number): Promise<DailyStoryResponse> {
   return api.get<DailyStoryResponse>(`/api/daily/records/${id}`)
 }
+
+/** DELETE /api/daily/records/{id} — 운세 기록 삭제 (소유자). 204 No Content */
+export function deleteDailyRecord(api: ApiClient, id: number): Promise<void> {
+  return api.delete(`/api/daily/records/${id}`)
+}
