@@ -38,6 +38,11 @@ export function listSessions(api: ApiClient): Promise<ChatSession[]> {
   return api.get<ChatSession[]>('/api/chat/sessions')
 }
 
+/** DELETE /api/chat/{session_id} — 세션 삭제 */
+export function deleteSession(api: ApiClient, sessionId: string): Promise<void> {
+  return api.delete(`/api/chat/${sessionId}`)
+}
+
 /** POST /api/chat/session — 세션 생성 */
 export function createSession(
   api: ApiClient,
