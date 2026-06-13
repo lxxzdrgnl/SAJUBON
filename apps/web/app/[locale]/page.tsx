@@ -73,7 +73,10 @@ export default async function Home() {
       {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
       <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
         <section className="flex items-center gap-3 rounded-[18px] border-2 border-ink bg-[linear-gradient(135deg,var(--yellow),var(--orange))] p-4 shadow-[4px_4px_0_#1A1A1A]">
-          <MascotTinted stemBg={stemBg} width={44} height={44} />
+          {/* 마스코트를 테두리 컨테이너에 담아 그라데이션 위에서 또렷하게 (목록 아바타와 통일) */}
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border-2 border-ink bg-surface">
+            <MascotTinted stemBg={stemBg} width={42} height={42} />
+          </span>
           <div>
             <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
             <p className="text-xs font-semibold text-ink">{fortuneSub}</p>
