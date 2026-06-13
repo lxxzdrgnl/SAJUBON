@@ -1,8 +1,11 @@
 'use client'
 
 /**
- * /question — 한 번 물어보기 페이지.
- * 질문 입력 + 프로필/최근 입력 선택 → POST /api/question → 결과 카드.
+ * /question — 한줄 상담 페이지.
+ * 흐름: 만세력 선택 모달(시트) → 질문 입력 → POST /api/question → 결과 카드.
+ * - 진입 시 시트 자동 오픈 (미선택 상태)
+ * - 선택 완료 후 질문 입력 textarea + 제출 노출
+ * - 선택된 만세력 카드에서 "다시 선택" 버튼으로 시트 재오픈
  */
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
@@ -19,7 +22,7 @@ import MascotTinted from '@/components/ui/MascotTinted'
 import BrutalCard from '@/components/ui/BrutalCard'
 import ToolCard from '@/components/chat/ToolCard'
 
-// ── 프로필 선택 인라인 시트 ─────────────────────────────────────────────────
+// ── 만세력 선택 시트 ──────────────────────────────────────────────────────────
 
 interface ProfilePickSheetProps {
   open: boolean
@@ -175,6 +178,13 @@ export default function QuestionPage() {
       .catch(() => {})
   }, [])
 
+  // 진입 시 만세력 미선택이면 시트 자동 오픈
+  useEffect(() => {
+    if (!selectedInput) {
+      setSheetOpen(true)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleSelect(input: ResultQueryInput | RecentBirthInput, label: string) {
     setSelectedInput(input)
     setSelectedLabel(label)
@@ -183,7 +193,7 @@ export default function QuestionPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!selectedInput) {
-      setError(t('errorNoBirth'))
+      setSheetOpen(true)
       return
     }
     const q = question.trim()
@@ -304,72 +314,79 @@ export default function QuestionPage() {
         onSelect={handleSelect}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* 사주 선택 */}
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[13px] font-extrabold">{t('birthLabel')}</p>
+      {/* 선택된 만세력 카드 */}
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[13px] font-extrabold">{t('birthLabel')}</p>
+        {selectedInput ? (
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+              <MascotTinted
+                stem={'day_stem' in selectedInput ? (selectedInput as RecentBirthInput).day_stem ?? null : null}
+                width={38}
+                height={38}
+              />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-extrabold">{selectedLabel}</span>
+              <span className="block text-xs text-text-sub">{selectedInput.birth_date}</span>
+            </span>
+            <button
+              type="button"
+              className="shrink-0 rounded-lg border-[1.5px] border-border-soft px-3 py-1.5 text-[12px] font-extrabold text-text-sub hover:border-ink hover:text-ink transition-colors"
+              onClick={() => setSheetOpen(true)}
+            >
+              {t('changeBirth')}
+            </button>
+          </div>
+        ) : (
           <button
             type="button"
-            className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
             onClick={() => setSheetOpen(true)}
           >
-            {selectedInput ? (
-              <>
-                <MascotTinted
-                  stem={'day_stem' in selectedInput ? (selectedInput as RecentBirthInput).day_stem ?? null : null}
-                  width={36}
-                  height={36}
-                />
-                <span className="flex-1">
-                  <span className="block text-[14px] font-extrabold">{selectedLabel}</span>
-                  <span className="block text-xs text-text-sub">{selectedInput.birth_date}</span>
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-border-soft bg-surface text-text-sub">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
-                  </svg>
-                </span>
-                <span className="text-[14px] text-text-sub">{t('birthPlaceholder')}</span>
-              </>
-            )}
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface text-lg font-extrabold">
+              +
+            </span>
+            <span className="text-[14px] font-extrabold">{t('selectBirth')}</span>
           </button>
-        </div>
-
-        {/* 질문 입력 */}
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="question" className="text-[13px] font-extrabold">
-            {t('questionLabel')}
-          </label>
-          <textarea
-            id="question"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder={t('questionPlaceholder')}
-            className="w-full resize-none rounded-xl border-2 border-border-soft bg-surface px-4 py-3 text-sm leading-relaxed outline-none focus:border-ink"
-            rows={3}
-            minLength={10}
-            maxLength={200}
-          />
-          <p className="text-right text-[11px] text-text-sub">{question.length}/200</p>
-        </div>
-
-        {error && (
-          <p className="rounded-xl border-[1.5px] border-orange bg-orange-tint px-4 py-3 text-[13px] font-bold text-orange">
-            {error}
-          </p>
         )}
+      </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] transition-opacity disabled:opacity-60 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
-        >
-          {loading ? t('submitting') : t('submit')}
-        </button>
-      </form>
+      {/* 질문 입력 — 만세력 선택 후에만 활성 */}
+      {selectedInput && (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="question" className="text-[13px] font-extrabold">
+              {t('questionLabel')}
+            </label>
+            <textarea
+              id="question"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder={t('questionPlaceholder')}
+              className="w-full resize-none rounded-xl border-2 border-border-soft bg-surface px-4 py-3 text-sm leading-relaxed outline-none focus:border-ink"
+              rows={3}
+              minLength={10}
+              maxLength={200}
+            />
+            <p className="text-right text-[11px] text-text-sub">{question.length}/200</p>
+          </div>
+
+          {error && (
+            <p className="rounded-xl border-[1.5px] border-orange bg-orange-tint px-4 py-3 text-[13px] font-bold text-orange">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] transition-opacity disabled:opacity-60 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
+          >
+            {loading ? t('submitting') : t('submit')}
+          </button>
+        </form>
+      )}
     </main>
   )
 }

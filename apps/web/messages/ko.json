@@ -138,7 +138,7 @@
       }
     },
     "result": {
-      "myIlju": "MY 일주",
+      "myIlju": "내 일주",
       "palja": "사주팔자",
       "detail": "12운성 · 신살 · 지장간 상세",
       "pillars": {
@@ -460,6 +460,8 @@
     "submitting": "분석 중...",
     "resultLabel": "AI 상담 결과",
     "askAgain": "다시 물어보기",
+    "selectBirth": "만세력 선택하기",
+    "changeBirth": "다시 선택",
     "errorNoBirth": "사주 정보를 먼저 선택해 주세요.",
     "errorQuestionShort": "고민은 10자 이상 입력해 주세요.",
     "errorFallback": "상담 요청에 실패했어요. 잠시 후 다시 시도해 주세요.",

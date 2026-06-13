@@ -138,7 +138,7 @@
       }
     },
     "result": {
-      "myIlju": "MY Day Pillar",
+      "myIlju": "My Day Pillar",
       "palja": "Four Pillars",
       "detail": "12-stage cycle · Sinsals · Hidden stems",
       "pillars": {
@@ -355,6 +355,8 @@
     "submitting": "Analyzing...",
     "resultLabel": "AI Answer",
     "askAgain": "Ask again",
+    "selectBirth": "Select a birth chart",
+    "changeBirth": "Change",
     "errorNoBirth": "Please select or enter your birth info first.",
     "errorQuestionShort": "Question must be at least 10 characters.",
     "errorFallback": "Request failed. Please try again later.",
