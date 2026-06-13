@@ -12,41 +12,36 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.PC_SSH_KEY }}" > ~/.ssh/pc_key
-          chmod 600 ~/.ssh/pc_key
-          ssh-keyscan -H ${{ secrets.PC_SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Write backend.env
-        env:
-          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
-        run: |
-          echo "$BACKEND_ENV" > backend.env
-          scp -i ~/.ssh/pc_key backend.env \
-            ${{ secrets.PC_SSH_USER }}@${{ secrets.PC_SSH_HOST }}:~/servers/sajuguri/backend.env
-          rm -f backend.env
-
+      # 가정용 서버(동적 IP)라 ssh-keyscan 대신 appleboy/ssh-action으로 접속한다.
+      # backend.env는 레포 밖(~/servers/sajuguri)에 BACKEND_ENV 시크릿을 heredoc로 기록.
       - name: Deploy to server
-        run: |
-          ssh -i ~/.ssh/pc_key \
-            ${{ secrets.PC_SSH_USER }}@${{ secrets.PC_SSH_HOST }} \
-            "cd ~/servers/sajuguri/repo && \
-             git fetch origin && git reset --hard origin/main && \
-             cd ~/servers && \
-             docker rm -f sajuguri-backend 2>/dev/null || true && \
-             docker compose build --no-cache sajuguri-backend && \
-             docker compose up -d sajuguri-backend && \
-             echo '⏳ Waiting for startup...' && \
-             sleep 8 && \
-             docker logs sajuguri-backend --tail=5 && \
-             docker inspect -f '{{.State.Running}}' sajuguri-backend | grep -q 'true' && echo '✅ Backend deployed' || (echo '❌ Backend failed to start' && exit 1)"
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PC_SSH_HOST }}
+          username: ${{ secrets.PC_SSH_USER }}
+          key: ${{ secrets.PC_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            mkdir -p ~/servers/sajuguri
+            cat > ~/servers/sajuguri/backend.env << 'BACKENDENV_EOF'
+            ${{ secrets.BACKEND_ENV }}
+            BACKENDENV_EOF
 
-      - name: Cleanup SSH Key
-        if: always()
-        run: rm -f ~/.ssh/pc_key
+            cd ~/servers/sajuguri/repo
+            git fetch origin
+            git reset --hard origin/main
+
+            cd ~/servers
+            docker rm -f sajuguri-backend 2>/dev/null || true
+            docker compose build --no-cache sajuguri-backend
+            docker compose up -d sajuguri-backend
+
+            echo '⏳ Waiting for startup...'
+            sleep 8
+            docker logs sajuguri-backend --tail=5
+            docker inspect -f '{{.State.Running}}' sajuguri-backend | grep -q 'true' \
+              && echo '✅ Backend deployed' \
+              || (echo '❌ Backend failed to start' && exit 1)
