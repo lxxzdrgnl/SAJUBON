@@ -77,10 +77,35 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
   useEffect(() => {
     getHistory(api, sessionId)
       .then(({ messages: hist }) => {
-        const converted: DisplayMessage[] = hist.map((m: ChatMessage) => ({
-          role: m.role,
-          blocks: [m.content],
-        }))
+        // 메시지를 순서대로 순회하며 DisplayMessage 목록을 구성한다.
+        // tool 항목은 직전 ai 메시지의 blocks에 tool_result 블록으로 병합하고,
+        // ai 텍스트는 같은 ai 메시지에 이어 붙인다.
+        // 라이브 SSE 렌더 구조(tool_result blocks + text)와 동일한 형태가 된다.
+        const converted: DisplayMessage[] = []
+        for (const m of hist as ChatMessage[]) {
+          if (m.role === 'human') {
+            converted.push({ role: 'human', blocks: [m.content] })
+          } else if (m.role === 'tool') {
+            if (!m.tool || !m.payload) continue
+            // 현재 진행 중인 ai 메시지가 없으면 새 ai 메시지 시작
+            let last = converted[converted.length - 1]
+            if (!last || last.role !== 'ai') {
+              converted.push({ role: 'ai', blocks: [] })
+              last = converted[converted.length - 1]
+            }
+            last.blocks = [...last.blocks, { kind: 'tool_result' as const, tool: m.tool, payload: m.payload }]
+          } else if (m.role === 'ai') {
+            // 현재 진행 중인 ai 메시지가 있으면 텍스트 block 추가, 없으면 새로 시작
+            let last = converted[converted.length - 1]
+            if (!last || last.role !== 'ai') {
+              converted.push({ role: 'ai', blocks: [] })
+              last = converted[converted.length - 1]
+            }
+            if (m.content) {
+              last.blocks = [...last.blocks, m.content]
+            }
+          }
+        }
         setMessages(converted)
         setHistoryLoaded(true)
       })
