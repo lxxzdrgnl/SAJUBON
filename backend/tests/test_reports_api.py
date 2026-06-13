@@ -60,14 +60,10 @@ class _FakeUnFlow:
 
 @pytest.fixture(autouse=True)
 def _stub_pipeline(monkeypatch):
-    async def _fake_run_saju_report(**kwargs):
-        return _FAKE_SAJU, _FakeWriter()
+    async def _fake_run_saju_report_full(**kwargs):
+        return _FAKE_SAJU, _FakeWriter(), _FakeUnFlow()
 
-    async def _fake_run_un_flow(saju, year=None, llm_provider=None):
-        return _FakeUnFlow()
-
-    monkeypatch.setattr(reports_service, "run_saju_report", _fake_run_saju_report)
-    monkeypatch.setattr(reports_service, "run_un_flow", _fake_run_un_flow)
+    monkeypatch.setattr(reports_service, "run_saju_report_full", _fake_run_saju_report_full)
 
 
 @pytest.fixture

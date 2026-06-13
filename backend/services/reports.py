@@ -9,7 +9,7 @@ from core.config import settings
 from core.exceptions import ForbiddenException, ReportNotFoundException
 from crud import reports as reports_crud
 from db.models import SajuReport
-from llm.pipelines.saju_report import run_saju_report, run_un_flow
+from llm.pipelines.saju_report import run_saju_report_full
 from schemas.report import (
     ReportCreateRequest, ReportDetail, ReportSummary, ReportShareResponse,
 )
@@ -76,8 +76,8 @@ async def create_report(
 
     b = req.birth_input
 
-    # 2. 본 리포트 (Engine → RAG → Writer)
-    saju, writer_output = await run_saju_report(
+    # 2~3. 본 리포트(Writer)와 올해의 흐름(UnFlow)을 병렬 생성 — saju·RAG는 1회만.
+    saju, writer_output, un_flow = await run_saju_report_full(
         birth_date=b.birth_date,
         birth_time=b.birth_time,
         gender=b.gender,
@@ -87,9 +87,6 @@ async def create_report(
         birth_longitude=b.birth_longitude,
         birth_utc_offset=b.birth_utc_offset,
     )
-
-    # 3. 올해의 흐름·대운 해설
-    un_flow = await run_un_flow(saju)
 
     # 4. 저장 (birth_input은 입력 원본 + name 보존)
     birth_input = b.model_dump()
