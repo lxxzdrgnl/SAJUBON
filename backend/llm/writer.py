@@ -70,8 +70,8 @@ async def generate_report(
     Returns:
         WriterOutput (tabs: list[TabContent])
     """
-    # 10탭 장문 구조화 — 무거운 작업이라 mini로.
-    llm = get_llm(provider, model="gpt-4.1-mini")
+    # 10탭 장문 구조화 — 가장 무겁고 호출 빈도 낮은 작업이라 full gpt-4.1로 품질 우선.
+    llm = get_llm(provider, model="gpt-4.1")
 
     # ── 1. PydanticOutputParser 생성 ──
     parser: PydanticOutputParser[WriterOutput] = PydanticOutputParser(
