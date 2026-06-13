@@ -43,7 +43,9 @@
         "confirm": "Delete this record?",
         "cancel": "Cancel",
         "yes": "Delete"
-      }
+      },
+      "editToggle": "Edit",
+      "editDone": "Done"
     },
     "history": {
       "title": "My Records",
@@ -173,7 +175,12 @@
         "notFoundBody": "The link has expired or the address is invalid.",
         "ctaTitle": "Curious about your own Saju?",
         "ctaBody": "Just enter your birth date and time to see your Saju chart for free.",
-        "ctaButton": "See my own Saju"
+        "ctaButton": "See my own Saju",
+        "saveToMyTitle": "Add to My Charts",
+        "saveToMySuccess": "Saved to your charts",
+        "saveToMyError": "Save failed. Please try again",
+        "saveToMyLoginHint": "Sign in to save this chart",
+        "saveToMyLoginLink": "Sign in with Google"
       }
     },
     "charts": {

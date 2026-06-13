@@ -24,6 +24,20 @@ interface Props {
 
 type Tab = 'reports' | 'fortune' | 'question'
 
+// ── 편집 토글 버튼 ─────────────────────────────────────────────────────────────
+
+function EditToggleButton({ editMode, onToggle, t }: { editMode: boolean; onToggle: () => void; t: ReturnType<typeof useTranslations> }) {
+  return (
+    <button
+      type="button"
+      className="rounded-xl border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+      onClick={onToggle}
+    >
+      {editMode ? t('editDone') : t('editToggle')}
+    </button>
+  )
+}
+
 const PREVIEW_COUNT = 3
 
 function formatDate(date: string): string {
@@ -187,6 +201,7 @@ export default function MyRecordsClient({
   const [consultations, setConsultations] = useState(initialConsultations)
   const [pending, setPending] = useState<Pending | null>(null)
   const [opening, setOpening] = useState<number | null>(null)
+  const [editMode, setEditMode] = useState(false)
 
   const reportGroups = useMemo(
     () => groupByProfile(reports, repProfileName),
@@ -258,17 +273,24 @@ export default function MyRecordsClient({
   const isLimited = limit !== undefined && limit < activeList.length
   const hasMore = isLimited
 
+  const totalCount = reports.length + fortune.length + consultations.length
+
   return (
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-text-sub">
           {t('title')}
         </h2>
-        {limit !== undefined && (reports.length + fortune.length + consultations.length) > 0 && (
-          <Link href="/my/history" className="text-[12px] font-extrabold text-orange transition-opacity hover:opacity-80">
-            {t('viewAllHistory')} →
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {totalCount > 0 && (
+            <EditToggleButton editMode={editMode} onToggle={() => setEditMode((v) => !v)} t={t} />
+          )}
+          {limit !== undefined && totalCount > 0 && (
+            <Link href="/my/history" className="text-[12px] font-extrabold text-orange transition-opacity hover:opacity-80">
+              {t('viewAllHistory')} →
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* 탭 */}
@@ -289,22 +311,22 @@ export default function MyRecordsClient({
         reports.length === 0
           ? <EmptyState message={t('emptyReports')} ctaHref="/manse" ctaLabel={t('goReport')} ctaTone="orange" />
           : limit !== undefined
-            ? <PreviewReports items={reports.slice(0, limit)} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
-            : <GroupedReports groups={reportGroups} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
+            ? <PreviewReports items={reports.slice(0, limit)} editMode={editMode} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
+            : <GroupedReports groups={reportGroups} editMode={editMode} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
       )}
       {tab === 'fortune' && (
         fortune.length === 0
           ? <EmptyState message={t('emptyFortune')} ctaHref="/" ctaLabel={t('goFortune')} ctaTone="teal" />
           : limit !== undefined
-            ? <PreviewFortune items={fortune.slice(0, limit)} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
-            : <GroupedFortune groups={fortuneGroups} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
+            ? <PreviewFortune items={fortune.slice(0, limit)} editMode={editMode} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
+            : <GroupedFortune groups={fortuneGroups} editMode={editMode} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
       )}
       {tab === 'question' && (
         consultations.length === 0
           ? <EmptyState message={t('emptyQuestion')} ctaHref="/question" ctaLabel={t('goQuestion')} ctaTone="orange" />
           : limit !== undefined
-            ? <PreviewConsultations items={consultations.slice(0, limit)} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
-            : <GroupedConsultations groups={consultationGroups} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
+            ? <PreviewConsultations items={consultations.slice(0, limit)} editMode={editMode} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
+            : <GroupedConsultations groups={consultationGroups} editMode={editMode} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
       )}
 
       {/* 더보기 → /my/history 링크 */}
@@ -360,7 +382,7 @@ function EmptyState({ message, ctaHref, ctaLabel, ctaTone }: { message: string; 
   )
 }
 
-function ReportRow({ r, onDelete, t }: { r: ReportSummary; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
+function ReportRow({ r, editMode, onDelete, t }: { r: ReportSummary; editMode: boolean; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <div className="flex items-center gap-2">
       <Link href={`/report/${r.id}`} className="min-w-0 flex-1">
@@ -372,12 +394,12 @@ function ReportRow({ r, onDelete, t }: { r: ReportSummary; onDelete: () => void;
           </p>
         </BrutalCard>
       </Link>
-      <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />
+      {editMode && <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />}
     </div>
   )
 }
 
-function FortuneRow({ f, onDelete, t }: { f: DailyRecordSummary; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
+function FortuneRow({ f, editMode, onDelete, t }: { f: DailyRecordSummary; editMode: boolean; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <div className="flex items-center gap-2">
       <Link href={`/fortune?record=${f.id}`} className="min-w-0 flex-1">
@@ -386,26 +408,26 @@ function FortuneRow({ f, onDelete, t }: { f: DailyRecordSummary; onDelete: () =>
           <p className="text-[12px] text-text-sub">{new Date(f.date).toLocaleDateString('ko-KR')}</p>
         </BrutalCard>
       </Link>
-      <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />
+      {editMode && <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />}
     </div>
   )
 }
 
-function PreviewReports({ items, onDelete, t }: { items: ReportSummary[]; onDelete: (r: ReportSummary) => void; t: ReturnType<typeof useTranslations> }) {
+function PreviewReports({ items, editMode, onDelete, t }: { items: ReportSummary[]; editMode: boolean; onDelete: (r: ReportSummary) => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <ul className="flex flex-col gap-2">
       {items.map((r) => (
-        <li key={r.id}><ReportRow r={r} onDelete={() => onDelete(r)} t={t} /></li>
+        <li key={r.id}><ReportRow r={r} editMode={editMode} onDelete={() => onDelete(r)} t={t} /></li>
       ))}
     </ul>
   )
 }
 
-function PreviewFortune({ items, onDelete, t }: { items: DailyRecordSummary[]; onDelete: (f: DailyRecordSummary) => void; t: ReturnType<typeof useTranslations> }) {
+function PreviewFortune({ items, editMode, onDelete, t }: { items: DailyRecordSummary[]; editMode: boolean; onDelete: (f: DailyRecordSummary) => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <ul className="flex flex-col gap-2">
       {items.map((f) => (
-        <li key={f.id}><FortuneRow f={f} onDelete={() => onDelete(f)} t={t} /></li>
+        <li key={f.id}><FortuneRow f={f} editMode={editMode} onDelete={() => onDelete(f)} t={t} /></li>
       ))}
     </ul>
   )
@@ -419,7 +441,7 @@ function GroupHeader({ name }: { name: string }) {
   )
 }
 
-function GroupedReports({ groups, onDelete, t }: { groups: Group<ReportSummary>[]; onDelete: (r: ReportSummary) => void; t: ReturnType<typeof useTranslations> }) {
+function GroupedReports({ groups, editMode, onDelete, t }: { groups: Group<ReportSummary>[]; editMode: boolean; onDelete: (r: ReportSummary) => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <div className="flex flex-col">
       {groups.map((g) => (
@@ -427,7 +449,7 @@ function GroupedReports({ groups, onDelete, t }: { groups: Group<ReportSummary>[
           <GroupHeader name={g.profileName} />
           <ul className="flex flex-col gap-2">
             {g.items.map((r) => (
-              <li key={r.id}><ReportRow r={r} onDelete={() => onDelete(r)} t={t} /></li>
+              <li key={r.id}><ReportRow r={r} editMode={editMode} onDelete={() => onDelete(r)} t={t} /></li>
             ))}
           </ul>
         </div>
@@ -436,7 +458,7 @@ function GroupedReports({ groups, onDelete, t }: { groups: Group<ReportSummary>[
   )
 }
 
-function GroupedFortune({ groups, onDelete, t }: { groups: Group<DailyRecordSummary>[]; onDelete: (f: DailyRecordSummary) => void; t: ReturnType<typeof useTranslations> }) {
+function GroupedFortune({ groups, editMode, onDelete, t }: { groups: Group<DailyRecordSummary>[]; editMode: boolean; onDelete: (f: DailyRecordSummary) => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <div className="flex flex-col">
       {groups.map((g) => (
@@ -444,7 +466,7 @@ function GroupedFortune({ groups, onDelete, t }: { groups: Group<DailyRecordSumm
           <GroupHeader name={g.profileName} />
           <ul className="flex flex-col gap-2">
             {g.items.map((f) => (
-              <li key={f.id}><FortuneRow f={f} onDelete={() => onDelete(f)} t={t} /></li>
+              <li key={f.id}><FortuneRow f={f} editMode={editMode} onDelete={() => onDelete(f)} t={t} /></li>
             ))}
           </ul>
         </div>
@@ -453,7 +475,7 @@ function GroupedFortune({ groups, onDelete, t }: { groups: Group<DailyRecordSumm
   )
 }
 
-function ConsultationRow({ c, opening, onOpen, onDelete, t }: { c: ConsultationHistoryItem; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
+function ConsultationRow({ c, editMode, opening, onOpen, onDelete, t }: { c: ConsultationHistoryItem; editMode: boolean; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
   const busy = opening === c.id
   return (
     <div className="flex items-center gap-2">
@@ -469,22 +491,22 @@ function ConsultationRow({ c, opening, onOpen, onDelete, t }: { c: ConsultationH
           <p className="text-[12px] text-text-sub">{new Date(c.created_at).toLocaleDateString('ko-KR')}</p>
         </BrutalCard>
       </button>
-      <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />
+      {editMode && <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />}
     </div>
   )
 }
 
-function PreviewConsultations({ items, opening, onOpen, onDelete, t }: { items: ConsultationHistoryItem[]; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
+function PreviewConsultations({ items, editMode, opening, onOpen, onDelete, t }: { items: ConsultationHistoryItem[]; editMode: boolean; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <ul className="flex flex-col gap-2">
       {items.map((c) => (
-        <li key={c.id}><ConsultationRow c={c} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
+        <li key={c.id}><ConsultationRow c={c} editMode={editMode} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
       ))}
     </ul>
   )
 }
 
-function GroupedConsultations({ groups, opening, onOpen, onDelete, t }: { groups: Group<ConsultationHistoryItem>[]; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
+function GroupedConsultations({ groups, editMode, opening, onOpen, onDelete, t }: { groups: Group<ConsultationHistoryItem>[]; editMode: boolean; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
   return (
     <div className="flex flex-col">
       {groups.map((g) => (
@@ -492,7 +514,7 @@ function GroupedConsultations({ groups, opening, onOpen, onDelete, t }: { groups
           <GroupHeader name={g.profileName} />
           <ul className="flex flex-col gap-2">
             {g.items.map((c) => (
-              <li key={c.id}><ConsultationRow c={c} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
+              <li key={c.id}><ConsultationRow c={c} editMode={editMode} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
             ))}
           </ul>
         </div>
