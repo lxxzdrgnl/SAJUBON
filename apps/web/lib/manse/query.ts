@@ -18,22 +18,27 @@ export interface ResultQueryInput {
   city?: string | null
 }
 
-/** 게스트 최근 입력·저장 프로필 공용 — null/undefined 키를 빼고 쿼리스트링으로 직렬화. */
+/** "23:00:00"(초 포함) → "23:00". 엔진은 HH:MM만 받으므로 정규화. */
+function normalizeTime(t: string | null | undefined): string | null | undefined {
+  if (!t) return t
+  const m = t.match(/^(\d{2}:\d{2})/)
+  return m ? m[1] : t
+}
+
+/**
+ * 게스트 최근 입력·저장 프로필 공용 — null/undefined 키를 빼고 쿼리스트링으로 직렬화.
+ * birth_time은 항상 HH:MM으로 정규화 (옛 최근 입력의 "23:00:00"이 API에서 422 나는 것 방지).
+ */
 export function toResultQuery(input: ResultQueryInput | RecentBirthInput): string {
+  const normalized = { ...input, birth_time: normalizeTime(input.birth_time) }
   return new URLSearchParams(
-    Object.entries(input)
+    Object.entries(normalized)
       .filter(([, v]) => v !== null && v !== undefined && v !== '')
       .map(([k, v]) => [k, String(v)]),
   ).toString()
 }
 
 /** 저장 프로필 → result 쿼리 입력 (longitude → birth_longitude 매핑). */
-/** "23:00:00"(초 포함) → "23:00". 엔진은 HH:MM만 받으므로 정규화. */
-function normalizeTime(t: string | null): string | null {
-  if (!t) return null
-  const m = t.match(/^(\d{2}:\d{2})/)
-  return m ? m[1] : t
-}
 
 export function profileToQueryInput(profile: ProfileResponse): ResultQueryInput {
   return {
