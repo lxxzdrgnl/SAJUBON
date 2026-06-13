@@ -60,6 +60,9 @@ async def create_consultation_flow(
     if req.name:
         birth_input["name"] = req.name
 
+    charts = result.get("charts", [])
+    more = result.get("more", [])
+
     row = await consult_crud.create_consultation(
         db,
         user_id=user_id,
@@ -68,9 +71,10 @@ async def create_consultation_flow(
         category=result.get("category", "general"),
         headline=result["headline"],
         content=result["content"],
+        charts={"charts": charts, "more": more},
     )
     return ConsultationResult(
         row=row,
-        charts=result.get("charts", []),
-        more=result.get("more", []),
+        charts=charts,
+        more=more,
     )

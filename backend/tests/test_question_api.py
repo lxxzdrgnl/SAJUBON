@@ -31,6 +31,10 @@ async def _insert(test_sessionmaker, user_id, *, name="홍길동") -> int:
             category="career",
             headline="변화의 파도가 발아래까지 왔습니다",
             content="정관격에 식상운이 들어온 지금...",
+            charts={
+                "charts": [{"tool": "get_wuxing_balance", "payload": {"wood": 2}}],
+                "more": [{"tool": "get_dae_un", "payload": {"entries": []}}],
+            },
         )
         s.add(row)
         await s.commit()
@@ -83,6 +87,9 @@ async def test_share_create_and_public_read(test_sessionmaker, db_user, _cleanup
     assert g["headline"] == "변화의 파도가 발아래까지 왔습니다"
     assert g["question"] == "올해 이직 운이 있을까요?"
     assert g["name"] == "홍길동"
+    # 저장된 charts/more가 공개 조회에 그대로 포함된다
+    assert g["charts"] == [{"tool": "get_wuxing_balance", "payload": {"wood": 2}}]
+    assert g["more"] == [{"tool": "get_dae_un", "payload": {"entries": []}}]
 
 
 async def test_share_reuses_token(test_sessionmaker, db_user, _cleanup):

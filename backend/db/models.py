@@ -79,6 +79,7 @@ class Consultation(Base):
     category:    Mapped[str]            = mapped_column(String(20), nullable=False)
     headline:    Mapped[str]            = mapped_column(Text, nullable=False)
     content:     Mapped[str]            = mapped_column(Text, nullable=False)
+    charts:      Mapped[dict | None]    = mapped_column(JSONB, nullable=True, default=None)
     share_token: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), unique=True, nullable=True, default=None)
     created_at:  Mapped[datetime]       = mapped_column(DateTime(timezone=True), default=_utcnow)
 

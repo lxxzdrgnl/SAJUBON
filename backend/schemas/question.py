@@ -94,6 +94,8 @@ class ConsultationDetail(BaseModel):
     category:    str
     headline:    str
     content:     str
+    charts:      list[ChartItem] = Field(default_factory=list, description="자동 표시 차트 (저장본 그대로)")
+    more:        list[ChartItem] = Field(default_factory=list, description="칩 클릭 시 펼침 차트 (저장본 그대로)")
     created_at:  datetime
     share_token: str | None = None
 

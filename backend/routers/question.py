@@ -133,6 +133,7 @@ async def get_shared_consultation(
     if not row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="상담 기록을 찾을 수 없습니다.")
     bi = row.birth_input if isinstance(row.birth_input, dict) else None
+    saved = row.charts if isinstance(row.charts, dict) else {}
     return ConsultationDetail(
         id=row.id,
         name=bi.get("name") or None if bi else None,
@@ -141,6 +142,8 @@ async def get_shared_consultation(
         category=row.category,
         headline=row.headline,
         content=row.content,
+        charts=[ChartItem(**c) for c in saved.get("charts", [])],
+        more=[ChartItem(**c) for c in saved.get("more", [])],
         created_at=row.created_at,
         share_token=str(row.share_token),
     )
