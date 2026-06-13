@@ -28,11 +28,18 @@ export function toResultQuery(input: ResultQueryInput | RecentBirthInput): strin
 }
 
 /** 저장 프로필 → result 쿼리 입력 (longitude → birth_longitude 매핑). */
+/** "23:00:00"(초 포함) → "23:00". 엔진은 HH:MM만 받으므로 정규화. */
+function normalizeTime(t: string | null): string | null {
+  if (!t) return null
+  const m = t.match(/^(\d{2}:\d{2})/)
+  return m ? m[1] : t
+}
+
 export function profileToQueryInput(profile: ProfileResponse): ResultQueryInput {
   return {
     name: profile.name,
     birth_date: profile.birth_date,
-    birth_time: profile.birth_time,
+    birth_time: normalizeTime(profile.birth_time),
     gender: profile.gender,
     calendar: profile.calendar,
     is_leap_month: profile.is_leap_month,

@@ -64,6 +64,16 @@ describe('profileToQueryInput', () => {
     expect(params.has('longitude')).toBe(false)
   })
 
+  it('birth_time 초 단위(23:00:00)를 HH:MM으로 정규화', () => {
+    const profile: ProfileResponse = {
+      id: 2, name: '이용재', birth_date: '2001-08-17', birth_time: '23:00:00',
+      calendar: 'solar', gender: 'male', is_leap_month: false, city: null,
+      longitude: null, is_representative: false,
+      day_stem: '임', day_branch: '자', day_stem_element: 'water',
+    }
+    expect(profileToQueryInput(profile).birth_time).toBe('23:00')
+  })
+
   it('longitude null이면 쿼리에서 제외', () => {
     const profile: ProfileResponse = {
       id: 2,
