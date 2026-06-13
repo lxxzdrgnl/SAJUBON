@@ -120,7 +120,7 @@ export default function ReportEntrySheet({ open, onClose, profiles, isLoggedIn }
                   return (
                     <li key={q}>
                       <button
-                        className="flex w-full items-center gap-3 rounded-2xl border-[1.5px] border-border-soft bg-surface p-4 text-left hover:border-ink hover:shadow-[2px_2px_0_#1A1A1A] transition-all"
+                        className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left hover:shadow-[2px_2px_0_#1A1A1A] transition-all"
                         onClick={() => goReport(q)}
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">

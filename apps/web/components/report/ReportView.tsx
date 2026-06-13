@@ -26,21 +26,21 @@ function YearFlowSection({
 
       {/* 상/하반기 카드 */}
       <div className="flex gap-2">
-        <div className="flex-1 rounded-2xl border-[1.5px] border-border-soft bg-surface p-3">
+        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
           <p className="mb-1 text-[11px] font-extrabold text-text-sub">{t('page.firstHalf')}</p>
           <p className="text-[13px] leading-relaxed text-ink">{yearFlow.first_half}</p>
         </div>
-        <div className="flex-1 rounded-2xl border-[1.5px] border-border-soft bg-surface p-3">
+        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
           <p className="mb-1 text-[11px] font-extrabold text-text-sub">{t('page.secondHalf')}</p>
           <p className="text-[13px] leading-relaxed text-ink">{yearFlow.second_half}</p>
         </div>
       </div>
 
       {/* 월별 표 */}
-      <div className="overflow-hidden rounded-2xl border-[1.5px] border-border-soft bg-surface">
+      <div className="overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A]">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b-[1.5px] border-border-soft">
+            <tr className="border-b-2 border-ink">
               <th className="px-3 py-2 text-left text-[11px] font-extrabold text-text-sub">{t('page.monthCol')}</th>
               <th className="px-3 py-2 text-left text-[11px] font-extrabold text-text-sub">{t('page.keywordCol')}</th>
               <th className="px-3 py-2 text-left text-[11px] font-extrabold text-text-sub">{t('page.memoCol')}</th>
@@ -48,7 +48,7 @@ function YearFlowSection({
           </thead>
           <tbody>
             {visible.map(m => (
-              <tr key={m.month} className="border-b-[1px] border-border-soft last:border-0">
+              <tr key={m.month} className="border-b-[1px] border-ink last:border-0">
                 <td className="px-3 py-2 text-[13px] font-extrabold text-orange">{m.month}월</td>
                 <td className="px-3 py-2 text-[13px] font-bold text-ink">{m.keyword}</td>
                 <td className="px-3 py-2 text-[12px] leading-snug text-text-sub">{m.memo}</td>
@@ -60,7 +60,7 @@ function YearFlowSection({
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="w-full border-t-[1px] border-border-soft py-2 text-[12px] font-bold text-text-sub hover:bg-surface"
+            className="w-full border-t-[1px] border-ink py-2 text-[12px] font-bold text-text-sub hover:bg-surface"
           >
             {t('page.showMore')} ({months.length - 4})
           </button>
@@ -85,7 +85,7 @@ function DaeUnSection({
 
       <div className="flex gap-2">
         {/* 현재 대운 — 저강도 */}
-        <div className="flex-1 rounded-2xl border-[1.5px] border-border-soft bg-surface p-3">
+        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
           <p className="mb-1 text-[11px] font-extrabold text-text-sub">{t('page.currentDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.current.ganji}</p>
           <p className="mb-2 text-[11px] text-text-sub">{daeUn.current.period}</p>

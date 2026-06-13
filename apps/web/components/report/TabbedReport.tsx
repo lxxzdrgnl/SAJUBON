@@ -18,7 +18,7 @@ function TabAccordion({ tab, t }: { tab: ReportTab; t: ReturnType<typeof useTran
       className={`overflow-hidden rounded-2xl bg-surface transition-all ${
         open
           ? 'border-2 border-orange shadow-[4px_4px_0_#FF6B00]'
-          : 'border-[1.5px] border-border-soft'
+          : 'border-2 border-ink shadow-[4px_4px_0_#1A1A1A]'
       }`}
     >
       <button
@@ -51,7 +51,7 @@ function TabAccordion({ tab, t }: { tab: ReportTab; t: ReturnType<typeof useTran
       </button>
 
       {open && (
-        <div className="border-t-[1.5px] border-dashed border-border-soft px-4 py-3">
+        <div className="border-t-2 border-dashed border-ink px-4 py-3">
           {paragraphs.map((para, i) =>
             i === lastIdx ? (
               <div key={i} className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">

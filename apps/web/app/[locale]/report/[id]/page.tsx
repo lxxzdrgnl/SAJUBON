@@ -40,7 +40,7 @@ export default async function ReportDetailPage({
   return (
     <main className="flex flex-col gap-4">
       {/* 원국 한 줄 요약 */}
-      <div className="rounded-2xl border-[1.5px] border-border-soft bg-surface p-3 text-[13px] text-text-sub">
+      <div className="rounded-2xl border-2 border-ink bg-surface p-3 text-[13px] text-text-sub shadow-[4px_4px_0_#1A1A1A]">
         {summaryLine}
       </div>
 
