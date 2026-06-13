@@ -2,25 +2,25 @@ import { describe, it, expect } from 'vitest'
 import { ganjiNickname } from './ganjiNickname'
 
 describe('ganjiNickname — 천간 색 + 지지 동물', () => {
-  it('임자 = 회색 쥐, 배경 #B9C4CC', () => {
+  it('임자 = 회색 쥐, 배경 #8B8178', () => {
     const r = ganjiNickname('임', '자')
     expect(r.ko).toBe('회색 쥐')
     expect(r.en).toBe('Gray Rat')
-    expect(r.bg).toBe('#B9C4CC')
+    expect(r.bg).toBe('#8B8178')
   })
 
-  it('갑인 = 푸른 호랑이, 배경 #8FD6A8', () => {
+  it('갑인 = 푸른 호랑이, 배경 #7FC7BE', () => {
     const r = ganjiNickname('갑', '인')
     expect(r.ko).toBe('푸른 호랑이')
     expect(r.en).toBe('Blue Tiger')
-    expect(r.bg).toBe('#8FD6A8')
+    expect(r.bg).toBe('#7FC7BE')
   })
 
-  it('병오 = 붉은 말, 배경 #FF9466', () => {
+  it('병오 = 붉은 말, 배경 #F5623A', () => {
     const r = ganjiNickname('병', '오')
     expect(r.ko).toBe('붉은 말')
     expect(r.en).toBe('Red Horse')
-    expect(r.bg).toBe('#FF9466')
+    expect(r.bg).toBe('#F5623A')
   })
 
   it('무진 = 황금 용, 배경 #FFD900 (현행 옐로)', () => {
@@ -33,7 +33,7 @@ describe('ganjiNickname — 천간 색 + 지지 동물', () => {
     const r = ganjiNickname('경', '신')
     expect(r.ko).toBe('은빛 원숭이')
     expect(r.en).toBe('Silver Monkey')
-    expect(r.bg).toBe('#D7D9DD')
+    expect(r.bg).toBe('#E8EAED')
   })
 
   it('계해 = 회색 돼지', () => {
