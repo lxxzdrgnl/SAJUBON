@@ -118,13 +118,13 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
             "body": f.get("text", ""),
         })
 
-    # caution
+    # caution — headline은 리라이트에서 body 기반 구체적 한 마디로 생성
     cards.append({
         "kind": "caution",
         "category_key": None,
         "title": "오늘의 주의",
         "score": None,
-        "headline": "오늘 조심할 것",
+        "headline": "",          # 리라이트에서 구체적 주의 한 마디 생성
         "body": data.get("caution", ""),
     })
 
@@ -216,6 +216,14 @@ async def build_daily_story(
     cards, scores, keyword = assemble_story(data, profile_name)
 
     rewritten = await _rewrite(cards)
+
+    # 리라이트 실패·누락 시 빈 headline 폴백 (UI 빈 칸 방지)
+    for c in cards:
+        if not c.get("headline"):
+            if c["kind"] == "caution":
+                c["headline"] = "오늘 조심할 것"
+            elif c["kind"] == "overall":
+                c["headline"] = "무리만 안 하면 무난한 하루"
 
     return DailyStoryResponse(
         date=date,
