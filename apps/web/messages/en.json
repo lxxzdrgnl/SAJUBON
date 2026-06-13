@@ -450,6 +450,11 @@
       "sheetSubmit": "Attach",
       "errorSubmit": "Attach failed. Please try again."
     },
+    "compatibilityCta": {
+      "title": "Want a full compatibility report for you two?",
+      "action": "View Compatibility Report",
+      "error": "Failed to generate the report. Please try again."
+    },
     "error": {
       "load": "Could not load chat history",
       "send": "Send failed. Please try again."

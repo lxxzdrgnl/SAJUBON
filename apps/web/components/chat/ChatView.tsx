@@ -18,6 +18,7 @@ import type { ChatMessage } from '@sajuguri/api-client'
 import ToolCard from './ToolCard'
 import AttachSheet from './AttachSheet'
 import InlinePartnerCard from './InlinePartnerCard'
+import CompatibilityReportCTA from './CompatibilityReportCTA'
 import Markdown from '@/components/ui/Markdown'
 
 // ── 내부 메시지 타입 (ChatMessage 확장) ─────────────────────────────────────
@@ -249,6 +250,20 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
     }
   }, [])
 
+  // 마지막 check_compatibility tool_result 블록 위치 계산 (CTA 단일 렌더용)
+  let lastCheckCompatIdx: { mi: number; bi: number } | null = null
+  if (partnerName) {
+    for (let mi = 0; mi < messages.length; mi++) {
+      const msg = messages[mi]
+      for (let bi = 0; bi < msg.blocks.length; bi++) {
+        const blk = msg.blocks[bi]
+        if (typeof blk !== 'string' && blk.kind === 'tool_result' && blk.tool === 'check_compatibility') {
+          lastCheckCompatIdx = { mi, bi }
+        }
+      }
+    }
+  }
+
   return (
     <div className="flex flex-col" style={{ height: 'calc(100dvh - 116px)' }}>
       {/* 헤더 */}
@@ -333,7 +348,15 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                   )
                 }
                 if (block.kind === 'tool_result') {
-                  return <ToolCard key={bi} tool={block.tool} payload={block.payload} />
+                  const isLastCompat = lastCheckCompatIdx?.mi === i && lastCheckCompatIdx?.bi === bi
+                  return (
+                    <div key={bi} className="flex flex-col gap-2">
+                      <ToolCard tool={block.tool} payload={block.payload} />
+                      {isLastCompat && (
+                        <CompatibilityReportCTA sessionId={sessionId} />
+                      )}
+                    </div>
+                  )
                 }
                 if (block.kind === 'inline_partner') {
                   return (
