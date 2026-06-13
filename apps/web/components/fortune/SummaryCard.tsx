@@ -261,8 +261,8 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       <div className="mb-2 flex items-center justify-between" style={rise(0)}>
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/mascot.svg" alt="" width={26} height={26} />
-          <span className="text-[13px] font-black tracking-widest uppercase" style={{ color: ink }}>
+          <img src="/mascot.svg" alt="" width={30} height={30} />
+          <span className="text-[14px] font-black tracking-widest uppercase" style={{ color: ink }}>
             사주구리
           </span>
         </div>
@@ -280,11 +280,11 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
           <div className="flex items-end gap-2">
             <span
               className="font-black leading-[0.8] tabular-nums"
-              style={{ color: accent, fontSize: 'clamp(56px, 17vw, 80px)', letterSpacing: '-0.04em' }}
+              style={{ color: accent, fontSize: 'clamp(72px, 21vw, 104px)', letterSpacing: '-0.04em' }}
             >
               {avgScore}
             </span>
-            <span className="mb-2 text-[16px] font-black" style={{ color: inkSoft }}>/100</span>
+            <span className="mb-2.5 text-[17px] font-black" style={{ color: inkSoft }}>/100</span>
           </div>
         </div>
       )}
@@ -297,7 +297,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
           </p>
           <p
             className="font-black leading-[1.02]"
-            style={{ color: ink, fontSize: 'clamp(24px, 7vw, 36px)', wordBreak: 'keep-all', letterSpacing: '-0.02em' }}
+            style={{ color: ink, fontSize: 'clamp(30px, 8vw, 44px)', wordBreak: 'keep-all', letterSpacing: '-0.02em' }}
           >
             “{story.keyword}”
           </p>
@@ -305,7 +305,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       )}
 
       {/* 점수 바 6개 — 스태거 리빌 */}
-      <div className="mb-2.5 flex flex-col gap-1.5">
+      <div className="mb-3 flex flex-col gap-2">
         {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
@@ -316,7 +316,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
                 {CATEGORY_LABELS[key]}
               </span>
               <div
-                className="relative h-3 flex-1 overflow-hidden rounded-full"
+                className="relative h-3.5 flex-1 overflow-hidden rounded-full"
                 style={{ background: hexToRgba(ink, 0.14) }}
               >
                 <div
@@ -345,11 +345,11 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
         <div className="mb-2.5" style={rise(orderedKeys.length * 80 + 420)}>
           <p
             className="font-black leading-[1.12]"
-            style={{ color: ink, fontSize: 'clamp(16px, 4.4vw, 19px)', wordBreak: 'keep-all' }}
+            style={{ color: ink, fontSize: 'clamp(18px, 4.8vw, 21px)', wordBreak: 'keep-all' }}
           >
             {summaryCard.headline}
           </p>
-          <p className="mt-1 text-[12.5px] leading-snug" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
+          <p className="mt-1.5 text-[13.5px] leading-normal" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
             {summaryCard.body}
           </p>
         </div>
