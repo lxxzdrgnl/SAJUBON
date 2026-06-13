@@ -125,7 +125,7 @@ export default async function Home() {
         <ReportEntryButton profiles={profiles} isLoggedIn={!!user}>
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.doc} bg="#FFD900" color="var(--ink)" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-extrabold">
                 {t('cards.report.title')}
                 <span className="ml-1 inline-block rounded-full border-[1.5px] border-ink bg-orange px-2 text-[10px] font-extrabold text-white align-[2px]">
@@ -134,16 +134,18 @@ export default async function Home() {
               </p>
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.report.desc')}</p>
             </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </BrutalCard>
         </ReportEntryButton>
 
         <Link href="/chat">
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.chat} bg="#00C2B8" color="#FFFFFF" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-extrabold">{t('cards.chat.title')}</p>
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.chat.desc')}</p>
             </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </BrutalCard>
         </Link>
 
@@ -151,10 +153,11 @@ export default async function Home() {
         <Link href="/question">
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.bolt} bg="#FFB200" color="#FFFFFF" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-extrabold">{t('cards.question.title')}</p>
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.question.desc')}</p>
             </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </BrutalCard>
         </Link>
 
@@ -162,10 +165,11 @@ export default async function Home() {
         <Link href="/compatibility/new">
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.heart} bg="#4DA8E8" color="#FFFFFF" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-extrabold">{t('cards.compatibility.title')}</p>
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.compatibility.desc')}</p>
             </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </BrutalCard>
         </Link>
 

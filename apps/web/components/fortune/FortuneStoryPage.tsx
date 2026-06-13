@@ -199,14 +199,20 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
     return idx >= 0 ? idx + 1 : null
   })()
 
-  // [Fix 1] 현재 카드 배경색(solid base)을 body/html에 동기화 — iOS Safari 상하 safe-area
-  // 영역이 기본 앱 배경(크림)이 아닌 카드 색으로 채워지도록 한다.
+  // 현재 카드 배경색(solid base)을 body/html에 동기화 — iOS Safari 상하 safe-area 영역이
+  // 기본 앱 배경(크림)이 아닌 카드 색으로 채워지도록 한다.
+  // setProperty('background', ..., 'important')로 CSS 규칙(globals.css body{background:...})을
+  // 명시적으로 이기고, theme-color 메타로 iOS 상단 상태바 틴트도 업데이트.
   useEffect(() => {
-    const prev = document.body.style.background
-    const prevHtml = document.documentElement.style.background
-    document.body.style.background = palette.base
-    document.documentElement.style.background = palette.base
-    // theme-color 메타 — iOS 상단 브라우저 틴트
+    const prevBody = document.body.style.getPropertyValue('background')
+    const prevBodyPriority = document.body.style.getPropertyPriority('background')
+    const prevHtml = document.documentElement.style.getPropertyValue('background')
+    const prevHtmlPriority = document.documentElement.style.getPropertyPriority('background')
+
+    document.body.style.setProperty('background', palette.base, 'important')
+    document.documentElement.style.setProperty('background', palette.base, 'important')
+
+    // theme-color 메타 — iOS 상단 브라우저 틴트 / 홈화면 추가 시 상태바 색
     let metaTheme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
     const prevTheme = metaTheme?.content ?? ''
     if (!metaTheme) {
@@ -215,9 +221,18 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
       document.head.appendChild(metaTheme)
     }
     metaTheme.content = palette.base
+
     return () => {
-      document.body.style.background = prev
-      document.documentElement.style.background = prevHtml
+      if (prevBody) {
+        document.body.style.setProperty('background', prevBody, prevBodyPriority || '')
+      } else {
+        document.body.style.removeProperty('background')
+      }
+      if (prevHtml) {
+        document.documentElement.style.setProperty('background', prevHtml, prevHtmlPriority || '')
+      } else {
+        document.documentElement.style.removeProperty('background')
+      }
       if (metaTheme) metaTheme.content = prevTheme
     }
   }, [palette.base])
@@ -225,7 +240,7 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
   return (
     /* 풀스크린 오버레이 — fixed inset-0, max-w 640px 중앙 정렬 */
     <div
-      className="fixed inset-0 z-50 flex flex-col"
+      className="fixed inset-0 z-50 flex flex-col overscroll-none"
       style={{
         background: palette.bg,
         transition: 'background 480ms cubic-bezier(0.22,1,0.36,1)',

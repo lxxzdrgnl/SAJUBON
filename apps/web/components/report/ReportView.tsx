@@ -53,7 +53,7 @@ function YearFlowSection({
             {visible.map(m => (
               <tr key={m.month} className="border-b-[1px] border-ink last:border-0">
                 <td className="px-3 py-2 text-[13px] font-extrabold text-orange">{m.month}월</td>
-                <td className="whitespace-nowrap break-keep px-3 py-2 text-[13px] font-bold text-ink">{m.keyword}</td>
+                <td className="w-[88px] min-w-[88px] whitespace-nowrap px-3 py-2 text-[13px] font-bold text-ink">{m.keyword}</td>
                 <td className="px-3 py-2 text-[13px] leading-snug text-ink">{m.memo}</td>
               </tr>
             ))}
@@ -88,9 +88,9 @@ function DaeUnSection({
         <span className="text-orange">{t('page.daeUnTitle')}</span>
       </h2>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2">
         {/* 현재 대운 — 오렌지 강조 */}
-        <div className="flex-1 rounded-2xl border-2 border-orange bg-surface p-3 shadow-[4px_4px_0_#FF6B00]">
+        <div className="rounded-2xl border-2 border-orange bg-surface p-3 shadow-[4px_4px_0_#FF6B00]">
           <p className="mb-1 text-[12px] font-extrabold text-orange">{t('page.currentDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.current.ganji}</p>
           <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.current.period}</p>
@@ -98,7 +98,7 @@ function DaeUnSection({
         </div>
 
         {/* 다음 대운 — 일반 */}
-        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
+        <div className="rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
           <p className="mb-1 text-[12px] font-extrabold text-ink">{t('page.nextDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.next.ganji}</p>
           <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.next.period}</p>
