@@ -60,6 +60,15 @@ class ReportNotFoundException(AppException):
         )
 
 
+class CompatibilityReportNotFoundException(AppException):
+    def __init__(self, token: str):
+        super().__init__(
+            ErrorCode.COMPATIBILITY_REPORT_NOT_FOUND,
+            "해당 궁합 리포트를 찾을 수 없습니다.",
+            {"token": token},
+        )
+
+
 class UnauthorizedException(AppException):
     def __init__(self):
         super().__init__(
@@ -110,4 +119,13 @@ class LLMFailedException(AppException):
             ErrorCode.INTERNAL_SERVER_ERROR,
             "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
             {"detail": detail} if detail else None,
+        )
+
+
+class ChatSessionNotFoundException(AppException):
+    def __init__(self, session_id: str):
+        super().__init__(
+            ErrorCode.CHAT_SESSION_NOT_FOUND,
+            "채팅 세션을 찾을 수 없습니다.",
+            {"session_id": session_id},
         )

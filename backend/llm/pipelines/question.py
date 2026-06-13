@@ -6,6 +6,7 @@
   2. Engine.calculate_saju()
   3. question-centric RAG + Reranking (llm.reranker)
   4. generate_consultation() — 1탭, 500자
+  5. 카테고리 규칙으로 charts / more 선별 (LLM 미사용)
 """
 
 from __future__ import annotations
@@ -21,6 +22,18 @@ from engine.handlers.get_yeon_un import handle_get_yeon_un
 from llm.guard import guard_and_classify
 from llm.reranker import rerank_chunks, build_question_query, CATEGORY_QUERY_HINT, CATEGORY_TAG_MAP
 from llm.writer import generate_consultation
+from llm.tools.chart_payloads import (
+    payload_wuxing_balance,
+    payload_ten_gods,
+    payload_sin_sal,
+    payload_palja,
+    payload_strength,
+    payload_twelve_un_seong,
+    payload_dae_un,
+    payload_wol_un,
+    payload_yeon_un,
+    payload_il_jin,
+)
 from rag.db import search_multi
 from rag.search import handle_get_ilju_profile
 
@@ -30,6 +43,87 @@ _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="question-pipel
 
 # 시기 분석이 유의미한 카테고리
 _TIMING_CATEGORIES = {"love", "career", "money"}
+
+
+# ─── 카테고리 → 차트 매핑 ─────────────────────────────────────────────────────
+# 각 항목: (tool_name, payload_fn_or_None)
+# payload_fn은 saju dict를 첫 인자로 받는 callable.
+# None 이면 별도 처리 필요 (timing 차트 등).
+
+def _build_charts_for_category(
+    category: str,
+    saju: dict,
+) -> tuple[list[dict], list[dict]]:
+    """
+    카테고리 규칙으로 charts(자동 표시)와 more(칩 클릭)를 구성한다.
+
+    Returns:
+        (charts, more) — 각각 {"tool": str, "payload": dict} list
+    """
+    today = datetime.now()
+
+    def _wol_un() -> dict:
+        return payload_wol_un(saju, today.year)
+
+    def _yeon_un() -> dict:
+        return payload_yeon_un(saju, today.year, 5)
+
+    def _il_jin() -> dict:
+        return payload_il_jin(today.year, today.month)
+
+    # tool_name → lazy payload callable
+    _origin: dict[str, callable] = {
+        "get_wuxing_balance":   lambda: payload_wuxing_balance(saju),
+        "get_ten_gods":         lambda: payload_ten_gods(saju),
+        "get_sin_sal":          lambda: payload_sin_sal(saju),
+        "get_palja":            lambda: payload_palja(saju),
+        "get_strength":         lambda: payload_strength(saju),
+        "get_twelve_un_seong":  lambda: payload_twelve_un_seong(saju),
+        "get_dae_un":           lambda: payload_dae_un(saju),
+        "get_wol_un":           _wol_un,
+        "get_yeon_un":          _yeon_un,
+        "get_il_jin":           _il_jin,
+    }
+
+    # 카테고리별 (charts_tools, more_tools)
+    _MAP: dict[str, tuple[list[str], list[str]]] = {
+        "money":   (
+            ["get_wuxing_balance", "get_ten_gods"],
+            ["get_wol_un", "get_strength", "get_palja"],
+        ),
+        "love":    (
+            ["get_sin_sal"],
+            ["get_wol_un", "get_twelve_un_seong"],
+        ),
+        "career":  (
+            ["get_ten_gods", "get_strength"],
+            ["get_wuxing_balance", "get_palja"],
+        ),
+        # 시기 관련 질문 — guard가 career/love/money 아닌 'general'로 분류하는 경우는
+        # 없으므로 timing 전용 카테고리는 별도로 두지 않는다.
+        # 대신 career/love/money more에 타이밍 차트를 이미 포함.
+        "health":  (
+            [],
+            ["get_wuxing_balance", "get_strength"],
+        ),
+        "general": ([], []),
+    }
+
+    charts_tools, more_tools = _MAP.get(category, ([], []))
+
+    def _make(tool_name: str) -> dict | None:
+        fn = _origin.get(tool_name)
+        if fn is None:
+            return None
+        try:
+            return {"tool": tool_name, "payload": fn()}
+        except Exception:
+            logger.warning("chart payload 생성 실패: %s", tool_name, exc_info=True)
+            return None
+
+    charts = [item for name in charts_tools if (item := _make(name)) is not None]
+    more   = [item for name in more_tools   if (item := _make(name)) is not None]
+    return charts, more
 
 
 def _build_question_rag(
@@ -119,7 +213,8 @@ async def run_question_consultation(
     한줄 상담 파이프라인.
 
     Returns:
-        {"headline": str, "content": str}
+        {"headline": str, "content": str, "category": str,
+         "charts": list[ChartItem-dict], "more": list[ChartItem-dict]}
     """
     loop = asyncio.get_running_loop()
 
@@ -131,7 +226,7 @@ async def run_question_consultation(
             headline, content = guard_msg.split("|||", 1)
         else:
             headline, content = "잠깐만요", guard_msg or ""
-        return {"headline": headline, "content": content, "category": category}
+        return {"headline": headline, "content": content, "category": category, "charts": [], "more": []}
 
     is_medical = (guard_msg == "MEDICAL")
     if is_medical:
@@ -144,6 +239,8 @@ async def run_question_consultation(
             "headline": "사주는 덕(德)을 쌓는 자에게 길(吉)을 줍니다",
             "content": guard_msg,
             "category": category,
+            "charts": [],
+            "more": [],
         }
     logger.info("Guard passed, category=%s", category)
 
@@ -181,4 +278,21 @@ async def run_question_consultation(
         if is_medical else question
     )
     output = await generate_consultation(saju, rag_ctx, effective_question, category, llm_provider)
-    return {"headline": output.headline, "content": output.content, "category": category}
+
+    # 4. 차트 선별 — 카테고리 규칙, LLM 미사용
+    # MEDICAL은 의료 민감 — 차트 없음
+    if is_medical:
+        charts, more = [], []
+    else:
+        charts_raw, more_raw = _build_charts_for_category(category, saju)
+        charts = charts_raw
+        more   = more_raw
+    logger.info("차트 선별 완료: charts=%d more=%d (category=%s)", len(charts), len(more), category)
+
+    return {
+        "headline": output.headline,
+        "content":  output.content,
+        "category": category,
+        "charts":   charts,
+        "more":     more,
+    }

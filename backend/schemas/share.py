@@ -21,26 +21,6 @@ class ShareResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class DailyShareCreate(BaseModel):
-    birth_input: dict[str, Any] = Field(description="생년월일·성별 등 운세 계산 입력값")
-
-
-class DailyShareResponse(BaseModel):
-    share_token: UUID
-    share_url:   str
-    created_at:  datetime
-
-    model_config = {"from_attributes": True}
-
-
-class DailyShareDetail(BaseModel):
-    share_token: UUID
-    birth_input: dict[str, Any]
-    created_at:  datetime
-
-    model_config = {"from_attributes": True}
-
-
 class SharedResultResponse(BaseModel):
     share_token: UUID
     profile_id: int | None

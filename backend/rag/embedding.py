@@ -2,8 +2,8 @@
 Embedding Provider — Strategy Pattern.
 
 환경변수 EMBEDDING_PROVIDER 하나로 구현체를 교체.
-  - "gemini"  : Google Gemini text-embedding-004
   - "openai"  : OpenAI text-embedding-3-small (기본값)
+  - "gemini"  : Google Gemini (Strategy Pattern용 — 기본 경로에서는 쓰지 않음)
 
 사용:
     ef = get_embedding_function()
@@ -90,9 +90,9 @@ _PROVIDERS: dict[str, type[BaseEmbeddingProvider]] = {
 def get_embedding_function() -> EmbeddingFunction:
     """
     EMBEDDING_PROVIDER 환경변수에 따라 EmbeddingFunction 반환.
-    기본값: "gemini"
+    기본값: "openai"
     """
-    name = os.getenv("EMBEDDING_PROVIDER", "gemini").lower()
+    name = os.getenv("EMBEDDING_PROVIDER", "openai").lower()
     cls = _PROVIDERS.get(name)
     if cls is None:
         raise ValueError(f"Unknown EMBEDDING_PROVIDER: {name!r}. Choose from {list(_PROVIDERS)}")

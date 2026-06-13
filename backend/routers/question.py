@@ -11,6 +11,7 @@ from db.models import User
 from dependencies.auth import get_current_user, get_optional_user
 from dependencies.db import get_db
 from schemas.question import (
+    ChartItem,
     QuestionRequest,
     QuestionResponse,
     ConsultationHistoryItem,
@@ -47,12 +48,14 @@ async def ask_question(
     user: User | None = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db),
 ) -> QuestionResponse:
-    row = await create_consultation_flow(db, req, user.id if user else None)
+    result = await create_consultation_flow(db, req, user.id if user else None)
     return QuestionResponse(
-        id=row.id,
-        headline=row.headline,
-        content=row.content,
-        category=row.category,
+        id=result.row.id,
+        headline=result.row.headline,
+        content=result.row.content,
+        category=result.row.category,
+        charts=[ChartItem(**c) for c in result.charts],
+        more=[ChartItem(**c) for c in result.more],
     )
 
 
@@ -69,6 +72,7 @@ async def list_consultations(
     return [
         ConsultationHistoryItem(
             id=r.id,
+            profile_name=(r.birth_input.get("name") if isinstance(r.birth_input, dict) else None) or "",
             question=r.question,
             category=r.category,
             headline=r.headline,
@@ -129,6 +133,7 @@ async def get_shared_consultation(
     if not row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="상담 기록을 찾을 수 없습니다.")
     bi = row.birth_input if isinstance(row.birth_input, dict) else None
+    saved = row.charts if isinstance(row.charts, dict) else {}
     return ConsultationDetail(
         id=row.id,
         name=bi.get("name") or None if bi else None,
@@ -137,6 +142,8 @@ async def get_shared_consultation(
         category=row.category,
         headline=row.headline,
         content=row.content,
+        charts=[ChartItem(**c) for c in saved.get("charts", [])],
+        more=[ChartItem(**c) for c in saved.get("more", [])],
         created_at=row.created_at,
         share_token=str(row.share_token),
     )

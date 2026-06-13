@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+
+/* 디자인 토큰 — 원천: packages/design (docs/design.md) */
+:root {
+  --bg-base: #FFFBF2;
+  --ink: #1A1A1A;
+  --yellow: #FFD900;
+  --yellow-tint: #FFF3B0;
+  --amber: #FFB200;
+  --orange: #FF6B00;
+  --orange-tint: #FFE1CC;
+  --teal: #00C2B8;
+  --teal-deep: #00857D;
+  --teal-tint: #D7F7F4;
+  --surface: #FFFFFF;
+  --border-soft: #EBE3D2;
+  --text-sub: #8A8270;
+  --sky: #4DA8E8;
+  --sky-tint: #DCEFFB;
+}
+
+@theme inline {
+  /* 간지 폰트 — 주변 UI(고딕)와 동일하게 통일. 간지만 명조체로 튀어 보이던 문제 해결.
+     font-serif 유틸을 쓰는 간지(원국·대운·연운·합충·일진·툴카드)가 전부 본문과 같은 고딕으로 렌더된다. */
+  --font-serif: ui-sans-serif, system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  --color-bg-base: var(--bg-base);
+  --color-ink: var(--ink);
+  --color-yellow: var(--yellow);
+  --color-yellow-tint: var(--yellow-tint);
+  --color-amber: var(--amber);
+  --color-orange: var(--orange);
+  --color-orange-tint: var(--orange-tint);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-teal-tint: var(--teal-tint);
+  --color-surface: var(--surface);
+  --color-border-soft: var(--border-soft);
+  --color-text-sub: var(--text-sub);
+  --color-sky: var(--sky);
+  --color-sky-tint: var(--sky-tint);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--ink);
+}

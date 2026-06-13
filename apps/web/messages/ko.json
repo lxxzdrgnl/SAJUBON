@@ -1,0 +1,661 @@
+{
+  "tab": {
+    "home": "홈",
+    "manse": "만세력",
+    "chat": "상담",
+    "my": "마이"
+  },
+  "auth": {
+    "signingIn": "로그인 중…"
+  },
+  "notFound": {
+    "title": "페이지를 찾을 수 없어요",
+    "desc": "주소가 잘못됐거나 사라진 페이지예요.",
+    "home": "홈으로 가기"
+  },
+  "my": {
+    "title": "마이",
+    "loginRequired": "로그인이 필요해요",
+    "loginWithGoogle": "구글로 로그인",
+    "logout": "로그아웃",
+    "repCard": {
+      "noProfile": "대표 만세력이 없습니다",
+      "noProfileDesc": "만세력 탭에서 대표로 지정할 수 있어요",
+      "goManse": "만세력 목록 보기",
+      "born": "생년월일",
+      "badge": "대표"
+    },
+    "records": {
+      "title": "내 기록",
+      "tabReports": "리포트",
+      "tabFortune": "운세",
+      "tabQuestion": "한줄상담",
+      "viewMore": "더보기",
+      "collapse": "접기",
+      "viewAllHistory": "전체 기록 보기",
+      "emptyReports": "아직 생성한 리포트가 없어요",
+      "emptyFortune": "아직 운세 기록이 없어요",
+      "emptyQuestion": "아직 한줄상담 기록이 없어요",
+      "goReport": "리포트 생성하러 가기",
+      "goFortune": "오늘의 운세 보러 가기",
+      "goQuestion": "한줄상담 받으러 가기",
+      "delete": {
+        "confirm": "이 기록을 삭제할까요?",
+        "cancel": "취소",
+        "yes": "삭제"
+      },
+      "editToggle": "편집",
+      "editDone": "완료",
+      "tabCompatibility": "궁합",
+      "emptyCompatibility": "아직 궁합 리포트가 없어요",
+      "goCompatibility": "궁합 보러 가기",
+      "compatAnon": "익명",
+      "filterAll": "전체",
+      "feedEmpty": "아직 기록이 없어요",
+      "fortuneCardTitle": "오늘의 운세"
+    },
+    "history": {
+      "title": "내 기록",
+      "back": "마이로",
+      "loginRequired": "로그인이 필요해요",
+      "loginWithGoogle": "구글로 로그인"
+    },
+    "language": {
+      "title": "언어",
+      "ko": "한국어",
+      "en": "English"
+    }
+  },
+  "settings": {
+    "title": "설정",
+    "language": "언어",
+    "langKo": "한국어",
+    "langEn": "English",
+    "contact": "문의하기",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "version": "버전",
+    "notifications": "알림 설정",
+    "deleteAccount": "회원 탈퇴",
+    "soon": "준비 중",
+    "logout": "로그아웃"
+  },
+  "home": {
+    "title": "사주구리",
+    "fortuneBanner": "오늘의 운세",
+    "fortuneSub": "너의 하루는?",
+    "sectionTitle": "이런 건 어때?",
+    "cards": {
+      "report": {
+        "title": "내 사주 풀리포트",
+        "badge": "10탭",
+        "desc": "결론만 말해주는 AI 해설"
+      },
+      "chat": {
+        "title": "AI 사주 상담",
+        "desc": "궁합도 물어봐 · 로그인 필요"
+      },
+      "question": {
+        "title": "한줄 상담",
+        "desc": "로그인 없이 한 질문 맛보기"
+      },
+      "soon": {
+        "title": "작명 · 꿈해몽",
+        "desc": "coming soon"
+      },
+      "compatibility": {
+        "title": "궁합 리포트",
+        "desc": "두 사람 사주로 보는 케미"
+      }
+    }
+  },
+  "manse": {
+    "form": {
+      "title": "오직 당신을 위한 사주",
+      "name": "이름",
+      "birthplace": "출생지",
+      "birthplacePlaceholder": "도시명 검색 (예: 서울, 도쿄, 뉴욕)",
+      "birthplaceHint": "미입력 시 서울 기준 적용",
+      "datetime": "생년월일 · 시각",
+      "timeUnknown": "시간 모름",
+      "solar": "양력",
+      "lunar": "음력",
+      "leap": "윤달",
+      "gender": "성별",
+      "male": "남성",
+      "female": "여성",
+      "submit": "만세력 보기",
+      "guestNote": "게스트도 바로 볼 수 있어요 · 최근 입력은 이 기기에 저장됩니다",
+      "guestName": "게스트",
+      "datePlaceholderYear": "YYYY",
+      "datePlaceholderMonth": "MM",
+      "datePlaceholderDay": "DD",
+      "timePlaceholderHour": "HH",
+      "timePlaceholderMinute": "MM",
+      "timeUnknownDisplay": "시간 모름",
+      "searching": "검색 중...",
+      "correctionLabel": "{minutes}분 보정",
+      "timeUnknownNote": "시주(時柱) 미산출 — 자녀·노년운, 시신살 등 시주 관련 분석이 생략됩니다.",
+      "errorName": "이름을 입력해 주세요.",
+      "errorDateRequired": "생년월일을 입력해 주세요.",
+      "errorYearRange": "연도는 1900년 ~ 2100년 사이여야 합니다.",
+      "errorMonthRange": "월은 1 ~ 12 사이여야 합니다.",
+      "errorDayOverflow": "{year}년 {month}월은 {maxDay}일까지 있습니다.",
+      "errorMinuteMissing": "분을 입력해 주세요.",
+      "errorHourMissing": "시를 입력해 주세요.",
+      "sisi": {
+        "ja": "자시",
+        "chuk": "축시",
+        "in": "인시",
+        "myo": "묘시",
+        "jin": "진시",
+        "sa": "사시",
+        "o": "오시",
+        "mi": "미시",
+        "sin": "신시",
+        "yu": "유시",
+        "sul": "술시",
+        "hae": "해시"
+      }
+    },
+    "result": {
+      "myIlju": "내 일주",
+      "palja": "사주팔자",
+      "detail": "12운성 · 신살 · 지장간 상세",
+      "pillars": {
+        "hour": "생시",
+        "day": "생일",
+        "month": "생월",
+        "year": "생년"
+      },
+      "chartsComing": "오행 밸런스 · 십성 차트는 곧 추가돼요",
+      "error": "계산에 실패했어요. 입력을 확인해주세요",
+      "iljuName": "{name}일주",
+      "shareBtn": {
+        "label": "공유하기",
+        "loading": "링크 생성 중...",
+        "copied": "링크가 복사됐어요",
+        "shareTitle": "내 만세력",
+        "error": "공유 링크 생성에 실패했어요. 다시 시도해 주세요."
+      },
+      "shared": {
+        "metaTitle": "{name}님의 만세력 · {ilju}",
+        "metaTitleFallback": "사주구리",
+        "metaDescription": "{name}님의 만세력 결과를 확인해보세요.",
+        "notFoundTitle": "공유 링크를 찾을 수 없어요.",
+        "notFoundBody": "링크가 만료됐거나 잘못된 주소예요.",
+        "ctaTitle": "나도 내 사주가 궁금하다면?",
+        "ctaBody": "생년월일시만 입력하면 무료로 만세력을 확인할 수 있어요.",
+        "ctaButton": "나도 내 사주 보기",
+        "saveToMyTitle": "내 만세력에 추가하기",
+        "saveToMySuccess": "내 만세력에 저장됐어요",
+        "saveToMyError": "저장에 실패했어요. 다시 시도해주세요",
+        "saveToMyLoginHint": "저장하려면 로그인이 필요해요",
+        "saveToMyLoginLink": "구글로 로그인"
+      }
+    },
+    "charts": {
+      "detail": {
+        "title": "12운성 · 신살 · 지장간 상세",
+        "twelveWun": "12운성",
+        "jiJangGan": "지장간",
+        "sinSal": "신살",
+        "none": "—"
+      },
+      "wuxing": {
+        "title": "오행 밸런스",
+        "balance": "오행 균형도",
+        "tabBar": "막대",
+        "tabPentagram": "오각형",
+        "verdictOver": "과다",
+        "verdictLack": "부족",
+        "verdictOk": "적정",
+        "balanced": "균형 잡힌 오행 구성이에요",
+        "over": "과다",
+        "lack": "결핍",
+        "saeng": "상생",
+        "geuk": "상극",
+        "dayLabel": "일간",
+        "applyHap": "합에 따른 오행 변화 적용",
+        "applyJohu": "조후와 궁성 보정값 적용"
+      },
+      "tenGods": {
+        "title": "십성 구조",
+        "core": "핵심 구조",
+        "summary": "십성 구조 요약",
+        "coreLabel": "핵심 구조"
+      },
+      "strength": {
+        "title": "일간 강약 · 용신",
+        "score": "점",
+        "weak": "약",
+        "mid": "중화",
+        "strong": "강",
+        "deukRyeong": "득령",
+        "deukJi": "득지",
+        "deukSi": "득시",
+        "deukSe": "득세",
+        "yongSin": "용신",
+        "xiSin": "희신",
+        "jiSin": "기신",
+        "gyeokGuk": "격국",
+        "distTitle": "신강/신약지수",
+        "distPercentile": "{pct}%의 사람이 여기에 해당해요",
+        "distUnit": "(만명)",
+        "distMe": "나",
+        "levelDesc": {
+          "극약": "일간의 힘이 극도로 약해요. 인성·비겁이 절실하고 설기·극제하는 기운은 크게 해로워요.",
+          "태약": "일간이 매우 약해요. 인성·비겁으로 강하게 부조해야 균형이 잡혀요.",
+          "신약": "일간이 약한 편이에요. 인성이나 비겁이 용신 후보로 쓰여요.",
+          "중화신약": "거의 균형에 가깝지만 약간 부족해요. 소폭의 부조가 도움이 돼요.",
+          "중화신강": "가장 이상적인 균형에 가까워요. 크게 치우침 없이 두루 좋은 사주예요.",
+          "신강": "일간이 강한 편이에요. 식상·재성·관성으로 기운을 소모·설기해야 해요.",
+          "태강": "일간이 매우 강해요. 설기·극제하는 오행이 용신으로 필요해요.",
+          "극왕": "일간이 극도로 강해요. 종강격 가능성이 있고 거스르는 기운은 크게 흉해요."
+        }
+      },
+      "daeUn": {
+        "title": "대운",
+        "startAge": "{age}세 시작",
+        "age": "{age}세",
+        "current": "현재"
+      },
+      "yeonWol": {
+        "title": "연운 · 월운",
+        "tabYeon": "연운",
+        "tabWol": "월운",
+        "thisYear": "올해",
+        "thisMonth": "이번달",
+        "loading": "불러오는 중...",
+        "error": "데이터를 불러올 수 없어요"
+      },
+      "ilJin": {
+        "title": "일진 달력",
+        "loading": "일진 불러오는 중...",
+        "error": "일진 데이터를 불러올 수 없어요",
+        "today": "오늘",
+        "solarTerm": "절기",
+        "leap": "윤달",
+        "leapMark": "(윤)"
+      },
+      "hapChung": {
+        "title": "합충 분석",
+        "empty": "해당하는 관계가 없어요",
+        "broken": "충으로 합 파괴됨",
+        "gungSeongDesc": "기둥 위치에 따라 오행 작용력 가중치가 달라요. 월지 > 일간 > 시지·연주 > 천간 순서예요."
+      },
+      "feature": {
+        "title": "오행 특성 참고표",
+        "colEl": "오행",
+        "colDir": "방위·계절",
+        "colTraits": "성격 특성",
+        "colBody": "관련 신체",
+        "colJobs": "어울리는 직업",
+        "over": "과다",
+        "lack": "부족"
+      },
+      "cta": {
+        "report": "AI 리포트 생성",
+        "chat": "상담하기",
+        "soon": "준비 중"
+      }
+    },
+    "index": {
+      "title": "만세력",
+      "new": "+ 새 만세력 보기",
+      "recent": "최근 본 만세력",
+      "empty": "아직 본 만세력이 없어요. 새로 등록해보세요",
+      "loginHint": "로그인하면 만세력을 저장하고 관리할 수 있어요",
+      "recentSave": "저장",
+      "recentSaved": "저장됨",
+      "recentSaveError": "저장 실패",
+      "recentSaveLoginHint": "로그인하면 저장할 수 있어요",
+      "recentDelete": "삭제",
+      "recentDeleteConfirm": "최근 목록에서 지울까요?",
+      "recentDeleteConfirmYes": "삭제",
+      "recentDeleteConfirmCancel": "취소"
+    },
+    "saved": {
+      "title": "저장된 만세력",
+      "empty": "저장된 만세력이 없어요. 분석 후 저장해보세요",
+      "representative": "대표",
+      "loginPrompt": "로그인하면 이름 붙여 저장하고 어느 기기에서든 바로",
+      "save": "이 만세력 저장",
+      "saved": "저장됨",
+      "saveError": "저장 실패 · 다시 시도",
+      "setRepresentative": "대표로",
+      "delete": "삭제",
+      "deleteConfirm": "정말 삭제할까요?",
+      "deleteConfirmYes": "삭제",
+      "deleteConfirmCancel": "취소"
+    }
+  },
+  "mansePicker": {
+    "savedTitle": "저장된 만세력",
+    "recentTitle": "최근 본 만세력",
+    "directInput": "만세력 추가하기",
+    "backToList": "목록으로",
+    "confirmInput": "이 사람으로 선택",
+    "repBadge": "대표",
+    "unknownName": "이름 없음"
+  },
+  "report": {
+    "title": "AI 리포트 생성",
+    "checking": "확인 중...",
+    "loginRequired": "로그인이 필요해요",
+    "loginDesc": "리포트는 로그인한 사용자만 생성하고 저장할 수 있어요.",
+    "loginWithGoogle": "구글로 로그인",
+    "guideline": "사주를 분석해 10가지 주제로 헤드라인 리포트를 만들어 드려요. 추가로 궁금한 주제를 입력하면 함께 포함해드려요.",
+    "topicsLabel": "추가로 보고 싶은 것 (선택)",
+    "topicsPlaceholder": "이직 시기, 부모님 건강, 올해 재물운",
+    "topicsHint": "쉼표로 구분해 여러 주제를 입력할 수 있어요",
+    "submit": "리포트 생성",
+    "loadingNote": "AI가 사주를 분석 중이에요. 보통 30~60초 정도 걸려요.",
+    "errorMissingBirth": "생년월일 정보가 없어요. 만세력 페이지에서 다시 시도해 주세요.",
+    "errorLogin": "로그인이 필요해요.",
+    "errorLimit": "오늘 생성 가능한 리포트 수를 초과했어요. 내일 다시 시도해 주세요.",
+    "errorFallback": "리포트 생성에 실패했어요. 잠시 후 다시 시도해 주세요.",
+    "page": {
+      "summaryLabel": "사주 정보",
+      "guideText": "각 제목을 클릭하면 해설이 펼쳐져요",
+      "requestedBadge": "요청",
+      "adviceBoxLabel": "현실 조언",
+      "yearFlowTitle": "올해의 흐름",
+      "firstHalf": "상반기",
+      "secondHalf": "하반기",
+      "monthCol": "월",
+      "keywordCol": "키워드",
+      "memoCol": "한 줄 메모",
+      "showMore": "나머지 보기",
+      "daeUnTitle": "대운 비교",
+      "currentDaeUn": "현재 대운",
+      "nextDaeUn": "다음 대운",
+      "cautionLabel": "주의점",
+      "shareBtn": "공유",
+      "regenerateBtn": "다시 생성",
+      "maskBirthLabel": "생년월일시 공개",
+      "copyUrl": "URL 복사",
+      "copied": "복사됨",
+      "shareTitle": "리포트 공유"
+    },
+    "list": {
+      "empty": "아직 생성한 리포트가 없어요",
+      "generate": "리포트 생성하러 가기",
+      "createdAt": "생성일",
+      "topics": "요청 주제"
+    },
+    "entrySheet": {
+      "title": "누구의 사주로 볼까요?",
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 입력",
+      "directInput": "만세력 추가하기",
+      "repBadge": "대표"
+    },
+    "shared": {
+      "notFound": "공유 링크를 찾을 수 없어요.",
+      "notFoundDesc": "링크가 만료됐거나 잘못된 주소예요."
+    }
+  },
+  "chat": {
+    "title": "AI 사주 상담",
+    "loginRequired": "로그인이 필요해요",
+    "loginDesc": "AI 상담은 로그인한 사용자만 이용할 수 있어요.",
+    "loginWithGoogle": "구글로 로그인",
+    "newSession": "새 상담",
+    "empty": "아직 상담 내역이 없어요",
+    "emptyHint": "첫 상담을 시작해보세요",
+    "sessionFallback": "사주 상담",
+    "pickSheet": {
+      "title": "어떤 만세력으로 상담할까요?",
+      "savedTitle": "저장된 만세력",
+      "directInput": "만세력 추가하기",
+      "recentTitle": "최근 본 만세력"
+    },
+    "chip": {
+      "my": "내 만세력",
+      "partner": "상대 만세력",
+      "addPartner": "+ 상대 만세력"
+    },
+    "input": {
+      "placeholder": "고민을 자유롭게 적어보세요",
+      "send": "전송"
+    },
+    "attach": {
+      "title": "만세력 첨부",
+      "replaceMy": "내 만세력 교체",
+      "attachPartner": "상대 만세력 첨부"
+    },
+    "inlinePartner": {
+      "prompt": "상대방의 만세력이 필요해요. 첨부해 주세요.",
+      "action": "상대 만세력 선택",
+      "directInput": "만세력 추가하기",
+      "sheetTitle": "상대방 정보 입력",
+      "sheetSubmit": "첨부하기",
+      "errorSubmit": "첨부에 실패했어요. 다시 시도해 주세요."
+    },
+    "compatibilityCta": {
+      "title": "두 사람의 궁합을 리포트로 자세히 볼까요?",
+      "action": "궁합 리포트 보러가기",
+      "error": "리포트 생성에 실패했어요. 다시 시도해 주세요."
+    },
+    "error": {
+      "load": "상담 내역을 불러올 수 없어요",
+      "send": "전송에 실패했어요. 다시 시도해 주세요."
+    },
+    "editToggle": "편집",
+    "editDone": "완료",
+    "deleteConfirm": "이 상담을 삭제할까요?",
+    "deleteConfirmYes": "삭제",
+    "deleteConfirmCancel": "취소",
+    "streaming": "답변 생성 중…",
+    "toolCard": {
+      "labels": {
+        "get_dae_un": "대운",
+        "get_wol_un": "월운",
+        "get_yeon_un": "연운",
+        "get_daily_fortune": "오늘의 운세",
+        "get_il_jin": "일진",
+        "get_compatibility_detail": "궁합",
+        "get_wuxing_balance": "오행 균형",
+        "get_ten_gods": "십성 분포",
+        "get_sin_sal": "신살",
+        "get_palja": "사주팔자",
+        "get_strength": "강약·용신",
+        "get_twelve_un_seong": "12운성",
+        "get_hap_chung": "합충 관계"
+      },
+      "fields": {
+        "dayMaster": "일간",
+        "yongSin": "용신",
+        "strength": "강약",
+        "dominant": "강한 기운",
+        "weak": "약한 기운",
+        "none": "없음",
+        "jiSin": "기신"
+      },
+      "sinSal": {
+        "lucky": "길신",
+        "unlucky": "흉살"
+      },
+      "hints": {
+        "twelveUnSeong": "12운성 = 각 기둥의 기운이 어느 생애 단계에 있는지",
+        "hapChung": "합충 = 기둥끼리 끌어당기거나(합) 부딪히는(충) 관계"
+      }
+    }
+  },
+  "question": {
+    "title": "한줄 상담",
+    "desc": "사주 정보와 고민을 입력하면 AI가 단답형으로 답해드려요.",
+    "birthLabel": "사주 선택",
+    "birthPlaceholder": "만세력을 선택하거나 직접 입력해요",
+    "questionLabel": "고민을 입력해 주세요",
+    "questionPlaceholder": "올해 이직 운이 있을까요? (10자 이상)",
+    "submit": "물어보기",
+    "submitting": "분석 중...",
+    "resultLabel": "AI 상담 결과",
+    "askAgain": "다시 물어보기",
+    "selectBirth": "만세력 선택하기",
+    "changeBirth": "다시 선택",
+    "errorNoBirth": "사주 정보를 먼저 선택해 주세요.",
+    "errorQuestionShort": "고민은 10자 이상 입력해 주세요.",
+    "errorFallback": "상담 요청에 실패했어요. 잠시 후 다시 시도해 주세요.",
+    "pickSheet": {
+      "title": "누구의 사주로 물어볼까요?",
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 입력",
+      "directInput": "만세력 추가하기",
+      "repBadge": "대표"
+    },
+    "chartsTitle": "사주 분석",
+    "moreLabel": "더 보기",
+    "share": "공유하기",
+    "sharing": "링크 만드는 중...",
+    "shareCopied": "링크를 복사했어요",
+    "shareFailed": "공유 링크 생성에 실패했어요",
+    "shared": {
+      "notFoundTitle": "공유 링크를 찾을 수 없어요.",
+      "notFoundBody": "링크가 만료됐거나 잘못된 주소예요.",
+      "ctaTitle": "나도 한줄상담 받아볼까?",
+      "ctaBody": "생년월일시와 고민만 입력하면 AI가 바로 답해줘요.",
+      "ctaButton": "나도 한줄상담 받기"
+    }
+  },
+  "fortune": {
+    "banner": {
+      "title": "오늘의 운세",
+      "pickSheet": "누구의 운세를 볼까?"
+    },
+    "sheet": {
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 입력",
+      "directInput": "만세력 추가하기",
+      "seenToday": "다시 보기",
+      "loginHint": "로그인하면 저장된 만세력을 불러올 수 있어요",
+      "pickSheet": "누구의 운세를 볼까요?"
+    },
+    "story": {
+      "loading": "운세를 분석하고 있어요",
+      "error": "운세를 불러올 수 없어요. 잠시 후 다시 시도해 주세요.",
+      "closeLabel": "닫기",
+      "prev": "이전",
+      "next": "다음",
+      "home": "홈으로"
+    },
+    "summary": {
+      "headerTitle": "너의 하루 요약",
+      "keyword": "오늘의 키워드",
+      "saveImage": "이미지 저장",
+      "saving": "저장 중...",
+      "shareLink": "링크 공유",
+      "copied": "복사됨",
+      "shareLabel": "사주구리 오늘의 운세",
+      "back": "뒤로",
+      "shareCta": "나도 내 운세 보기"
+    },
+    "shared": {
+      "notFoundTitle": "공유 링크를 찾을 수 없어요",
+      "notFoundBody": "링크가 만료됐거나 잘못된 주소예요",
+      "metaTitle": "{name}님의 오늘 운세 · {keyword} {score}점",
+      "metaDescription": "{name}님의 오늘 운세를 확인해보세요. 키워드는 \"{keyword}\".",
+      "metaTitleFallback": "사주구리 오늘의 운세",
+      "metaDescriptionFallback": "사주구리에서 오늘의 운세를 확인해보세요."
+    },
+    "my": {
+      "title": "운세 기록",
+      "empty": "아직 운세 기록이 없어요",
+      "goFortune": "오늘의 운세 보러 가기"
+    },
+    "categories": {
+      "exam": "학업",
+      "money": "금전",
+      "love": "연애",
+      "career": "직업",
+      "health": "건강",
+      "social": "사교"
+    }
+  },
+  "compatibility": {
+    "scoreOverview": {
+      "personA": "A",
+      "personB": "B",
+      "highBadge": "찰떡궁합",
+      "lowBadge": "주의",
+      "dayPillar": "일주",
+      "elementHarmony": "오행 조화",
+      "branchRelation": "지지 관계",
+      "tenGods": "십성"
+    },
+    "elementFlow": {
+      "title": "오행 흐름",
+      "stemHapLabel": "천간합화",
+      "stemHapDesc": "{element}(으)로 합쳐지는 흐름",
+      "synergyLabel": "오행 관계",
+      "complementLabel": "보완 방향",
+      "yongsinLabel": "용신 보완",
+      "yongsinAHelpsB": "{nameA}이(가) {nameB}의 용신을 채워줌",
+      "yongsinBHelpsA": "{nameB}이(가) {nameA}의 용신을 채워줌",
+      "yongsinMutual": "서로의 용신을 채워주는 궁합",
+      "clashLabel": "지지충",
+      "tenGodLabel": "십성 관계",
+      "tenGodDesc": "{nameA} 기준 상대 십성: {tenGod}"
+    },
+    "viewCompatibility": "궁합 보기",
+    "unknownName": "이름 없음",
+    "slot": {
+      "labelA": "나 (첫 번째 사람)",
+      "labelB": "상대방 (두 번째 사람)",
+      "selectOrInput": "선택 / 입력",
+      "reselect": "다시 선택"
+    },
+    "pickSheet": {
+      "titleA": "첫 번째 사람 선택",
+      "titleB": "두 번째 사람 선택",
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 본 만세력",
+      "directInput": "직접 입력하기",
+      "repBadge": "대표",
+      "backToList": "목록으로",
+      "confirmInput": "이 사람으로 선택"
+    },
+    "new": {
+      "title": "궁합 리포트",
+      "guideline": "두 사람의 사주로 연애·관계 케미를 결론형 리포트로 분석해 드려요.",
+      "topicsLabel": "더 알고 싶은 주제 (선택)",
+      "topicsPlaceholder": "예: 결혼 시기, 다툼이 잦은 이유",
+      "topicsHint": "쉼표로 여러 주제를 적으면 각각 별도 탭으로 분석해요.",
+      "checking": "확인 중...",
+      "loadingNote": "AI가 두 사주를 분석 중이에요. 보통 30~60초 정도 걸려요.",
+      "loginRequired": "로그인이 필요해요",
+      "loginDesc": "궁합 리포트는 저장·공유를 위해 로그인 후 이용할 수 있어요.",
+      "loginWithGoogle": "구글로 시작하기",
+      "errorLogin": "로그인이 필요해요. 다시 로그인해 주세요.",
+      "errorLimit": "요청이 너무 많아요. 잠시 후 다시 시도해 주세요.",
+      "errorFallback": "리포트 생성에 실패했어요. 다시 시도해 주세요.",
+      "loading": {
+        "0": "두 사람의 사주를 읽고 있어요...",
+        "1": "천간합화와 오행 흐름을 살피는 중이에요...",
+        "2": "지지의 충과 합을 분석하고 있어요...",
+        "3": "두 분만을 위한 케미 해설을 작성하고 있어요...",
+        "4": "거의 다 됐어요, 조금만 기다려 주세요..."
+      }
+    },
+    "view": {
+      "guideText": "각 제목을 클릭하면 해설이 펼쳐져요.",
+      "errorFallback": "리포트를 불러오지 못했어요. 다시 시도해 주세요."
+    },
+    "share": {
+      "shareBtn": "궁합 리포트 공유하기",
+      "title": "궁합 리포트 공유",
+      "maskBirthLabel": "생년월일시 공개",
+      "creating": "링크 생성 중...",
+      "copyUrl": "링크 복사하기",
+      "copied": "복사됐어요!",
+      "error": "공유 링크 생성에 실패했어요. 다시 시도해 주세요.",
+      "notFoundTitle": "공유 링크를 찾을 수 없어요.",
+      "notFoundDesc": "링크가 만료됐거나 잘못된 주소예요.",
+      "ctaTitle": "나도 궁합이 궁금하다면?",
+      "ctaDesc": "두 사람의 생년월일시만 입력하면 AI 궁합 리포트를 받아볼 수 있어요.",
+      "ctaBtn": "나도 궁합 보기"
+    }
+  }
+}

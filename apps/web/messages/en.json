@@ -1,0 +1,661 @@
+{
+  "tab": {
+    "home": "Home",
+    "manse": "Chart",
+    "chat": "Chat",
+    "my": "My"
+  },
+  "auth": {
+    "signingIn": "Signing in…"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "desc": "The address is wrong or the page is gone.",
+    "home": "Go home"
+  },
+  "my": {
+    "title": "My",
+    "loginRequired": "Sign in to continue",
+    "loginWithGoogle": "Sign in with Google",
+    "logout": "Sign out",
+    "repCard": {
+      "noProfile": "No default chart set",
+      "noProfileDesc": "You can set a default chart in the Chart tab",
+      "goManse": "Go to Chart list",
+      "born": "Born",
+      "badge": "Default"
+    },
+    "records": {
+      "title": "My Records",
+      "tabReports": "Reports",
+      "tabFortune": "Fortune",
+      "tabQuestion": "Quick Reading",
+      "viewMore": "View more",
+      "collapse": "Collapse",
+      "viewAllHistory": "View all records",
+      "emptyReports": "No reports yet",
+      "emptyFortune": "No fortune records yet",
+      "emptyQuestion": "No quick readings yet",
+      "goReport": "Generate a report",
+      "goFortune": "Check today's fortune",
+      "goQuestion": "Get a quick reading",
+      "delete": {
+        "confirm": "Delete this record?",
+        "cancel": "Cancel",
+        "yes": "Delete"
+      },
+      "editToggle": "Edit",
+      "editDone": "Done",
+      "tabCompatibility": "Compatibility",
+      "emptyCompatibility": "No compatibility reports yet",
+      "goCompatibility": "Check compatibility",
+      "compatAnon": "Anonymous",
+      "filterAll": "All",
+      "feedEmpty": "No records yet",
+      "fortuneCardTitle": "Today's Fortune"
+    },
+    "history": {
+      "title": "My Records",
+      "back": "Back to My",
+      "loginRequired": "Sign in to continue",
+      "loginWithGoogle": "Sign in with Google"
+    },
+    "language": {
+      "title": "Language",
+      "ko": "한국어",
+      "en": "English"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "langKo": "한국어",
+    "langEn": "English",
+    "contact": "Contact us",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy",
+    "version": "Version",
+    "notifications": "Notifications",
+    "deleteAccount": "Delete account",
+    "soon": "Coming soon",
+    "logout": "Sign out"
+  },
+  "home": {
+    "title": "SajuGuri",
+    "fortuneBanner": "Today's Fortune",
+    "fortuneSub": "How's your day?",
+    "sectionTitle": "What about these?",
+    "cards": {
+      "report": {
+        "title": "My Full Saju Report",
+        "badge": "10 tabs",
+        "desc": "AI insights, conclusions first"
+      },
+      "chat": {
+        "title": "AI Saju Chat",
+        "desc": "Ask anything, even compatibility · Sign-in required"
+      },
+      "question": {
+        "title": "One-Line Reading",
+        "desc": "One free question, no sign-in"
+      },
+      "soon": {
+        "title": "Naming · Dream reading",
+        "desc": "coming soon"
+      },
+      "compatibility": {
+        "title": "Compatibility",
+        "desc": "Chemistry of two charts"
+      }
+    }
+  },
+  "manse": {
+    "form": {
+      "title": "Your personal Saju reading",
+      "name": "Name",
+      "birthplace": "Birthplace",
+      "birthplacePlaceholder": "Search city (e.g. Seoul, Tokyo, New York)",
+      "birthplaceHint": "Defaults to Seoul if left blank",
+      "datetime": "Date of birth · Time",
+      "timeUnknown": "Time unknown",
+      "solar": "Solar",
+      "lunar": "Lunar",
+      "leap": "Leap",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "submit": "View Saju Chart",
+      "guestNote": "No sign-in needed · Recent inputs are saved on this device",
+      "guestName": "Guest",
+      "datePlaceholderYear": "YYYY",
+      "datePlaceholderMonth": "MM",
+      "datePlaceholderDay": "DD",
+      "timePlaceholderHour": "HH",
+      "timePlaceholderMinute": "MM",
+      "timeUnknownDisplay": "Time unknown",
+      "searching": "Searching...",
+      "correctionLabel": "{minutes} min correction",
+      "timeUnknownNote": "Hour pillar (時柱) omitted — analyses tied to it (children/late-life fortune, hour-based sinsal) are skipped.",
+      "errorName": "Please enter a name.",
+      "errorDateRequired": "Please enter a date of birth.",
+      "errorYearRange": "Year must be between 1900 and 2100.",
+      "errorMonthRange": "Month must be between 1 and 12.",
+      "errorDayOverflow": "{month}/{year} only has {maxDay} days.",
+      "errorMinuteMissing": "Please enter the minutes.",
+      "errorHourMissing": "Please enter the hour.",
+      "sisi": {
+        "ja": "Ja (Rat)",
+        "chuk": "Chuk (Ox)",
+        "in": "In (Tiger)",
+        "myo": "Myo (Rabbit)",
+        "jin": "Jin (Dragon)",
+        "sa": "Sa (Snake)",
+        "o": "O (Horse)",
+        "mi": "Mi (Goat)",
+        "sin": "Sin (Monkey)",
+        "yu": "Yu (Rooster)",
+        "sul": "Sul (Dog)",
+        "hae": "Hae (Pig)"
+      }
+    },
+    "result": {
+      "myIlju": "My Day Pillar",
+      "palja": "Four Pillars",
+      "detail": "12-stage cycle · Sinsals · Hidden stems",
+      "pillars": {
+        "hour": "Hour",
+        "day": "Day",
+        "month": "Month",
+        "year": "Year"
+      },
+      "chartsComing": "Five elements balance · Ten gods chart coming soon",
+      "error": "Calculation failed. Please check your input",
+      "iljuName": "{name} Day Pillar",
+      "shareBtn": {
+        "label": "Share",
+        "loading": "Creating link...",
+        "copied": "Link copied",
+        "shareTitle": "My Saju chart",
+        "error": "Failed to create the share link. Please try again."
+      },
+      "shared": {
+        "metaTitle": "{name}'s Saju chart · {ilju}",
+        "metaTitleFallback": "SajuGuri",
+        "metaDescription": "Check out {name}'s Saju chart.",
+        "notFoundTitle": "Share link not found.",
+        "notFoundBody": "The link has expired or the address is invalid.",
+        "ctaTitle": "Curious about your own Saju?",
+        "ctaBody": "Just enter your birth date and time to see your Saju chart for free.",
+        "ctaButton": "See my own Saju",
+        "saveToMyTitle": "Add to My Charts",
+        "saveToMySuccess": "Saved to your charts",
+        "saveToMyError": "Save failed. Please try again",
+        "saveToMyLoginHint": "Sign in to save this chart",
+        "saveToMyLoginLink": "Sign in with Google"
+      }
+    },
+    "charts": {
+      "detail": {
+        "title": "12-stage cycle · Sinsals · Hidden stems",
+        "twelveWun": "12운성",
+        "jiJangGan": "지장간",
+        "sinSal": "신살",
+        "none": "—"
+      },
+      "wuxing": {
+        "title": "Five Elements Balance",
+        "balance": "Balance score",
+        "tabBar": "Bars",
+        "tabPentagram": "Pentagram",
+        "verdictOver": "과다",
+        "verdictLack": "부족",
+        "verdictOk": "적정",
+        "balanced": "A well-balanced five-element makeup",
+        "over": "과다",
+        "lack": "결핍",
+        "saeng": "상생",
+        "geuk": "상극",
+        "dayLabel": "일간",
+        "applyHap": "Apply element shifts from combinations",
+        "applyJohu": "Apply seasonal & palace weighting"
+      },
+      "tenGods": {
+        "title": "Ten Gods Structure",
+        "core": "Core",
+        "summary": "Structure summary",
+        "coreLabel": "핵심 구조"
+      },
+      "strength": {
+        "title": "Day Master Strength · Yongsin",
+        "score": "pts",
+        "weak": "Weak",
+        "mid": "Balanced",
+        "strong": "Strong",
+        "deukRyeong": "득령",
+        "deukJi": "득지",
+        "deukSi": "득시",
+        "deukSe": "득세",
+        "yongSin": "용신",
+        "xiSin": "희신",
+        "jiSin": "기신",
+        "gyeokGuk": "격국",
+        "distTitle": "Strength Index",
+        "distPercentile": "{pct}% of people fall here",
+        "distUnit": "(10k)",
+        "distMe": "You",
+        "levelDesc": {
+          "극약": "The Day Master is extremely weak. It urgently needs resource/peer support; draining or controlling energy is very harmful.",
+          "태약": "The Day Master is very weak. Strong resource/peer support is needed for balance.",
+          "신약": "The Day Master is on the weak side. Resource or peer elements serve as useful gods.",
+          "중화신약": "Nearly balanced but slightly lacking. A small boost helps.",
+          "중화신강": "Close to the ideal balance. Well-rounded with no major bias.",
+          "신강": "The Day Master is on the strong side. Output/wealth/officer elements should drain the excess.",
+          "태강": "The Day Master is very strong. Draining or controlling elements are needed as useful gods.",
+          "극왕": "The Day Master is extremely strong. A dominant structure is possible; opposing energy is very inauspicious."
+        }
+      },
+      "daeUn": {
+        "title": "Great Luck (대운)",
+        "startAge": "Starts at {age}",
+        "age": "{age}",
+        "current": "Now"
+      },
+      "yeonWol": {
+        "title": "Yearly · Monthly Luck",
+        "tabYeon": "연운",
+        "tabWol": "월운",
+        "thisYear": "This year",
+        "thisMonth": "This month",
+        "loading": "Loading...",
+        "error": "Could not load data"
+      },
+      "ilJin": {
+        "title": "Daily Almanac (일진)",
+        "loading": "Loading almanac...",
+        "error": "Could not load almanac data",
+        "today": "Today",
+        "solarTerm": "절기",
+        "leap": "Leap",
+        "leapMark": "(윤)"
+      },
+      "hapChung": {
+        "title": "Combinations & Clashes",
+        "empty": "No matching relations",
+        "broken": "Combination broken by clash",
+        "gungSeongDesc": "Element weight varies by pillar position: month branch > day stem > hour/year > stems."
+      },
+      "feature": {
+        "title": "Five Elements Reference",
+        "colEl": "Element",
+        "colDir": "Direction · Season",
+        "colTraits": "Traits",
+        "colBody": "Body",
+        "colJobs": "Careers",
+        "over": "과다",
+        "lack": "부족"
+      },
+      "cta": {
+        "report": "Generate AI Report",
+        "chat": "Chat",
+        "soon": "Coming soon"
+      }
+    },
+    "index": {
+      "title": "Saju Chart",
+      "new": "+ View Saju Chart",
+      "recent": "Recent Charts",
+      "empty": "No charts yet. Try adding one",
+      "loginHint": "Sign in to save and manage your charts",
+      "recentSave": "Save",
+      "recentSaved": "Saved",
+      "recentSaveError": "Save failed",
+      "recentSaveLoginHint": "Sign in to save",
+      "recentDelete": "Delete",
+      "recentDeleteConfirm": "Remove from recent list?",
+      "recentDeleteConfirmYes": "Remove",
+      "recentDeleteConfirmCancel": "Cancel"
+    },
+    "saved": {
+      "title": "Saved Charts",
+      "empty": "No saved charts yet. Save one after analyzing",
+      "representative": "Default",
+      "loginPrompt": "Sign in to save with a name and access from any device",
+      "save": "Save this chart",
+      "saved": "Saved",
+      "saveError": "Failed · Try again",
+      "setRepresentative": "Set as default",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this chart?",
+      "deleteConfirmYes": "Delete",
+      "deleteConfirmCancel": "Cancel"
+    }
+  },
+  "mansePicker": {
+    "savedTitle": "Saved charts",
+    "recentTitle": "Recently viewed",
+    "directInput": "Add new chart",
+    "backToList": "Back to list",
+    "confirmInput": "Select this person",
+    "repBadge": "Default",
+    "unknownName": "Unknown"
+  },
+  "report": {
+    "title": "Generate AI Report",
+    "checking": "Checking...",
+    "loginRequired": "Sign in to continue",
+    "loginDesc": "Reports can only be created and saved by signed-in users.",
+    "loginWithGoogle": "Sign in with Google",
+    "guideline": "We'll analyze your Saju and create a 10-tab headline report. You can add extra topics to include.",
+    "topicsLabel": "Additional topics (optional)",
+    "topicsPlaceholder": "Career change timing, parents' health, wealth this year",
+    "topicsHint": "Separate multiple topics with commas",
+    "submit": "Generate Report",
+    "loadingNote": "AI is analyzing your Saju. This usually takes 30–60 seconds.",
+    "errorMissingBirth": "Birth info is missing. Please try again from the Saju chart page.",
+    "errorLogin": "Please sign in to continue.",
+    "errorLimit": "You've reached today's report limit. Try again tomorrow.",
+    "errorFallback": "Report generation failed. Please try again later.",
+    "page": {
+      "summaryLabel": "Saju Info",
+      "guideText": "Click each title to expand the reading",
+      "requestedBadge": "Requested",
+      "adviceBoxLabel": "Practical Advice",
+      "yearFlowTitle": "Year Flow",
+      "firstHalf": "First Half",
+      "secondHalf": "Second Half",
+      "monthCol": "Month",
+      "keywordCol": "Keyword",
+      "memoCol": "One-line note",
+      "showMore": "Show more",
+      "daeUnTitle": "Great Luck Comparison",
+      "currentDaeUn": "Current",
+      "nextDaeUn": "Next",
+      "cautionLabel": "Caution",
+      "shareBtn": "Share",
+      "regenerateBtn": "Regenerate",
+      "maskBirthLabel": "Show birth date/time",
+      "copyUrl": "Copy URL",
+      "copied": "Copied",
+      "shareTitle": "Share Report"
+    },
+    "list": {
+      "empty": "No reports yet",
+      "generate": "Generate a report",
+      "createdAt": "Created",
+      "topics": "Topics"
+    },
+    "entrySheet": {
+      "title": "Whose Saju to use?",
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Add new chart",
+      "repBadge": "Default"
+    },
+    "shared": {
+      "notFound": "Share link not found.",
+      "notFoundDesc": "The link may have expired or is invalid."
+    }
+  },
+  "question": {
+    "title": "One-Line Reading",
+    "desc": "Enter your birth info and question — AI answers in one insight.",
+    "birthLabel": "Select Saju",
+    "birthPlaceholder": "Select a saved chart or enter manually",
+    "questionLabel": "Your question",
+    "questionPlaceholder": "Is this a good year to change jobs? (10+ chars)",
+    "submit": "Ask",
+    "submitting": "Analyzing...",
+    "resultLabel": "AI Answer",
+    "askAgain": "Ask again",
+    "selectBirth": "Select a birth chart",
+    "changeBirth": "Change",
+    "errorNoBirth": "Please select or enter your birth info first.",
+    "errorQuestionShort": "Question must be at least 10 characters.",
+    "errorFallback": "Request failed. Please try again later.",
+    "pickSheet": {
+      "title": "Whose Saju to ask about?",
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Add new chart",
+      "repBadge": "Default"
+    },
+    "chartsTitle": "Saju Analysis",
+    "moreLabel": "More",
+    "share": "Share",
+    "sharing": "Creating link...",
+    "shareCopied": "Link copied",
+    "shareFailed": "Failed to create share link",
+    "shared": {
+      "notFoundTitle": "Share link not found.",
+      "notFoundBody": "The link may have expired or is invalid.",
+      "ctaTitle": "Want your own quick reading?",
+      "ctaBody": "Just enter your birth info and question — AI answers right away.",
+      "ctaButton": "Get my quick reading"
+    }
+  },
+  "chat": {
+    "title": "AI Saju Chat",
+    "loginRequired": "Sign in to continue",
+    "loginDesc": "AI chat is available for signed-in users only.",
+    "loginWithGoogle": "Sign in with Google",
+    "newSession": "New chat",
+    "empty": "No chats yet",
+    "emptyHint": "Start your first consultation",
+    "sessionFallback": "Saju Chat",
+    "pickSheet": {
+      "title": "Which chart to use?",
+      "savedTitle": "Saved charts",
+      "directInput": "Add new chart",
+      "recentTitle": "Recently viewed"
+    },
+    "chip": {
+      "my": "My chart",
+      "partner": "Partner chart",
+      "addPartner": "+ Partner chart"
+    },
+    "input": {
+      "placeholder": "Type your question freely",
+      "send": "Send"
+    },
+    "attach": {
+      "title": "Attach chart",
+      "replaceMy": "Replace my chart",
+      "attachPartner": "Attach partner chart"
+    },
+    "inlinePartner": {
+      "prompt": "I need your partner's birth info. Please attach it.",
+      "action": "Select partner chart",
+      "directInput": "Add new chart",
+      "sheetTitle": "Enter partner info",
+      "sheetSubmit": "Attach",
+      "errorSubmit": "Attach failed. Please try again."
+    },
+    "compatibilityCta": {
+      "title": "Want a full compatibility report for you two?",
+      "action": "View Compatibility Report",
+      "error": "Failed to generate the report. Please try again."
+    },
+    "error": {
+      "load": "Could not load chat history",
+      "send": "Send failed. Please try again."
+    },
+    "editToggle": "Edit",
+    "editDone": "Done",
+    "deleteConfirm": "Delete this chat?",
+    "deleteConfirmYes": "Delete",
+    "deleteConfirmCancel": "Cancel",
+    "streaming": "Generating response…",
+    "toolCard": {
+      "labels": {
+        "get_dae_un": "Major Luck",
+        "get_wol_un": "Monthly Luck",
+        "get_yeon_un": "Yearly Luck",
+        "get_daily_fortune": "Today's Fortune",
+        "get_il_jin": "Daily",
+        "get_compatibility_detail": "Compatibility",
+        "get_wuxing_balance": "Five Elements",
+        "get_ten_gods": "Ten Gods",
+        "get_sin_sal": "Spirits",
+        "get_palja": "Four Pillars",
+        "get_strength": "Strength & Yongsin",
+        "get_twelve_un_seong": "12-Stage Cycle",
+        "get_hap_chung": "Combinations & Clashes"
+      },
+      "fields": {
+        "dayMaster": "Day Master",
+        "yongSin": "Yongsin",
+        "strength": "Strength",
+        "dominant": "Strong",
+        "weak": "Weak",
+        "none": "None",
+        "jiSin": "Jisin"
+      },
+      "sinSal": {
+        "lucky": "Auspicious",
+        "unlucky": "Inauspicious"
+      },
+      "hints": {
+        "twelveUnSeong": "12-stage cycle = which life phase each pillar's energy is in",
+        "hapChung": "Comb./Clash = whether pillars attract each other (합) or collide (충)"
+      }
+    }
+  },
+  "fortune": {
+    "banner": {
+      "title": "Today's Fortune",
+      "pickSheet": "Whose fortune?"
+    },
+    "sheet": {
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Add new chart",
+      "seenToday": "See again",
+      "loginHint": "Sign in to load saved charts",
+      "pickSheet": "Whose fortune shall we read?"
+    },
+    "story": {
+      "loading": "Analyzing your fortune",
+      "error": "Could not load fortune. Please try again later.",
+      "closeLabel": "Close",
+      "prev": "Prev",
+      "next": "Next",
+      "home": "Home"
+    },
+    "summary": {
+      "headerTitle": "Your day in a nutshell",
+      "keyword": "Today's keyword",
+      "saveImage": "Save image",
+      "saving": "Saving...",
+      "shareLink": "Share link",
+      "copied": "Copied",
+      "shareLabel": "SajuGuri Daily Fortune",
+      "back": "Back",
+      "shareCta": "See my own fortune"
+    },
+    "shared": {
+      "notFoundTitle": "Share link not found",
+      "notFoundBody": "The link may have expired or is invalid",
+      "metaTitle": "{name}'s fortune today · {keyword} {score}",
+      "metaDescription": "Check out {name}'s fortune today. Keyword: \"{keyword}\".",
+      "metaTitleFallback": "SajuGuri Daily Fortune",
+      "metaDescriptionFallback": "Check today's fortune on SajuGuri."
+    },
+    "my": {
+      "title": "Fortune history",
+      "empty": "No fortune records yet",
+      "goFortune": "Check today's fortune"
+    },
+    "categories": {
+      "exam": "Study",
+      "money": "Money",
+      "love": "Love",
+      "career": "Career",
+      "health": "Health",
+      "social": "Social"
+    }
+  },
+  "compatibility": {
+    "scoreOverview": {
+      "personA": "A",
+      "personB": "B",
+      "highBadge": "Perfect Match",
+      "lowBadge": "Caution",
+      "dayPillar": "Day Pillar",
+      "elementHarmony": "Element Harmony",
+      "branchRelation": "Branch Relation",
+      "tenGods": "Ten Gods"
+    },
+    "elementFlow": {
+      "title": "Element Flow",
+      "stemHapLabel": "Stem Combination",
+      "stemHapDesc": "Merges into {element}",
+      "synergyLabel": "Element Relation",
+      "complementLabel": "Complementary Flow",
+      "yongsinLabel": "Yongsin Complement",
+      "yongsinAHelpsB": "{nameA} supports {nameB}'s Yongsin",
+      "yongsinBHelpsA": "{nameB} supports {nameA}'s Yongsin",
+      "yongsinMutual": "Mutually complementary Yongsin",
+      "clashLabel": "Branch Clashes",
+      "tenGodLabel": "Ten-God Relation",
+      "tenGodDesc": "{nameA}'s ten-god for partner: {tenGod}"
+    },
+    "viewCompatibility": "View Compatibility",
+    "unknownName": "Unknown",
+    "slot": {
+      "labelA": "Person A (You)",
+      "labelB": "Person B (Partner)",
+      "selectOrInput": "Select / Enter",
+      "reselect": "Change"
+    },
+    "pickSheet": {
+      "titleA": "Select Person A",
+      "titleB": "Select Person B",
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Enter manually",
+      "repBadge": "Default",
+      "backToList": "Back to list",
+      "confirmInput": "Select this person"
+    },
+    "new": {
+      "title": "Compatibility Report",
+      "guideline": "We analyze two people's Saju into a conclusion-style report on their romantic chemistry.",
+      "topicsLabel": "Topics you're curious about (optional)",
+      "topicsPlaceholder": "e.g. timing for marriage, why we argue",
+      "topicsHint": "Separate multiple topics with commas to get a dedicated tab for each.",
+      "checking": "Checking...",
+      "loadingNote": "AI is analyzing both charts. This usually takes 30-60 seconds.",
+      "loginRequired": "Login required",
+      "loginDesc": "Sign in to create, save, and share compatibility reports.",
+      "loginWithGoogle": "Continue with Google",
+      "errorLogin": "Login required. Please sign in again.",
+      "errorLimit": "Too many requests. Please try again in a moment.",
+      "errorFallback": "Failed to create the report. Please try again.",
+      "loading": {
+        "0": "Reading both people's charts...",
+        "1": "Examining stem combinations and element flow...",
+        "2": "Analyzing branch clashes and harmonies...",
+        "3": "Writing chemistry insights just for you two...",
+        "4": "Almost there, hang tight..."
+      }
+    },
+    "view": {
+      "guideText": "Tap each headline to expand the reading.",
+      "errorFallback": "Couldn't load the report. Please try again."
+    },
+    "share": {
+      "shareBtn": "Share compatibility report",
+      "title": "Share Compatibility Report",
+      "maskBirthLabel": "Show birth date & time",
+      "creating": "Creating link...",
+      "copyUrl": "Copy link",
+      "copied": "Copied!",
+      "error": "Failed to create the share link. Please try again.",
+      "notFoundTitle": "Share link not found.",
+      "notFoundDesc": "The link has expired or the address is invalid.",
+      "ctaTitle": "Curious about your own compatibility?",
+      "ctaDesc": "Just enter two people's birth details to get an AI compatibility report.",
+      "ctaBtn": "Check my compatibility"
+    }
+  }
+}

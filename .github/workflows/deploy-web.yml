@@ -1,0 +1,57 @@
+name: Deploy Web
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PC_SSH_KEY }}" > ~/.ssh/pc_key
+          chmod 600 ~/.ssh/pc_key
+          ssh-keyscan -H ${{ secrets.PC_SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # next build가 apps/web/.env.production을 읽으므로 (NEXT_PUBLIC_* 빌드타임 인라인 포함)
+      # git reset 이후에도 untracked로 살아남는 이 경로에 시크릿을 배치한다 (backend.env 패턴)
+      - name: Write web env
+        env:
+          WEB_ENV: ${{ secrets.WEB_ENV }}
+        run: |
+          echo "$WEB_ENV" > web.env
+          ssh -i ~/.ssh/pc_key \
+            ${{ secrets.PC_SSH_USER }}@${{ secrets.PC_SSH_HOST }} \
+            "mkdir -p ~/servers/sajuguri/repo/apps/web"
+          scp -i ~/.ssh/pc_key web.env \
+            ${{ secrets.PC_SSH_USER }}@${{ secrets.PC_SSH_HOST }}:~/servers/sajuguri/repo/apps/web/.env.production
+          rm -f web.env
+
+      - name: Deploy to server
+        run: |
+          ssh -i ~/.ssh/pc_key \
+            ${{ secrets.PC_SSH_USER }}@${{ secrets.PC_SSH_HOST }} \
+            "cd ~/servers/sajuguri/repo && \
+             git fetch origin && git reset --hard origin/main && \
+             cd ~/servers && \
+             docker compose up -d --build --no-deps sajuguri-web && \
+             echo '⏳ Waiting for web...' && \
+             sleep 5 && \
+             docker compose logs --tail=20 sajuguri-web && \
+             docker compose ps sajuguri-web | grep -q 'Up' && echo '✅ Web deployed' || (echo '❌ Web failed to start' && exit 1)"
+
+      - name: Cleanup SSH Key
+        if: always()
+        run: rm -f ~/.ssh/pc_key

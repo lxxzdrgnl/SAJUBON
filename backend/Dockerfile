@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 의존성 레이어 캐싱
 COPY pyproject.toml uv.lock ./
-RUN uv sync --no-dev
+RUN uv sync --no-dev --group observability
 
 COPY . .
 

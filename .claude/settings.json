@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in *apps/web/*) out=$(node apps/web/scripts/check-i18n.mjs 2>&1); if [ $? -ne 0 ]; then printf '{\"systemMessage\": %s}\\n' \"$(printf '%s' \"$out\" | jq -Rs .)\"; fi;; esac; }",
+            "statusMessage": "i18n 키 검증 중..."
+          }
+        ]
+      }
+    ]
+  }
+}

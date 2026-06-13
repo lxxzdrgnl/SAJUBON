@@ -14,13 +14,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
 from core.config import settings
 from core.errors import ErrorCode, ErrorResponse, http_status
 from core.exceptions import AppException
 from db.models import Base
 from db.session import engine
 from core.middleware import AccessLogMiddleware
-from routers import saju, cities, auth, profiles, share, question
+from routers import saju, cities, auth, profiles, share, question, chat, reports, daily_story, compatibility
 
 # ─── 로깅 설정 ───────────────────────────────────────────────────────────────
 
@@ -31,6 +33,36 @@ logging.basicConfig(
 )
 logger = logging.getLogger("sajubon")
 
+# ─── Observability (Phoenix) ─────────────────────────────────────────────────
+
+def _setup_phoenix() -> None:
+    """IQHub(my-own-phoenix) 연동. PHOENIX_ENABLED=true 일 때만 활성화."""
+    if not settings.phoenix_enabled:
+        return
+    try:
+        import os
+        from openinference.instrumentation.langchain import LangChainInstrumentor
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+
+        os.environ["PHOENIX_PROJECT_NAME"] = settings.phoenix_project_name
+
+        tracer_provider = TracerProvider()
+        tracer_provider.add_span_processor(
+            SimpleSpanProcessor(OTLPSpanExporter(endpoint=settings.phoenix_otlp_endpoint))
+        )
+        LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
+        logger.info("IQHub tracing enabled → %s (project: %s)", settings.phoenix_otlp_endpoint, settings.phoenix_project_name)
+    except ImportError:
+        logger.warning(
+            "PHOENIX_ENABLED=true 지만 패키지가 없습니다. "
+            "uv add openinference-instrumentation-langchain opentelemetry-exporter-otlp-proto-http opentelemetry-sdk"
+        )
+
+
+_setup_phoenix()
+
 # ─── Lifespan ────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
@@ -40,7 +72,11 @@ async def lifespan(app: FastAPI):
             await conn.run_sync(Base.metadata.create_all)
     except Exception as e:
         logger.warning("DB 연결 실패 (create_all 건너뜀): %s", e)
-    yield
+
+    async with AsyncPostgresSaver.from_conn_string(settings.postgres_url) as checkpointer:
+        await checkpointer.setup()
+        app.state.checkpointer = checkpointer
+        yield
 
 # ─── FastAPI 앱 ──────────────────────────────────────────────────────────────
 
@@ -117,9 +153,13 @@ app.include_router(saju.router)
 app.include_router(cities.router)
 app.include_router(profiles.router)
 app.include_router(share.router)
-# app.include_router(compatibility.router)   # 구현 예정
+app.include_router(compatibility.router)
 # app.include_router(daily.router)           # 구현 예정
 app.include_router(question.router)
+app.include_router(chat.router)
+app.include_router(reports.router)
+app.include_router(reports.share_router)
+app.include_router(daily_story.router)
 
 
 @app.get("/health", tags=["상태 확인"])

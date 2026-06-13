@@ -68,13 +68,16 @@ def compute_synastry(calc1: dict, calc2: dict) -> dict:
     if hap:
         tags.append(f"stem_hap_{hap}")
 
-    # 2. 용신 보완
-    ys1 = calc1["yong_sin"]["primary"]
-    ys2 = calc2["yong_sin"]["primary"]
-    if el2 == ys1 or el1 == ys2:
-        tags.append("yong_sin_complement")
-    if el1 == ys1 and el2 == ys2:
-        tags.append("same_yong_sin_element")  # 서로 같은 용신 → 독립적
+    # 2. 용신 보완 (yong_sin 없으면 건너뜀 — raw calculate_saju 결과에도 동작)
+    _ys1 = (calc1.get("yong_sin") or {}).get("primary")
+    _ys2 = (calc2.get("yong_sin") or {}).get("primary")
+    if _ys1 is not None and _ys2 is not None:
+        ys1 = _ys1
+        ys2 = _ys2
+        if el2 == ys1 or el1 == ys2:
+            tags.append("yong_sin_complement")
+        if el1 == ys1 and el2 == ys2:
+            tags.append("same_yong_sin_element")  # 서로 같은 용신 → 독립적
 
     # 3. 오행 결핍 상호 보완
     wx1: dict = calc1["wuxing_count"]
@@ -112,4 +115,76 @@ def compute_synastry(calc1: dict, calc2: dict) -> dict:
     return {
         "interaction_tags": tags,
         **details,
+    }
+
+
+def synastry_for_report(calc1: dict, calc2: dict) -> dict:
+    """
+    리포트용 방향성 신호 셰이퍼.
+
+    기존 compute_synastry 결과에 방향성 신호와 양방향 보완 오행을 추가하여
+    CompatibilitySynastry 형태로 반환한다.
+
+    Returns:
+        {
+          "stem_hap": None | "토/금/수/목/화",
+          "day_ten_god": "정재" (person1 기준 person2 일간의 십성),
+          "element_synergy": "상생" | "상극" | "동기" | None,
+          "clash_pairs": [("인", "신"), ...],
+          "complement_a_to_b": ["목", ...],  # calc1 약한 오행 ∩ calc2 dominant
+          "complement_b_to_a": ["화", ...],  # calc2 약한 오행 ∩ calc1 dominant
+          "yongsin_help": None | "a_helps_b" | "b_helps_a" | "mutual",
+          "interaction_tags": [...],
+        }
+    """
+    base = compute_synastry(calc1, calc2)
+
+    el1 = calc1["day_pillar"]["stem_element"]
+    el2 = calc2["day_pillar"]["stem_element"]
+
+    # yong_sin — raw calculate_saju 결과에는 없을 수 있음
+    _raw_ys1 = (calc1.get("yong_sin") or {}).get("primary")
+    _raw_ys2 = (calc2.get("yong_sin") or {}).get("primary")
+
+    # yongsin_help 방향 판정 — ys1/ys2 는 list 또는 str일 수 있으므로 정규화
+    def _as_list(v) -> list:
+        if v is None:
+            return []
+        if isinstance(v, list):
+            return v
+        return [v]
+
+    ys1_list = _as_list(_raw_ys1)
+    ys2_list = _as_list(_raw_ys2)
+
+    a_helps_b = el1 in ys2_list  # calc1 일간 오행이 calc2 용신이면 a→b
+    b_helps_a = el2 in ys1_list  # calc2 일간 오행이 calc1 용신이면 b→a
+
+    if a_helps_b and b_helps_a:
+        yongsin_help: str | None = "mutual"
+    elif a_helps_b:
+        yongsin_help = "a_helps_b"
+    elif b_helps_a:
+        yongsin_help = "b_helps_a"
+    else:
+        yongsin_help = None
+
+    # 양방향 보완 오행
+    weak1 = calc1.get("weak_elements", [])
+    weak2 = calc2.get("weak_elements", [])
+    dominant1 = calc1.get("dominant_elements", [])
+    dominant2 = calc2.get("dominant_elements", [])
+
+    complement_a_to_b = list(set(weak1) & set(dominant2))
+    complement_b_to_a = list(set(weak2) & set(dominant1))
+
+    return {
+        "stem_hap": base["stem_hap"],
+        "day_ten_god": base["day_ten_god"],
+        "element_synergy": base["element_synergy"],
+        "clash_pairs": base["clash_pairs"],
+        "complement_a_to_b": complement_a_to_b,
+        "complement_b_to_a": complement_b_to_a,
+        "yongsin_help": yongsin_help,
+        "interaction_tags": base["interaction_tags"],
     }

@@ -1,0 +1,5 @@
+# ETL 산출물 — 커밋 금지 (spec §8 보안)
+scripts/etl/out/
+
+# 덤프 파일 — 절대 커밋 금지
+*.sql

@@ -1,0 +1,14 @@
+{
+  "name": "sajuguri",
+  "private": true,
+  "packageManager": "pnpm@11.1.0",
+  "scripts": {
+    "dev": "turbo dev --filter=web",
+    "build": "turbo build",
+    "test": "turbo test",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  }
+}
