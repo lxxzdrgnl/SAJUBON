@@ -425,7 +425,8 @@
     "pickSheet": {
       "title": "Which chart to use?",
       "savedTitle": "Saved charts",
-      "directInput": "Add new chart"
+      "directInput": "Add new chart",
+      "recentTitle": "Recently viewed"
     },
     "chip": {
       "my": "My chart",
