@@ -67,6 +67,10 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
 
   if (!open) return null
 
+  // 저장 만세력과 중복되는 최근 입력 제거
+  const savedKeys = new Set(profiles.map(profileToBirthKey))
+  const filteredRecent = recentInputs.filter((r) => !savedKeys.has(recentToBirthKey(r)))
+
   return (
     <>
       {/* 백드롭 */}
@@ -136,14 +140,14 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
             </section>
           )}
 
-          {/* 게스트 최근 입력 (비로그인 or 저장 목록 없을 때 보조) */}
-          {recentInputs.length > 0 && (!isLoggedIn || profiles.length === 0) && (
+          {/* 최근 입력 (저장 만세력과 중복되지 않는 항목만 표시) */}
+          {filteredRecent.length > 0 && (
             <section className="mb-4">
               <p className="mb-2 text-[12px] font-extrabold uppercase tracking-widest text-text-sub">
                 {t('recentTitle')}
               </p>
               <ul className="flex flex-col gap-2">
-                {recentInputs.map((r) => {
+                {filteredRecent.map((r) => {
                   const key = recentToBirthKey(r)
                   const seen = seenKeys.has(key)
                   const q = toResultQuery(r)
