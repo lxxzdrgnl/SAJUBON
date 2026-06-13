@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useRouter } from '@/i18n/navigation'
+import { persistLocale } from '@/components/LocaleBoot'
 
 /** 마이 탭 하단 인라인 언어 전환 (한국어 / English) — 별도 설정 페이지 없이. */
 export default function LanguageToggleInline() {
@@ -12,6 +13,7 @@ export default function LanguageToggleInline() {
 
   function setLocale(next: 'ko' | 'en') {
     if (next === locale) return
+    persistLocale(next)
     router.replace(pathname, { locale: next })
   }
 

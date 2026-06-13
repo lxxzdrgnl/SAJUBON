@@ -2,6 +2,7 @@
 
 import { useLocale } from 'next-intl'
 import { usePathname, useRouter } from '@/i18n/navigation'
+import { persistLocale } from '@/components/LocaleBoot'
 
 /** 헤더 코너용 컴팩트 언어 토글 (한 / EN) — 로그인 전에도 노출. */
 export default function LanguageToggleCompact() {
@@ -11,6 +12,7 @@ export default function LanguageToggleCompact() {
 
   function setLocale(next: 'ko' | 'en') {
     if (next === locale) return
+    persistLocale(next)
     router.replace(pathname, { locale: next })
   }
 

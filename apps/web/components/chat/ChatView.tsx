@@ -265,7 +265,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
   }
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100dvh - 116px)' }}>
+    <div className="flex flex-col overflow-x-hidden" style={{ height: 'calc(100dvh - 116px)' }}>
       {/* 헤더 */}
       <div className="flex shrink-0 items-center gap-2 border-b-2 border-border-soft pb-3">
         <button
@@ -303,14 +303,14 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
       )}
 
       {/* 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 flex flex-col gap-3">
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`flex gap-2 ${m.role === 'human' ? 'flex-row-reverse' : 'flex-row'}`}
+            className={`flex gap-2 min-w-0 ${m.role === 'human' ? 'flex-row-reverse' : 'flex-row'}`}
           >
             {/* 블록들 */}
-            <div className={`flex flex-col gap-2 max-w-[78%] ${m.role === 'human' ? 'items-end' : 'items-start'}`}>
+            <div className={`flex flex-col gap-2 min-w-0 max-w-[78%] ${m.role === 'human' ? 'items-end' : 'items-start'}`}>
               {m.blocks.map((block, bi) => {
                 if (typeof block === 'string') {
                   if (!block && m.streaming) {
@@ -328,7 +328,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                     return (
                       <div
                         key={bi}
-                        className="rounded-2xl px-4 py-2.5 text-sm font-bold leading-relaxed whitespace-pre-wrap border-2 border-ink bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]"
+                        className="rounded-2xl px-4 py-2.5 text-sm font-bold leading-relaxed whitespace-pre-wrap break-words border-2 border-ink bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]"
                       >
                         {block}
                       </div>
@@ -337,7 +337,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                   return (
                     <div
                       key={bi}
-                      className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed border-2 border-teal bg-surface text-ink"
+                      className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
                     >
                       <Markdown>{block}</Markdown>
                     </div>

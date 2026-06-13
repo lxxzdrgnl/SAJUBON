@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Noto_Serif_KR } from 'next/font/google'
 import { routing } from '@/i18n/routing'
 import TabBar from '@/components/TabBar'
+import LocaleBoot from '@/components/LocaleBoot'
 import '../globals.css'
 
 // 간지(천간·지지) 명조체 — font-serif(--font-serif)에 한글·한자 세리프 글리프를 공급한다.
@@ -47,6 +48,8 @@ export default async function LocaleLayout({
     <html lang={locale} className={notoSerifKR.variable}>
       <body>
         <NextIntlClientProvider>
+          {/* 저장된 언어 선택을 부팅 시 강제 (영어 기기여도 한국어 유지) */}
+          <LocaleBoot />
           {/* 모바일 단일 컬럼 — design.md §7 */}
           <div className="mx-auto min-h-dvh max-w-[640px] px-4 pb-24 pt-[calc(1.25rem+env(safe-area-inset-top))] md:pb-8 md:pt-24">
             {children}
