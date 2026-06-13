@@ -90,7 +90,7 @@ export default async function MyPage() {
                   {repProfile.name}
                 </p>
                 {repProfile.day_stem && repProfile.day_branch && (
-                  <p className="mt-0.5 text-[13px] font-extrabold text-teal-deep">
+                  <p className="mt-0.5 text-[13px] font-extrabold text-ink opacity-75">
                     {repProfile.day_stem}{repProfile.day_branch}일주
                   </p>
                 )}
