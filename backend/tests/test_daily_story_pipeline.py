@@ -77,6 +77,28 @@ def test_overall_card_has_avg_score():
     assert "병" in intro["body"] or "병" in intro["headline"] or "병오" in intro["body"]
 
 
+def test_summary_headline_differs_from_keyword():
+    """summary 카드 headline은 총운 첫 문장, keyword와 같아선 안 된다 (중복 방지)."""
+    data = _engine_data()
+    cards, _, keyword = story.assemble_story(data, profile_name="홍길동")
+    summary = next(c for c in cards if c["kind"] == "summary")
+    # headline은 keyword가 아닌 총운 첫 문장 기반
+    assert summary["headline"] != keyword
+    # 총운 본문(overall)에서 파생된 텍스트여야 함
+    assert summary["headline"] in data["overall"] or summary["headline"].rstrip("…") in data["overall"]
+
+
+def test_keyword_low_avg_uses_calm_word():
+    """총점 50 미만이면 키워드가 긍정 도약형이 아닌 회복/안정 계열이어야 한다."""
+    data = _engine_data()
+    # 모든 점수를 낮게 — avg 40
+    for key in data["fortunes"]:
+        data["fortunes"][key]["score"] = 40
+    _, _, keyword = story.assemble_story(data, profile_name="")
+    # 저점 매핑 키워드들
+    assert keyword in {"인내", "절약", "이해", "집중", "휴식", "배려", "안정"}
+
+
 # ── 2. 리라이트 성공 (LLM 스텁) ──
 class _FakeMsg:
     def __init__(self, content):

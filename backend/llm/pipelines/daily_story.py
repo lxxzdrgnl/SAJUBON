@@ -35,8 +35,19 @@ _CATEGORY_TITLES = {
 }
 
 
-def _keyword_from_top(fortunes: dict, top_key: str) -> str:
-    """최고점 카테고리 기반 키워드 — 규칙 생성."""
+def _keyword_from_top(fortunes: dict, top_key: str, avg: int) -> str:
+    """오늘의 강점 키워드 — 총점 밴드 + 최고점 카테고리 반영."""
+    if avg < 50:
+        # 저점 구간: 강점보다 회복/안정 키워드
+        low_mapping = {
+            "exam": "인내",
+            "money": "절약",
+            "love": "이해",
+            "career": "집중",
+            "health": "휴식",
+            "social": "배려",
+        }
+        return low_mapping.get(top_key, "안정")
     mapping = {
         "exam": "집중",
         "money": "재물",
@@ -48,13 +59,27 @@ def _keyword_from_top(fortunes: dict, top_key: str) -> str:
     return mapping.get(top_key, "오늘")
 
 
+def _overall_oneliner(overall_text: str) -> str:
+    """총운 본문에서 첫 문장(또는 최대 40자)을 뽑아 요약 카드 헤드라인으로 사용."""
+    text = (overall_text or "").strip()
+    if not text:
+        return ""
+    # 첫 마침표·느낌표·물음표 기준으로 자름
+    for end in (".", "!", "?", "。", "！", "？"):
+        idx = text.find(end)
+        if 0 < idx <= 50:
+            return text[: idx + 1]
+    # 구두점 없으면 40자 이하 전체, 초과 시 40자 + "…"
+    return text if len(text) <= 40 else text[:40] + "…"
+
+
 def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str, int], str]:
     """엔진 데이터(dict) → 카드 11장 + scores + keyword (결정론)."""
     fortunes = data["fortunes"]
     scores = {k: int(fortunes[k]["score"]) for k in CATEGORY_KEYS}
     avg = round(sum(scores.values()) / len(scores))
     top_key = max(scores, key=scores.get)
-    keyword = _keyword_from_top(fortunes, top_key)
+    keyword = _keyword_from_top(fortunes, top_key, avg)
 
     ganji = data["day_ganji"]
     ganji_str = f"{ganji['stem']}{ganji['branch']}"
@@ -114,14 +139,15 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
         "body": color.get("reason", ""),
     })
 
-    # summary
+    # summary — headline은 총운 첫 문장(keyword 중복 방지), body는 총운 전체
+    overall_text = data.get("overall", "")
     cards.append({
         "kind": "summary",
         "category_key": None,
         "title": "오늘의 요약",
         "score": avg,
-        "headline": keyword,
-        "body": data.get("overall", ""),
+        "headline": _overall_oneliner(overall_text),
+        "body": overall_text,
     })
 
     return cards, scores, keyword
