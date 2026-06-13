@@ -46,33 +46,29 @@ export default function ChatListClient({ sessions, profiles }: Props) {
           </button>
         </BrutalCard>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {sessions.map((s) => (
             <li key={s.id}>
               <Link href={`/chat/${s.id}`}>
-                <BrutalCard
-                  intensity="soft"
-                  className="flex items-center gap-3 hover:border-ink hover:shadow-[2px_2px_0_#1A1A1A] transition-all"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-[var(--teal-tint)]">
+                <BrutalCard className="flex items-center gap-3 transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-[var(--teal)]">
                     <svg
-                      width="18"
-                      height="18"
+                      width="20"
+                      height="20"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="currentColor"
+                      stroke="#fff"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="text-[var(--teal-deep)]"
                     >
                       <path d="M4 6 a3 3 0 0 1 3-3 h10 a3 3 0 0 1 3 3 v7 a3 3 0 0 1-3 3 H10 l-4.5 4 v-4 H7 a3 3 0 0 1-3-3 Z" />
                     </svg>
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-[14px] font-extrabold text-ink">
+                  <span className="min-w-0 flex-1 truncate text-[15px] font-extrabold text-ink">
                     {s.title || t('sessionFallback')}
                   </span>
-                  <span className="ml-2 shrink-0 rounded-full border border-border-soft bg-surface px-2 py-0.5 text-[11px] font-semibold text-text-sub">
+                  <span className="ml-2 shrink-0 text-xs font-semibold text-text-sub">
                     {formatDate(s.last_message_at)}
                   </span>
                 </BrutalCard>
