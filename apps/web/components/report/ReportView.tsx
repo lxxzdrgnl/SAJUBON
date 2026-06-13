@@ -202,16 +202,16 @@ export default function ReportView({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 헤드라인 아코디언 */}
-      {report.tabs.map((tab, i) => (
-        <TabAccordion key={i} tab={tab} t={t} />
-      ))}
-
-      {/* 올해의 흐름 */}
+      {/* 올해의 흐름 — 최상단 */}
       <YearFlowSection yearFlow={report.year_flow} t={t} />
 
       {/* 대운 비교 */}
       <DaeUnSection daeUn={report.dae_un_analysis} t={t} />
+
+      {/* 헤드라인 아코디언 — 흐름·대운 아래 */}
+      {report.tabs.map((tab, i) => (
+        <TabAccordion key={i} tab={tab} t={t} />
+      ))}
 
       {/* CTA — 공유/다시 생성 (공유 모드에서는 숨김) */}
       {!shareMode && (
