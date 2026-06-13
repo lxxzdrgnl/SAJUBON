@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { loadRecentInputs, removeRecentInput, type RecentBirthInput } from '@sajuguri/core'
@@ -66,6 +67,7 @@ interface ItemState {
 export default function RecentList({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const t = useTranslations('manse.index')
   const tf = useTranslations('manse.form')
+  const router = useRouter()
   const [items, setItems] = useState<RecentBirthInput[] | null>(null)
   const [itemStates, setItemStates] = useState<Record<string, ItemState>>({})
 
@@ -115,6 +117,8 @@ export default function RecentList({ isLoggedIn = false }: { isLoggedIn?: boolea
         longitude: item.birth_longitude,
       })
       patchItemState(key, { saveState: 'done' })
+      // 저장 즉시 '저장된 만세력' 목록에 반영
+      router.refresh()
     } catch {
       patchItemState(key, { saveState: 'error' })
     }

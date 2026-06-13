@@ -404,6 +404,10 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
         onClose={() => setAttachOpen(false)}
         profiles={profiles}
         onAttachPartner={handleAttachPartner}
+        onSubmitPartnerBirth={async (body) => {
+          await handleAttachPartnerBirth(body)
+          setAttachOpen(false)
+        }}
         sessionId={sessionId}
       />
     </div>

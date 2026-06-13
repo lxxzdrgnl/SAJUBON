@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { ApiClient, setRepresentative, deleteProfile } from '@sajuguri/api-client'
@@ -66,6 +66,11 @@ export default function SavedListClient({
   const [isPending, startTransition] = useTransition()
   const [loadingId, setLoadingId] = useState<number | null>(null)
 
+  // router.refresh() 후 서버가 내려준 새 목록(대표 변경·신규 저장)을 반영
+  useEffect(() => {
+    setProfiles(initialProfiles)
+  }, [initialProfiles])
+
   if (profiles.length === 0)
     return <p className="py-6 text-center text-sm text-text-sub">{t('empty')}</p>
 
@@ -75,6 +80,8 @@ export default function SavedListClient({
     setLoadingId(id)
     try {
       await setRepresentative(api, id)
+      // 낙관적 업데이트 — 대표 뱃지 즉시 이동
+      setProfiles((prev) => prev.map((p) => ({ ...p, is_representative: p.id === id })))
       startTransition(() => { router.refresh() })
     } finally {
       setLoadingId(null)
