@@ -6,6 +6,17 @@
 from __future__ import annotations
 from engine.data.earthly_branches import SAM_HAP, CHUNG_PAIRS
 from engine.data.wuxing import WUXING_GENERATION, WUXING_DESTRUCTION
+from engine.calc.ten_gods import calculate_ten_god
+
+
+# 십성별 관계 우호도 — 정관/정인/식신/정재 높음, 편관/겁재 낮음
+_TEN_GOD_HARMONY: dict[str, int] = {
+    "비견": 60, "겁재": 45,
+    "식신": 80, "상관": 60,
+    "편재": 70, "정재": 85,
+    "편관": 50, "정관": 85,
+    "편인": 60, "정인": 80,
+}
 
 
 def _element_harmony(el1: str, el2: str) -> int:
@@ -74,10 +85,9 @@ def _branch_relation_score(saju1: dict, saju2: dict) -> tuple[int, list[str]]:
 
 
 def _ten_gods_score(saju1: dict, saju2: dict) -> int:
-    """십성 상호 관계 점수."""
-    el1 = saju1["day_pillar"]["stem_element"]
-    el2 = saju2["day_pillar"]["stem_element"]
-    return _element_harmony(el1, el2)
+    """십성 상호 관계 점수 (일간 기준 실제 십성 계산)."""
+    rel = calculate_ten_god(saju1["day_pillar"]["stem"], saju2["day_pillar"]["stem"])
+    return _TEN_GOD_HARMONY.get(rel, 60)
 
 
 def check_compatibility(saju1: dict, saju2: dict) -> dict:
@@ -87,7 +97,8 @@ def check_compatibility(saju1: dict, saju2: dict) -> dict:
     Returns:
         total_score, day_pillar_score, element_harmony_score,
         branch_relation_score, ten_gods_score,
-        conflict_branches, complement_elements
+        conflict_branches, complement_elements (하위호환),
+        complement_a_to_b, complement_b_to_a
     """
     dp = _day_pillar_score(saju1, saju2)
     eh = _element_harmony_score(saju1, saju2)
@@ -97,10 +108,18 @@ def check_compatibility(saju1: dict, saju2: dict) -> dict:
     # 가중 평균 (40 : 25 : 20 : 15)
     total = int(dp * 0.40 + eh * 0.25 + br * 0.20 + tg * 0.15)
 
-    # 서로 보완하는 오행 (약한 오행을 상대가 가진 경우)
+    # 양방향 보완 오행
     weak1 = saju1.get("weak_elements", [])
-    strong2 = saju2.get("dominant_elements", [])
-    complement = list(set(weak1) & set(strong2))
+    weak2 = saju2.get("weak_elements", [])
+    dominant1 = saju1.get("dominant_elements", [])
+    dominant2 = saju2.get("dominant_elements", [])
+
+    # a→b: 사주1의 약한 오행을 사주2가 보완
+    complement_a_to_b = list(set(weak1) & set(dominant2))
+    # b→a: 사주2의 약한 오행을 사주1이 보완
+    complement_b_to_a = list(set(weak2) & set(dominant1))
+    # 하위호환: 기존 complement_elements 유지 (a→b 방향)
+    complement = complement_a_to_b
 
     return {
         "total_score": total,
@@ -110,4 +129,6 @@ def check_compatibility(saju1: dict, saju2: dict) -> dict:
         "ten_gods_score": tg,
         "conflict_branches": conflicts,
         "complement_elements": complement,
+        "complement_a_to_b": complement_a_to_b,
+        "complement_b_to_a": complement_b_to_a,
     }
