@@ -22,7 +22,7 @@ from core.exceptions import AppException
 from db.models import Base
 from db.session import engine
 from core.middleware import AccessLogMiddleware
-from routers import saju, cities, auth, profiles, share, question, chat, reports, daily_story
+from routers import saju, cities, auth, profiles, share, question, chat, reports, daily_story, compatibility
 
 # ─── 로깅 설정 ───────────────────────────────────────────────────────────────
 
@@ -153,7 +153,7 @@ app.include_router(saju.router)
 app.include_router(cities.router)
 app.include_router(profiles.router)
 app.include_router(share.router)
-# app.include_router(compatibility.router)   # 구현 예정
+app.include_router(compatibility.router)
 # app.include_router(daily.router)           # 구현 예정
 app.include_router(question.router)
 app.include_router(chat.router)
