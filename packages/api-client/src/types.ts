@@ -270,6 +270,10 @@ export interface ConsultationDetail {
   category: string
   headline: string
   content: string
+  /** 자동 표시 차트 (저장본 그대로) */
+  charts?: ToolChartItem[]
+  /** 칩(더보기) 항목 (저장본 그대로) */
+  more?: ToolChartItem[]
   created_at: string
   share_token: string | null
 }
@@ -285,8 +289,12 @@ export interface ChatSession {
 }
 
 export interface ChatMessage {
-  role: 'human' | 'ai'
+  role: 'human' | 'ai' | 'tool'
   content: string
+  /** role === 'tool' 일 때 tool 이름 */
+  tool?: string
+  /** role === 'tool' 일 때 차트 data */
+  payload?: Record<string, unknown>
 }
 
 export interface ChatReport {
