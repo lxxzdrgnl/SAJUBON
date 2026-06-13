@@ -30,10 +30,12 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
       <div className="mt-2 grid grid-cols-4 gap-1.5">
         {active.map((pk) => {
           const p = pillarOf(data, pk)
+          /* Box: 고정 높이로 가중치 라벨과 간지 글자가 겹치지 않게 분리 */
           const Box = ({ ch, on, weight }: { ch?: string; on: boolean; weight?: string }) => (
-            <div className={`relative flex min-h-[44px] flex-col items-center justify-center rounded-lg border-2 ${on ? 'border-orange bg-orange text-white' : 'border-border-soft bg-surface'}`}>
-              <span className="font-serif text-lg font-black leading-none">{ch ?? '—'}</span>
-              {weight && <span className="absolute bottom-0.5 right-1 text-[8px] font-bold text-text-sub">{weight}</span>}
+            <div className={`flex h-[56px] flex-col items-center justify-center rounded-lg border-2 ${on ? 'border-orange bg-orange text-white' : 'border-border-soft bg-surface'}`}>
+              <span className="font-serif text-xl font-black leading-none">{ch ?? '—'}</span>
+              {/* 가중치 영역을 고정 높이(16px)로 예약 — 없으면 빈 줄로 유지해 정렬 안정 */}
+              <span className={`mt-0.5 text-[9px] font-bold ${on ? 'text-white/70' : 'text-text-sub'}`}>{weight ?? ''}</span>
             </div>
           )
           return (
@@ -65,7 +67,7 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
                 isActive
                   ? 'border-ink bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]'
                   : has
-                    ? 'border-ink bg-surface text-ink'
+                    ? 'border-ink bg-surface text-ink shadow-[2px_2px_0_#1A1A1A]'
                     : 'border-border-soft bg-surface text-text-sub'
               }`}
             >
@@ -88,9 +90,9 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
             {entries.map((e, i) => (
               <div key={i} className="flex flex-col gap-1.5">
                 <p className="text-sm leading-snug text-ink [&_b]:font-black [&_b]:text-orange" dangerouslySetInnerHTML={{ __html: e.text }} />
-                {e.broken && <span className="w-fit rounded-md bg-orange-tint px-2 py-0.5 text-[11px] font-extrabold text-[#B34800]">{t('broken')}</span>}
+                {e.broken && <span className="w-fit rounded-[10px] border-2 border-ink bg-orange-tint px-2 py-0.5 text-[11px] font-extrabold text-[#B34800] shadow-[2px_2px_0_#1A1A1A]">{t('broken')}</span>}
                 {e.resultEl && !e.broken && (
-                  <span className="w-fit rounded-md px-2 py-0.5 text-[11px] font-extrabold" style={{ color: ohaengColor(e.resultEl), background: `${ohaengColor(e.resultEl)}1A` }}>
+                  <span className="w-fit rounded-[10px] border-2 border-ink px-2 py-0.5 text-[11px] font-extrabold shadow-[2px_2px_0_#1A1A1A]" style={{ color: ohaengColor(e.resultEl), background: `${ohaengColor(e.resultEl)}1A` }}>
                     → {e.resultEl}화(化)
                   </span>
                 )}
