@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
 
     # Embedding / RAG
-    embedding_provider: str = "gemini"
-    embedding_model: str = "gemini-embedding-001"
+    embedding_provider: str = "openai"
+    embedding_model: str = "text-embedding-3-small"
     chroma_path: str = "./chroma_db"
 
     # DB (PostgreSQL)
