@@ -81,9 +81,9 @@ export default async function MyPage() {
             className={`rounded-2xl border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A] ${repCardBg(repProfile.day_stem)}`}
           >
             <div className="flex items-center gap-3">
-              {/* 마스코트 아바타 */}
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
-                <MascotTinted stem={repProfile.day_stem} width={52} height={52} />
+              {/* 마스코트 아바타 — 하늘색 배경에 크게 */}
+              <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-ink bg-teal-tint">
+                <MascotTinted stem={repProfile.day_stem} width={72} height={72} />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-[18px] font-black leading-tight">
@@ -101,8 +101,8 @@ export default async function MyPage() {
                   {maskEmail(user.email)}
                 </p>
               </div>
-              {/* 대표 뱃지 — 주황 */}
-              <span className="shrink-0 rounded-full border-2 border-ink bg-orange px-2 py-0.5 text-[10px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A]">
+              {/* 대표 뱃지 — 주황, 크게 */}
+              <span className="shrink-0 self-start rounded-full border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A]">
                 {t('repCard.badge')}
               </span>
             </div>
