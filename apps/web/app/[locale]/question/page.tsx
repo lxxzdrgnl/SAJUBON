@@ -207,7 +207,10 @@ export default function QuestionPage() {
 
   return (
     <main className="flex flex-col gap-5">
-      <h1 className="text-lg font-black">{t('title')}</h1>
+      <div>
+        <h1 className="text-[22px] font-black leading-tight text-ink">{t('title')}</h1>
+        <span className="mt-2 block h-1.5 w-12 rounded-full bg-teal" />
+      </div>
       <p className="text-[13px] text-text-sub">{t('desc')}</p>
 
       <MansePickerSheet

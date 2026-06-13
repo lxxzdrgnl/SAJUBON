@@ -133,7 +133,10 @@ export default function CompatibilityNewPage() {
   // 로그인 상태 — 슬롯 선택 + 요청 주제
   return (
     <main className="flex flex-col gap-5">
-      <h1 className="text-lg font-black">{t('new.title')}</h1>
+      <div>
+        <h1 className="text-[22px] font-black leading-tight text-ink">{t('new.title')}</h1>
+        <span className="mt-2 block h-1.5 w-12 rounded-full bg-orange" />
+      </div>
       <p className="text-[13px] leading-relaxed text-text-sub">{t('new.guideline')}</p>
 
       {/* 요청 주제 입력 (브루탈 스타일) */}

@@ -618,7 +618,7 @@
       "confirmInput": "Select this person"
     },
     "new": {
-      "title": "Are we a match?",
+      "title": "Compatibility Report",
       "guideline": "We analyze two people's Saju into a conclusion-style report on their romantic chemistry.",
       "topicsLabel": "Topics you're curious about (optional)",
       "topicsPlaceholder": "e.g. timing for marriage, why we argue",
