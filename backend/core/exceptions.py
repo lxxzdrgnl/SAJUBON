@@ -60,6 +60,15 @@ class ReportNotFoundException(AppException):
         )
 
 
+class CompatibilityReportNotFoundException(AppException):
+    def __init__(self, token: str):
+        super().__init__(
+            ErrorCode.COMPATIBILITY_REPORT_NOT_FOUND,
+            "해당 궁합 리포트를 찾을 수 없습니다.",
+            {"token": token},
+        )
+
+
 class UnauthorizedException(AppException):
     def __init__(self):
         super().__init__(
