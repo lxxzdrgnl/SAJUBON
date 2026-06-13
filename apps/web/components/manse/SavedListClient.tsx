@@ -109,7 +109,7 @@ export default function SavedListClient({
                 <span className="flex items-center gap-1.5">
                   <span className="truncate text-[15px] font-extrabold">{p.name}</span>
                   {p.is_representative && (
-                    <span className="shrink-0 rounded-full border-[1.5px] border-ink bg-yellow px-2 py-0.5 text-[10px] font-extrabold">
+                    <span className="shrink-0 rounded-full border-[1.5px] border-ink bg-orange px-2 py-0.5 text-[10px] font-extrabold text-white">
                       {t('representative')}
                     </span>
                   )}
