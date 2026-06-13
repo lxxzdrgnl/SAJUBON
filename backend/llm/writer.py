@@ -70,7 +70,8 @@ async def generate_report(
     Returns:
         WriterOutput (tabs: list[TabContent])
     """
-    llm = get_llm(provider)
+    # 10탭 장문 구조화 — 무거운 작업이라 mini로.
+    llm = get_llm(provider, model="gpt-4.1-mini")
 
     # ── 1. PydanticOutputParser 생성 ──
     parser: PydanticOutputParser[WriterOutput] = PydanticOutputParser(
@@ -162,7 +163,8 @@ async def generate_un_flow(
     Returns:
         UnFlowOutput (year_flow + dae_un_analysis)
     """
-    llm = get_llm(provider)
+    # 연운·대운 구조화 해설 — mini로.
+    llm = get_llm(provider, model="gpt-4.1-mini")
 
     parser: PydanticOutputParser[UnFlowOutput] = PydanticOutputParser(
         pydantic_object=UnFlowOutput

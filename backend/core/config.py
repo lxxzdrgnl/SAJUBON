@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # LLM
-    llm_provider: str = "gemini"
+    # LLM — 기본 OpenAI gpt-4.1 계열 (provider별 모델은 providers.get_llm 참고)
+    llm_provider: str = "openai"
     gemini_api_key: str = ""
     openai_api_key: str = ""
     anthropic_api_key: str = ""

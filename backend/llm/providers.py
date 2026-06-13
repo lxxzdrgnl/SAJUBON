@@ -1,4 +1,4 @@
-"""LLM provider — Strategy Pattern. 기본: Gemini 2.0 Flash."""
+"""LLM provider — Strategy Pattern. 기본: OpenAI gpt-4.1-nano (무거운 작업은 gpt-4.1-mini로 오버라이드)."""
 
 from __future__ import annotations
 from langchain_core.language_models import BaseChatModel
@@ -16,9 +16,10 @@ def get_llm(
     provider 우선순위:
       1. 인수로 명시 (테스트·교체 용도)
       2. settings.llm_provider (.env LLM_PROVIDER)
-      3. 기본값 "gemini"
+      3. 기본값 "openai"
 
-    model: provider별 기본 모델을 덮어쓴다 (예: 운세 스토리는 경량 gpt-4o-mini).
+    model: provider별 기본 모델을 덮어쓴다 (예: 리포트는 gpt-4.1-mini).
+    gemini 분기는 Strategy Pattern용으로 남겨두되 기본 경로에서는 쓰지 않는다.
     """
     p = (provider or settings.llm_provider).lower()
 
@@ -33,7 +34,7 @@ def get_llm(
     if p == "openai":
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
-            model=model or "gpt-4o",
+            model=model or "gpt-4.1-nano",
             api_key=settings.openai_api_key or None,
             temperature=temperature,
         )

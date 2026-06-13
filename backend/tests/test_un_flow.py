@@ -105,7 +105,7 @@ async def test_generate_un_flow_with_stub(monkeypatch):
         async def ainvoke(self, messages):
             return _StubResp()
 
-    monkeypatch.setattr(writer_mod, "get_llm", lambda provider=None: _StubLLM())
+    monkeypatch.setattr(writer_mod, "get_llm", lambda *a, **k: _StubLLM())
 
     out = await writer_mod.generate_un_flow(_SAJU, _MONTHS, 2026)
     assert out.year_flow.year == 2026
