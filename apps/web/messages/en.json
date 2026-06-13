@@ -72,7 +72,7 @@
         "desc": "Ask anything, even compatibility · Sign-in required"
       },
       "question": {
-        "title": "Quick Question",
+        "title": "One-Line Reading",
         "desc": "One free question, no sign-in"
       },
       "soon": {
@@ -338,7 +338,7 @@
     }
   },
   "question": {
-    "title": "Quick Question",
+    "title": "One-Line Reading",
     "desc": "Enter your birth info and question — AI answers in one insight.",
     "birthLabel": "Select Saju",
     "birthPlaceholder": "Select a saved chart or enter manually",
