@@ -33,10 +33,19 @@ export default function MascotTinted({ stemBg, width = 44, height = 44 }: Props)
     return <img src="/mascot.svg" alt="" width={width} height={height} />
   }
 
-  const tinted = svgContent
+  let tinted = svgContent
     .replace(/width="[^"]*"/, `width="${width}"`)
     .replace(/height="[^"]*"/, `height="${height}"`)
     .replace(/#FFD900/gi, bodyColor)
+
+  // 회색 몸통이면 디테일(수염·눈·코 등 중간 회색)이 묻혀 칙칙해진다.
+  // 디테일을 잉크 블랙으로 끌어올려 이목구비가 또렷하게 살게 한다.
+  if (grey) {
+    tinted = tinted
+      .replace(/#666/gi, '#1A1A1A')
+      .replace(/#3A3A3A/gi, '#1A1A1A')
+      .replace(/#333/gi, '#1A1A1A')
+  }
 
   const wrapStyle: React.CSSProperties = grey
     ? { filter: 'drop-shadow(0 0 3px rgba(160,175,200,0.65))' }
