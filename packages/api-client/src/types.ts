@@ -315,3 +315,94 @@ export interface ChatSessionCreate {
   calendar?: string
   is_leap_month?: boolean
 }
+
+// ── 궁합 리포트 ──────────────────────────────────────────────────────────────
+
+/** 궁합 리포트용 사람 입력 — 이름 포함 (backend BirthInput) */
+export interface BirthInput {
+  name?: string | null
+  /** 생년월일 YYYY-MM-DD. 공유 mask 시 null 반환 가능 */
+  birth_date: string | null
+  /** 출생 시각 HH:MM. 시간 모를 경우 null. 공유 mask 시 null */
+  birth_time: string | null
+  gender: 'male' | 'female'
+  calendar?: 'solar' | 'lunar'
+  is_leap_month?: boolean
+  birth_longitude?: number | null
+  birth_utc_offset?: number | null
+}
+
+/** 궁합 점수 오버뷰 (check_compatibility 기반) */
+export interface CompatibilityScore {
+  total: number
+  day_pillar: number
+  element_harmony: number
+  branch_relation: number
+  ten_gods: number
+}
+
+/** 방향성 신호 (synastry_for_report 기반) */
+export interface CompatibilitySynastry {
+  stem_hap: string | null
+  day_ten_god: string
+  element_synergy: string | null
+  /** 지지충 쌍 목록 */
+  clash_pairs: [string, string][]
+  complement_a_to_b: string[]
+  complement_b_to_a: string[]
+  yongsin_help: 'a_helps_b' | 'b_helps_a' | 'mutual' | null
+  interaction_tags: string[]
+}
+
+/**
+ * 궁합 탭 — ReportTab과 구조 동일 (backend CompatibilityTab = ReportTab 별칭).
+ * ReportTab을 직접 import해도 되지만 타입 안정성을 위해 독립 선언.
+ */
+export interface CompatibilityTab {
+  category: string
+  headline: string
+  content: string
+  requested: boolean
+}
+
+/** POST /api/compatibility — 궁합 리포트 생성 요청 */
+export interface CompatibilityReportRequest {
+  person_a: BirthInput
+  person_b: BirthInput
+  request_topics?: string | null
+  language?: string
+}
+
+/** GET /api/compatibility — 목록 항목 */
+export interface CompatibilityReportSummary {
+  id: number
+  person_a_name: string | null
+  person_b_name: string | null
+  total_score: number
+  request_topics: string | null
+  created_at: string
+}
+
+/** GET /api/compatibility/{id} — 단건 전체 */
+export interface CompatibilityReportDetail {
+  id: number
+  person_a: BirthInput
+  person_b: BirthInput
+  score: CompatibilityScore
+  synastry: CompatibilitySynastry
+  tabs: CompatibilityTab[]
+  request_topics: string | null
+  language: string
+  created_at: string
+}
+
+/** POST /api/compatibility/{id}/share — 공유 토큰 발급 요청 */
+export interface CompatibilityShareRequest {
+  mask_birth: boolean
+}
+
+/** 공유 토큰 발급 응답 */
+export interface CompatibilityShareResponse {
+  share_token: string
+  share_url: string
+}
