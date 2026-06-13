@@ -596,6 +596,46 @@
       "repBadge": "Default",
       "backToList": "Back to list",
       "confirmInput": "Select this person"
+    },
+    "new": {
+      "title": "Compatibility Report",
+      "guideline": "We analyze two people's Saju into a conclusion-style report on their romantic chemistry.",
+      "topicsLabel": "Topics you're curious about (optional)",
+      "topicsPlaceholder": "e.g. timing for marriage, why we argue",
+      "topicsHint": "Separate multiple topics with commas to get a dedicated tab for each.",
+      "checking": "Checking...",
+      "loadingNote": "AI is analyzing both charts. This usually takes 30-60 seconds.",
+      "loginRequired": "Login required",
+      "loginDesc": "Sign in to create, save, and share compatibility reports.",
+      "loginWithGoogle": "Continue with Google",
+      "errorLogin": "Login required. Please sign in again.",
+      "errorLimit": "Too many requests. Please try again in a moment.",
+      "errorFallback": "Failed to create the report. Please try again.",
+      "loading": {
+        "0": "Reading both people's charts...",
+        "1": "Examining stem combinations and element flow...",
+        "2": "Analyzing branch clashes and harmonies...",
+        "3": "Writing chemistry insights just for you two...",
+        "4": "Almost there, hang tight..."
+      }
+    },
+    "view": {
+      "guideText": "Tap each headline to expand the reading.",
+      "errorFallback": "Couldn't load the report. Please try again."
+    },
+    "share": {
+      "shareBtn": "Share compatibility report",
+      "title": "Share Compatibility Report",
+      "maskBirthLabel": "Show birth date & time",
+      "creating": "Creating link...",
+      "copyUrl": "Copy link",
+      "copied": "Copied!",
+      "error": "Failed to create the share link. Please try again.",
+      "notFoundTitle": "Share link not found.",
+      "notFoundDesc": "The link has expired or the address is invalid.",
+      "ctaTitle": "Curious about your own compatibility?",
+      "ctaDesc": "Just enter two people's birth details to get an AI compatibility report.",
+      "ctaBtn": "Check my compatibility"
     }
   }
 }
