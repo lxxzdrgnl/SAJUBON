@@ -94,3 +94,7 @@ frontend/CLAUDE.md
 .turbo/
 *.tsbuildinfo
 speech.md
+.next-docker/
+
+Photos/
+.pnpm-store/
