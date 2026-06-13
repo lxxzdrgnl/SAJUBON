@@ -252,6 +252,44 @@
       "notFoundDesc": "The link may have expired or is invalid."
     }
   },
+  "chat": {
+    "title": "AI Saju Chat",
+    "loginRequired": "Sign in to continue",
+    "loginDesc": "AI chat is available for signed-in users only.",
+    "loginWithGoogle": "Sign in with Google",
+    "newSession": "New chat",
+    "empty": "No chats yet",
+    "emptyHint": "Start your first consultation",
+    "sessionFallback": "Saju Chat",
+    "pickSheet": {
+      "title": "Which chart to use?",
+      "savedTitle": "Saved charts",
+      "directInput": "Enter manually"
+    },
+    "chip": {
+      "my": "My chart",
+      "partner": "Partner chart",
+      "addPartner": "+ Partner chart"
+    },
+    "input": {
+      "placeholder": "Type your question freely",
+      "send": "Send"
+    },
+    "attach": {
+      "title": "Attach chart",
+      "replaceMy": "Replace my chart",
+      "attachPartner": "Attach partner chart"
+    },
+    "inlinePartner": {
+      "prompt": "I need your partner's birth info. Please attach it.",
+      "action": "Select partner chart"
+    },
+    "error": {
+      "load": "Could not load chat history",
+      "send": "Send failed. Please try again."
+    },
+    "streaming": "Generating response…"
+  },
   "fortune": {
     "banner": {
       "title": "Today's Fortune",
