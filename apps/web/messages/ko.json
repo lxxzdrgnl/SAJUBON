@@ -504,7 +504,16 @@
       "shareLink": "링크 공유",
       "copied": "복사됨",
       "shareLabel": "사주구리 오늘의 운세",
-      "back": "뒤로"
+      "back": "뒤로",
+      "shareCta": "나도 내 운세 보기"
+    },
+    "shared": {
+      "notFoundTitle": "공유 링크를 찾을 수 없어요",
+      "notFoundBody": "링크가 만료됐거나 잘못된 주소예요",
+      "metaTitle": "{name}님의 오늘 운세 · {keyword} {score}점",
+      "metaDescription": "{name}님의 오늘 운세를 확인해보세요. 키워드는 \"{keyword}\".",
+      "metaTitleFallback": "사주구리 오늘의 운세",
+      "metaDescriptionFallback": "사주구리에서 오늘의 운세를 확인해보세요."
     },
     "my": {
       "title": "운세 기록",

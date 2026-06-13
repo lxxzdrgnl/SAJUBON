@@ -504,7 +504,16 @@
       "shareLink": "Share link",
       "copied": "Copied",
       "shareLabel": "SajuGuri Daily Fortune",
-      "back": "Back"
+      "back": "Back",
+      "shareCta": "See my own fortune"
+    },
+    "shared": {
+      "notFoundTitle": "Share link not found",
+      "notFoundBody": "The link may have expired or is invalid",
+      "metaTitle": "{name}'s fortune today · {keyword} {score}",
+      "metaDescription": "Check out {name}'s fortune today. Keyword: \"{keyword}\".",
+      "metaTitleFallback": "SajuGuri Daily Fortune",
+      "metaDescriptionFallback": "Check today's fortune on SajuGuri."
     },
     "my": {
       "title": "Fortune history",

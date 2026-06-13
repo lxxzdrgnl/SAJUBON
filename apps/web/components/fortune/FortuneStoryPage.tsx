@@ -36,13 +36,22 @@ function todayLocal(): string {
 /** 배경 위 흩뿌린 점 — 결정적 좌표, prefers-reduced-motion 무관 (정적 데코). */
 const DOTS = scatterDots(14)
 
-export default function FortuneStoryPage() {
+interface FortuneStoryPageProps {
+  /**
+   * 미리 받은 스토리를 주입하면 fetch를 건너뛰고 읽기전용(공유) 모드로 렌더한다.
+   * 없으면 기존 동작(쿼리 파라미터로 생성/저장본 재생).
+   */
+  initialStory?: DailyStoryResponse
+}
+
+export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps = {}) {
   const t = useTranslations('fortune.story')
   const router = useRouter()
   const params = useSearchParams()
 
-  const [story, setStory] = useState<DailyStoryResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+  const shareMode = initialStory != null
+  const [story, setStory] = useState<DailyStoryResponse | null>(initialStory ?? null)
+  const [loading, setLoading] = useState(!initialStory)
   const [error, setError] = useState<string | null>(null)
   const [cardIndex, setCardIndex] = useState(0)
   // 전환 방향 — 카드 슬라이드 인 방향 결정 (next=오른쪽에서, prev=왼쪽에서)
@@ -83,8 +92,9 @@ export default function FortuneStoryPage() {
     [goPrev, goNext],
   )
 
-  // 데이터 로드
+  // 데이터 로드 — 공유 모드(initialStory 주입)면 fetch 스킵
   useEffect(() => {
+    if (shareMode) return
     let cancelled = false
 
     async function load() {
@@ -164,7 +174,7 @@ export default function FortuneStoryPage() {
 
     load()
     return () => { cancelled = true }
-  }, [params, t])
+  }, [params, t, shareMode])
 
   const totalCards = story?.cards.length ?? 0
   const segments = calcSegmentFills(totalCards, cardIndex)
@@ -376,6 +386,7 @@ export default function FortuneStoryPage() {
                   story={story}
                   onClose={handleClose}
                   palette={palette}
+                  shareMode={shareMode}
                 />
               )}
             </div>

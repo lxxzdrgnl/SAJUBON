@@ -1,0 +1,104 @@
+import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { getTranslations } from 'next-intl/server'
+import { serverApi } from '@/lib/api'
+import { getSharedFortune } from '@sajuguri/api-client'
+import type { DailyStoryResponse } from '@sajuguri/api-client'
+import FortuneStoryPage from '@/components/fortune/FortuneStoryPage'
+
+export const dynamic = 'force-dynamic'
+
+/** 총점 — overall 카드 점수 또는 카테고리 평균 (SummaryCard와 동일 규칙). */
+function overallScore(story: DailyStoryResponse): number | undefined {
+  const fromCard = story.cards.find((c) => c.kind === 'overall')?.score
+  if (fromCard !== undefined) return fromCard
+  const keys = Object.keys(story.scores)
+  if (keys.length === 0) return undefined
+  return Math.round(keys.reduce((s, k) => s + (story.scores[k] ?? 0), 0) / keys.length)
+}
+
+// OG 메타 — 카카오/트위터 미리보기. og:image는 동일 경로 opengraph-image.tsx가 제공.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ token: string }>
+}): Promise<Metadata> {
+  const { token } = await params
+  const t = await getTranslations('fortune.shared')
+
+  let story: DailyStoryResponse | null = null
+  try {
+    story = await getSharedFortune(serverApi, token)
+  } catch {
+    story = null
+  }
+
+  if (!story) {
+    return {
+      title: t('metaTitleFallback'),
+      description: t('metaDescriptionFallback'),
+      robots: { index: false },
+    }
+  }
+
+  const score = overallScore(story)
+  const title = t('metaTitle', {
+    name: story.profile_name || t('metaTitleFallback'),
+    keyword: story.keyword,
+    score: score ?? '',
+  })
+  const description = t('metaDescription', {
+    name: story.profile_name || t('metaTitleFallback'),
+    keyword: story.keyword,
+  })
+
+  return {
+    title,
+    description,
+    robots: { index: false },
+    openGraph: {
+      title,
+      description,
+      siteName: '사주구리',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  }
+}
+
+export default async function SharedFortunePage({
+  params,
+}: {
+  params: Promise<{ token: string }>
+}) {
+  const { token } = await params
+
+  let story: DailyStoryResponse | null = null
+  try {
+    story = await getSharedFortune(serverApi, token)
+  } catch {
+    story = null
+  }
+
+  if (!story) {
+    const t = await getTranslations('fortune.shared')
+    return (
+      <main className="pt-16 text-center">
+        <p className="text-[15px] font-extrabold text-text-sub">{t('notFoundTitle')}</p>
+        <p className="mt-2 text-[13px] text-text-sub">{t('notFoundBody')}</p>
+      </main>
+    )
+  }
+
+  // 읽기전용 공유 모드 — 미리 받은 스토리를 주입하면 fetch 스킵.
+  // FortuneStoryPage는 useSearchParams를 쓰므로 Suspense로 감싼다.
+  return (
+    <Suspense>
+      <FortuneStoryPage initialStory={story} />
+    </Suspense>
+  )
+}

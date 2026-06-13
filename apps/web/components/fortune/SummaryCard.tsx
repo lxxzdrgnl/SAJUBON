@@ -14,6 +14,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
+import { createFortuneShare } from '@sajuguri/api-client'
+import { api } from '@/lib/api'
 import { calcScoreBars } from '@/lib/fortune/canvas'
 import { hexToRgba, type CardPalette } from '@/lib/fortune/story'
 
@@ -36,9 +38,11 @@ interface Props {
   story: DailyStoryResponse
   onClose: () => void
   palette: CardPalette
+  /** 공유(읽기전용) 모드 — 저장/공유 동선 대신 "나도 내 운세 보기" CTA */
+  shareMode?: boolean
 }
 
-export default function SummaryCard({ story, palette }: Props) {
+export default function SummaryCard({ story, palette, shareMode = false }: Props) {
   const t = useTranslations('fortune.summary')
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [saving, setSaving] = useState(false)
@@ -188,18 +192,29 @@ export default function SummaryCard({ story, palette }: Props) {
     }
   }
 
-  /** 링크 공유 — record_id 있으면 /fortune?record={id}, 없으면 클립보드 복사 */
+  /**
+   * 링크 공유 — 추측 불가 토큰 발급 후 공개 공유 URL을 복사/네이티브 공유.
+   * createFortuneShare(story) → share_token → /share/fortune/{token}
+   * (순차 정수 record_id 노출 금지)
+   */
   async function handleShareLink() {
     setSharing(true)
     try {
-      const url = story.record_id
-        ? `${window.location.origin}/fortune?record=${story.record_id}`
-        : window.location.href
+      const { share_token } = await createFortuneShare(api, { story })
+      const url = `${window.location.origin}/share/fortune/${share_token}`
+      if (typeof navigator.share === 'function') {
+        try {
+          await navigator.share({ title: t('shareLabel'), url })
+          return
+        } catch {
+          // 사용자 취소·미지원 → 클립보드 폴백
+        }
+      }
       await navigator.clipboard.writeText(url)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // 클립보드 불가 — silent fail
+      // 발급·클립보드 불가 — silent fail
     } finally {
       setSharing(false)
     }
@@ -321,7 +336,19 @@ export default function SummaryCard({ story, palette }: Props) {
         </div>
       )}
 
-      {/* CTA 버튼 — 공유 동선 강조 */}
+      {/* CTA 버튼 — 공유 모드면 "나도 내 운세 보기", 아니면 저장/공유 동선 */}
+      {shareMode ? (
+        <div className="mt-auto pt-3" style={rise(orderedKeys.length * 80 + 540)}>
+          <a
+            href="/fortune"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-black transition-all duration-100 active:translate-y-[2px]"
+            style={{ background: ink, color: CARD_BG }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {t('shareCta')}
+          </a>
+        </div>
+      ) : (
       <div className="mt-auto flex gap-3 pt-3" style={rise(orderedKeys.length * 80 + 540)}>
         {/* 이미지 저장 — 잉크 솔리드 필 */}
         <button
@@ -353,6 +380,7 @@ export default function SummaryCard({ story, palette }: Props) {
           {copied ? t('copied') : t('shareLink')}
         </button>
       </div>
+      )}
 
       {/* 숨겨진 캔버스 (이미지 생성용) */}
       <canvas ref={canvasRef} className="hidden" />
