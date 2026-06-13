@@ -11,6 +11,7 @@ from db.models import User
 from dependencies.auth import get_current_user, get_optional_user
 from dependencies.db import get_db
 from schemas.question import (
+    ChartItem,
     QuestionRequest,
     QuestionResponse,
     ConsultationHistoryItem,
@@ -47,12 +48,14 @@ async def ask_question(
     user: User | None = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db),
 ) -> QuestionResponse:
-    row = await create_consultation_flow(db, req, user.id if user else None)
+    result = await create_consultation_flow(db, req, user.id if user else None)
     return QuestionResponse(
-        id=row.id,
-        headline=row.headline,
-        content=row.content,
-        category=row.category,
+        id=result.row.id,
+        headline=result.row.headline,
+        content=result.row.content,
+        category=result.row.category,
+        charts=[ChartItem(**c) for c in result.charts],
+        more=[ChartItem(**c) for c in result.more],
     )
 
 

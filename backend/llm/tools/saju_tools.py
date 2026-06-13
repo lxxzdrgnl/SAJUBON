@@ -20,6 +20,19 @@ from rag.search import handle_search_by_context
 from engine.calc.ten_gods import calculate_ten_god, get_branch_ten_god
 from engine.calc.se_un import calc_year_ganji, calc_month_ganji, get_element_interaction
 from engine.calc.twelve_wun import get_twelve_wun
+from llm.tools.chart_payloads import (
+    payload_wuxing_balance,
+    payload_ten_gods,
+    payload_sin_sal,
+    payload_palja,
+    payload_strength,
+    payload_twelve_un_seong,
+    payload_hap_chung,
+    payload_dae_un,
+    payload_wol_un,
+    payload_yeon_un,
+    payload_il_jin,
+)
 
 # request_partner_profile tool이 반환하는 시그널 문자열.
 # SSE 레이어(routers/chat.py)가 이 tool 호출을 감지해 request_partner 이벤트를 방출한다.
@@ -133,10 +146,9 @@ async def get_wol_un(year: int | None = None, config: RunnableConfig = None) -> 
     """특정 연도의 월운 12개. year 생략 시 올해."""
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
-    day_stem = saju["day_pillar"]["stem"]
     target_year = year or date_type.today().year
-    result = await asyncio.to_thread(handle_get_wol_un, year=target_year, day_stem=day_stem)
-    return _envelope(f"{target_year}년 월운 12개월 데이터입니다.", {"year": target_year, "months": result})
+    data = await asyncio.to_thread(payload_wol_un, saju, target_year)
+    return _envelope(f"{target_year}년 월운 12개월 데이터입니다.", data)
 
 
 @tool
@@ -144,7 +156,7 @@ async def get_dae_un(config: RunnableConfig = None) -> str:
     """대운 전체 목록 (12개)."""
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
-    return _envelope("대운 전체 타임라인 데이터입니다.", {"dae_un_list": saju["dae_un_list"]})
+    return _envelope("대운 전체 타임라인 데이터입니다.", payload_dae_un(saju))
 
 
 @tool
@@ -152,10 +164,9 @@ async def get_yeon_un(start_year: int | None = None, count: int = 5, config: Run
     """N년치 연운. start_year 생략 시 올해부터."""
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
-    day_stem = saju["day_pillar"]["stem"]
     start = start_year or date_type.today().year
-    result = await asyncio.to_thread(handle_get_yeon_un, start_year=start, count=min(count, 10), day_stem=day_stem)
-    return _envelope(f"{start}년부터 {len(result)}년치 연운 데이터입니다.", {"start_year": start, "years": result})
+    data = await asyncio.to_thread(payload_yeon_un, saju, start, count)
+    return _envelope(f"{start}년부터 {len(data['years'])}년치 연운 데이터입니다.", data)
 
 
 @tool
@@ -164,8 +175,8 @@ async def get_il_jin(year: int | None = None, month: int | None = None, config: 
     today = date_type.today()
     y = year or today.year
     m = month or today.month
-    result = await asyncio.to_thread(handle_get_il_jin, year=y, month=m)
-    return _envelope(f"{y}년 {m}월 일진 달력 데이터입니다.", {"year": y, "month": m, "days": result})
+    data = await asyncio.to_thread(payload_il_jin, y, m)
+    return _envelope(f"{y}년 {m}월 일진 달력 데이터입니다.", data)
 
 
 @tool
@@ -222,16 +233,7 @@ async def get_wuxing_balance(config: RunnableConfig = None) -> str:
     if weak:
         parts.append(f"{'·'.join(weak)} 기운이 약한")
     summary = f"오행 분포는 {' '.join(parts)} 구조입니다." if parts else "오행 분포 데이터입니다."
-    data = {
-        "wuxing_count_hap":          saju["wuxing_count_hap"],
-        "wuxing_count":              saju["wuxing_count"],
-        "wuxing_chars":              saju["wuxing_chars"],
-        "wuxing_hap_contributions":  saju["wuxing_hap_contributions"],
-        "dominant_elements":         dominant,
-        "weak_elements":             weak,
-        "day_stem_element":          saju["day_pillar"]["stem_element"],
-    }
-    return _envelope(summary, data)
+    return _envelope(summary, payload_wuxing_balance(saju))
 
 
 @tool
@@ -242,11 +244,7 @@ async def get_ten_gods(config: RunnableConfig = None) -> str:
     dist = saju.get("ten_gods_distribution", {})
     top = max(dist, key=dist.get) if dist else ""
     summary = f"십성 분포에서 {top}이(가) 가장 두드러집니다." if top else "십성 분포 데이터입니다."
-    data = {
-        "ten_gods_distribution": dist,
-        "structure_patterns":    saju["structure_patterns"],
-    }
-    return _envelope(summary, data)
+    return _envelope(summary, payload_ten_gods(saju))
 
 
 @tool
@@ -257,7 +255,7 @@ async def get_sin_sal(config: RunnableConfig = None) -> str:
     sin_sals = saju.get("sin_sals", [])
     names = "·".join(s["name"] for s in sin_sals)
     summary = f"사주에 {names} 신살이 있습니다." if names else "별다른 신살은 없습니다."
-    return _envelope(summary, {"sin_sals": sin_sals})
+    return _envelope(summary, payload_sin_sal(saju))
 
 
 @tool
@@ -267,15 +265,7 @@ async def get_palja(config: RunnableConfig = None) -> str:
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
     day = saju["day_pillar"]
     summary = f"일간 {day['stem']}({day['stem_element']})을 중심으로 한 사주팔자 원국입니다."
-    data = {
-        "year_pillar":  saju["year_pillar"],
-        "month_pillar": saju["month_pillar"],
-        "day_pillar":   day,
-        "hour_pillar":  saju["hour_pillar"],
-        "day_stem":     day["stem"],
-        "gyeok_guk":    saju["gyeok_guk"],
-    }
-    return _envelope(summary, data)
+    return _envelope(summary, payload_palja(saju))
 
 
 @tool
@@ -289,11 +279,7 @@ async def get_strength(config: RunnableConfig = None) -> str:
         f"일간은 {strength.get('level_8', strength.get('level', ''))}이며 "
         f"용신은 {yong.get('primary', '')}입니다."
     )
-    data = {
-        "day_master_strength": strength,
-        "yong_sin":            yong,
-    }
-    return _envelope(summary, data)
+    return _envelope(summary, payload_strength(saju))
 
 
 @tool
@@ -302,25 +288,12 @@ async def get_twelve_un_seong(config: RunnableConfig = None) -> str:
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
     day = saju["day_pillar"]
-    pillars_wun = {}
-    for key in ("year_pillar", "month_pillar", "day_pillar", "hour_pillar"):
-        p = saju.get(key)
-        if p:
-            pillars_wun[key] = {
-                "stem": p["stem"],
-                "branch": p["branch"],
-                "twelve_wun": p["twelve_wun"],
-            }
-    wun_labels = [f"{p['stem']}{p['branch']}({p['twelve_wun']})" for p in pillars_wun.values()]
-    summary = (
-        f"일간 {day['stem']}의 12운성: "
-        + ", ".join(wun_labels)
-    )
-    data = {
-        "pillars_wun": pillars_wun,
-        "day_stem": day["stem"],
-        "day_element": day["stem_element"],
-    }
+    data = payload_twelve_un_seong(saju)
+    wun_labels = [
+        f"{p['stem']}{p['branch']}({p['twelve_wun']})"
+        for p in data["pillars_wun"].values()
+    ]
+    summary = f"일간 {day['stem']}의 12운성: " + ", ".join(wun_labels)
     return _envelope(summary, data)
 
 
@@ -329,10 +302,10 @@ async def get_hap_chung(config: RunnableConfig = None) -> str:
     """합충 관계 분석. '합충', '기둥끼리 관계', '충', '삼합/육합', '공망' 질문에 사용."""
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
-    branch_relations = saju.get("branch_relations", {})
-    gong_mang = saju.get("gong_mang", {"vacant_branches": [], "affected_pillars": []})
+    data = payload_hap_chung(saju)
+    branch_relations = data["branch_relations"]
+    gong_mang = data["gong_mang"]
 
-    # 활성 관계 종류 요약 (비어있지 않은 키)
     active_keys = [k for k, v in branch_relations.items() if v]
     summary_parts = []
     if active_keys:
@@ -345,15 +318,6 @@ async def get_hap_chung(config: RunnableConfig = None) -> str:
         if summary_parts
         else "특별한 합충 관계가 없습니다."
     )
-
-    data = {
-        "year_pillar":   saju.get("year_pillar"),
-        "month_pillar":  saju.get("month_pillar"),
-        "day_pillar":    saju.get("day_pillar"),
-        "hour_pillar":   saju.get("hour_pillar"),
-        "branch_relations": branch_relations,
-        "gong_mang":     gong_mang,
-    }
     return _envelope(summary, data)
 
 

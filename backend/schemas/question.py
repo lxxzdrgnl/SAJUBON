@@ -3,7 +3,7 @@
 from __future__ import annotations
 import uuid
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 from schemas.saju import SajuCalcRequest
@@ -55,12 +55,20 @@ class ConsultationOutput(BaseModel):
     )
 
 
+class ChartItem(BaseModel):
+    """단일 차트 아이템 — tool 이름 + payload."""
+    tool:    str = Field(description="차트 tool 이름 (e.g. get_wuxing_balance)")
+    payload: dict[str, Any] = Field(description="프론트 ToolCard가 소비하는 data dict")
+
+
 class QuestionResponse(BaseModel):
     """한줄 상담 API 응답 (자동 저장, id 포함)."""
     id:       int
     headline: str
     content:  str
     category: str
+    charts:   list[ChartItem] = Field(default_factory=list, description="자동 표시 차트 (0~2개)")
+    more:     list[ChartItem] = Field(default_factory=list, description="칩 클릭 시 펼침 차트 (0~4개)")
 
 
 class ConsultationHistoryItem(BaseModel):
