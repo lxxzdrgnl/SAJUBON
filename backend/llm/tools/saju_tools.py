@@ -39,6 +39,8 @@ CHART_TOOL_NAMES = frozenset({
     "get_sin_sal",
     "get_palja",
     "get_strength",
+    "get_twelve_un_seong",
+    "get_hap_chung",
 })
 
 
@@ -290,6 +292,67 @@ async def get_strength(config: RunnableConfig = None) -> str:
     data = {
         "day_master_strength": strength,
         "yong_sin":            yong,
+    }
+    return _envelope(summary, data)
+
+
+@tool
+async def get_twelve_un_seong(config: RunnableConfig = None) -> str:
+    """12운성(십이운성) 분석. '12운성', '각 기둥 생로병사', '기둥별 생애단계' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    day = saju["day_pillar"]
+    pillars_wun = {}
+    for key in ("year_pillar", "month_pillar", "day_pillar", "hour_pillar"):
+        p = saju.get(key)
+        if p:
+            pillars_wun[key] = {
+                "stem": p["stem"],
+                "branch": p["branch"],
+                "twelve_wun": p["twelve_wun"],
+            }
+    wun_labels = [f"{p['stem']}{p['branch']}({p['twelve_wun']})" for p in pillars_wun.values()]
+    summary = (
+        f"일간 {day['stem']}의 12운성: "
+        + ", ".join(wun_labels)
+    )
+    data = {
+        "pillars_wun": pillars_wun,
+        "day_stem": day["stem"],
+        "day_element": day["stem_element"],
+    }
+    return _envelope(summary, data)
+
+
+@tool
+async def get_hap_chung(config: RunnableConfig = None) -> str:
+    """합충 관계 분석. '합충', '기둥끼리 관계', '충', '삼합/육합', '공망' 질문에 사용."""
+    birth_info = _birth_info(config)
+    saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+    branch_relations = saju.get("branch_relations", {})
+    gong_mang = saju.get("gong_mang", {"vacant_branches": [], "affected_pillars": []})
+
+    # 활성 관계 종류 요약 (비어있지 않은 키)
+    active_keys = [k for k, v in branch_relations.items() if v]
+    summary_parts = []
+    if active_keys:
+        summary_parts.append("·".join(active_keys) + " 관계가 있습니다")
+    if gong_mang.get("affected_pillars"):
+        affected = "·".join(gong_mang["affected_pillars"])
+        summary_parts.append(f"{affected}주에 공망")
+    summary = (
+        "합충 관계: " + ", ".join(summary_parts)
+        if summary_parts
+        else "특별한 합충 관계가 없습니다."
+    )
+
+    data = {
+        "year_pillar":   saju.get("year_pillar"),
+        "month_pillar":  saju.get("month_pillar"),
+        "day_pillar":    saju.get("day_pillar"),
+        "hour_pillar":   saju.get("hour_pillar"),
+        "branch_relations": branch_relations,
+        "gong_mang":     gong_mang,
     }
     return _envelope(summary, data)
 

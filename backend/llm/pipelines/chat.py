@@ -20,6 +20,7 @@ from llm.tools.saju_tools import (
     evaluate_specific_date, explain_past_event, check_current_sin_sal_timing,
     get_compatibility_detail, request_partner_profile,
     get_wuxing_balance, get_ten_gods, get_sin_sal, get_palja, get_strength,
+    get_twelve_un_seong, get_hap_chung,
 )
 
 CHAT_TOOLS = [
@@ -29,6 +30,7 @@ CHAT_TOOLS = [
     evaluate_specific_date, explain_past_event, check_current_sin_sal_timing,
     get_compatibility_detail, request_partner_profile,
     get_wuxing_balance, get_ten_gods, get_sin_sal, get_palja, get_strength,
+    get_twelve_un_seong, get_hap_chung,
 ]
 
 

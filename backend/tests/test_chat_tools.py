@@ -21,6 +21,8 @@ from llm.tools.saju_tools import (
     get_sin_sal,
     get_palja,
     get_strength,
+    get_twelve_un_seong,
+    get_hap_chung,
 )
 
 
@@ -191,6 +193,8 @@ _CARD_TOOLS = {
     "get_sin_sal":        get_sin_sal,
     "get_palja":          get_palja,
     "get_strength":       get_strength,
+    "get_twelve_un_seong": get_twelve_un_seong,
+    "get_hap_chung":      get_hap_chung,
 }
 
 _CARD_DATA_KEYS = {
@@ -203,6 +207,8 @@ _CARD_DATA_KEYS = {
     "get_sin_sal":   ["sin_sals"],
     "get_palja":     ["year_pillar", "month_pillar", "day_pillar", "hour_pillar", "day_stem", "gyeok_guk"],
     "get_strength":  ["day_master_strength", "yong_sin"],
+    "get_twelve_un_seong": ["pillars_wun", "day_stem", "day_element"],
+    "get_hap_chung": ["year_pillar", "month_pillar", "day_pillar", "branch_relations", "gong_mang"],
 }
 
 
@@ -249,3 +255,61 @@ class TestVisualCardTools:
         for p in ("year_pillar", "month_pillar", "day_pillar"):
             assert "stem" in data[p] and "branch" in data[p]
         assert data["day_stem"] == data["day_pillar"]["stem"]
+
+
+class TestTwelveUnSeongTool:
+    def _config(self) -> RunnableConfig:
+        return {"configurable": {"birth_info": _BIRTH_SELF}}
+
+    def test_in_chart_whitelist(self):
+        assert "get_twelve_un_seong" in CHART_TOOL_NAMES
+
+    def test_tool_name(self):
+        assert get_twelve_un_seong.name == "get_twelve_un_seong"
+
+    def test_envelope_shape(self):
+        parsed = json.loads(_invoke(get_twelve_un_seong, {}, self._config()))
+        assert "summary" in parsed and isinstance(parsed["summary"], str)
+        assert "data" in parsed and isinstance(parsed["data"], dict)
+
+    def test_pillars_wun_contains_wun(self):
+        data = json.loads(_invoke(get_twelve_un_seong, {}, self._config()))["data"]
+        assert "pillars_wun" in data
+        pillars_wun = data["pillars_wun"]
+        # at minimum year/month/day pillars are always present
+        for pk in ("year_pillar", "month_pillar", "day_pillar"):
+            assert pk in pillars_wun, f"missing {pk}"
+            assert "twelve_wun" in pillars_wun[pk], f"{pk} missing twelve_wun"
+            assert isinstance(pillars_wun[pk]["twelve_wun"], str)
+            assert pillars_wun[pk]["twelve_wun"], f"{pk} has empty twelve_wun"
+
+    def test_day_stem_and_element(self):
+        data = json.loads(_invoke(get_twelve_un_seong, {}, self._config()))["data"]
+        assert "day_stem" in data and data["day_stem"]
+        assert "day_element" in data and data["day_element"]
+
+
+class TestHapChungTool:
+    def _config(self) -> RunnableConfig:
+        return {"configurable": {"birth_info": _BIRTH_SELF}}
+
+    def test_in_chart_whitelist(self):
+        assert "get_hap_chung" in CHART_TOOL_NAMES
+
+    def test_tool_name(self):
+        assert get_hap_chung.name == "get_hap_chung"
+
+    def test_envelope_shape(self):
+        parsed = json.loads(_invoke(get_hap_chung, {}, self._config()))
+        assert "summary" in parsed and isinstance(parsed["summary"], str)
+        assert "data" in parsed and isinstance(parsed["data"], dict)
+
+    def test_data_contains_pillars_and_relations(self):
+        data = json.loads(_invoke(get_hap_chung, {}, self._config()))["data"]
+        for pk in ("year_pillar", "month_pillar", "day_pillar"):
+            assert pk in data, f"missing {pk}"
+        assert "branch_relations" in data
+        assert isinstance(data["branch_relations"], dict)
+        assert "gong_mang" in data
+        assert "vacant_branches" in data["gong_mang"]
+        assert "affected_pillars" in data["gong_mang"]
