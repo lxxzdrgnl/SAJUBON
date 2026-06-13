@@ -30,10 +30,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 interface Props {
   story: DailyStoryResponse
   onClose: () => void
-  onPrev: () => void
 }
 
-export default function SummaryCard({ story, onClose, onPrev }: Props) {
+export default function SummaryCard({ story, onClose }: Props) {
   const t = useTranslations('fortune.summary')
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [saving, setSaving] = useState(false)
@@ -170,19 +169,10 @@ export default function SummaryCard({ story, onClose, onPrev }: Props) {
     }
   }
 
+  // 탭 전파를 막지 않는다 — 다른 카드처럼 좌측 1/3 탭=뒤로가 동작.
+  // 스크롤·버튼만 개별적으로 전파 차단(아래 CTA).
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-4 pt-2 select-none" onClick={(e) => e.stopPropagation()}>
-      {/* 뒤로 — 요약은 탭 전파를 막으므로 명시적 버튼 필요 */}
-      <button
-        type="button"
-        onClick={onPrev}
-        className="mb-1 -ml-1 flex w-fit items-center gap-1 rounded-lg px-1 py-1 text-[13px] font-bold text-white/70 transition-opacity hover:opacity-100"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 5 L8 12 L15 19" />
-        </svg>
-        {t('back')}
-      </button>
+    <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-4 pt-2 select-none">
       {/* 헤더 */}
       <div className="mb-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -266,7 +256,7 @@ export default function SummaryCard({ story, onClose, onPrev }: Props) {
         {/* 이미지 저장 (옐로 필) */}
         <button
           className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-yellow py-3 text-[14px] font-extrabold text-ink shadow-[4px_4px_0_#1A1A1A] disabled:opacity-50"
-          onClick={handleSaveImage}
+          onClick={(e) => { e.stopPropagation(); handleSaveImage() }}
           disabled={saving}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -278,7 +268,7 @@ export default function SummaryCard({ story, onClose, onPrev }: Props) {
         {/* 링크 공유 (고스트) */}
         <button
           className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-white/50 py-3 text-[14px] font-extrabold text-white disabled:opacity-50"
-          onClick={handleShareLink}
+          onClick={(e) => { e.stopPropagation(); handleShareLink() }}
           disabled={sharing}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

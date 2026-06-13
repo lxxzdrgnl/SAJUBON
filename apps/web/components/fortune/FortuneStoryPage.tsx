@@ -281,7 +281,6 @@ export default function FortuneStoryPage() {
                 <SummaryCard
                   story={story}
                   onClose={handleClose}
-                  onPrev={goPrev}
                 />
               )}
             </div>
