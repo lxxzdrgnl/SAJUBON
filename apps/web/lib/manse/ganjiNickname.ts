@@ -12,8 +12,8 @@ interface StemColor {
 const STEM_COLOR: Record<string, StemColor> = {
   갑: { ko: '푸른', en: 'Blue', bg: '#7FC7BE' },   // 목 — 또렷한 청록
   을: { ko: '푸른', en: 'Blue', bg: '#7FC7BE' },
-  병: { ko: '붉은', en: 'Red', bg: '#F5623A' },   // 화 — 또렷한 적색
-  정: { ko: '붉은', en: 'Red', bg: '#F5623A' },
+  병: { ko: '붉은', en: 'Red', bg: '#EA6845' },   // 화 — 적색(채도 살짝 낮춤)
+  정: { ko: '붉은', en: 'Red', bg: '#EA6845' },
   무: { ko: '황금', en: 'Golden', bg: '#FFD900' },
   기: { ko: '황금', en: 'Golden', bg: '#FFD900' },
   경: { ko: '은빛', en: 'Silver', bg: '#E8EAED' },  // 금 — 백색(은빛 화이트)
