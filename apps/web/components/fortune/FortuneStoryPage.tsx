@@ -208,42 +208,34 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
     return idx >= 0 ? idx + 1 : null
   })()
 
-  // 현재 카드 배경색(solid base)을 body/html에 동기화 — iOS Safari 상하 safe-area 영역이
-  // 기본 앱 배경(크림)이 아닌 카드 색으로 채워지도록 한다.
-  // setProperty('background', ..., 'important')로 CSS 규칙(globals.css body{background:...})을
-  // 명시적으로 이기고, theme-color 메타로 iOS 상단 상태바 틴트도 업데이트.
+  // 스토리 진입 시 원래 배경/테마색을 1회 저장하고, 나갈 때만 복원한다.
+  // (카드 전환마다 복원했다가 다시 설정하면 iOS Safari가 '복원값'을 최신으로 잡아
+  //  크롬이 안 따라오는 레이스가 생긴다 → 마운트/언마운트에서만 저장·복원.)
   useEffect(() => {
-    const prevBody = document.body.style.getPropertyValue('background')
-    const prevBodyPriority = document.body.style.getPropertyPriority('background')
-    const prevHtml = document.documentElement.style.getPropertyValue('background')
-    const prevHtmlPriority = document.documentElement.style.getPropertyPriority('background')
+    const body = document.body.style
+    const html = document.documentElement.style
+    const prevBody = body.getPropertyValue('background')
+    const prevBodyPri = body.getPropertyPriority('background')
+    const prevHtml = html.getPropertyValue('background')
+    const prevHtmlPri = html.getPropertyPriority('background')
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    const prevTheme = meta?.content ?? ''
+    return () => {
+      if (prevBody) body.setProperty('background', prevBody, prevBodyPri || '')
+      else body.removeProperty('background')
+      if (prevHtml) html.setProperty('background', prevHtml, prevHtmlPri || '')
+      else html.removeProperty('background')
+      if (meta) meta.content = prevTheme
+    }
+  }, [])
 
+  // 현재 카드 색(solid base)을 body/html 배경 + theme-color 메타에 반영 — 카드 전환마다.
+  // iOS Safari 상하 safe-area·크롬이 카드 색을 따라가도록. 복원 없이 '설정만' 한다.
+  useEffect(() => {
     document.body.style.setProperty('background', palette.base, 'important')
     document.documentElement.style.setProperty('background', palette.base, 'important')
-
-    // theme-color 메타 — iOS 상단 브라우저 틴트 / 홈화면 추가 시 상태바 색
-    let metaTheme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    const prevTheme = metaTheme?.content ?? ''
-    if (!metaTheme) {
-      metaTheme = document.createElement('meta')
-      metaTheme.name = 'theme-color'
-      document.head.appendChild(metaTheme)
-    }
-    metaTheme.content = palette.base
-
-    return () => {
-      if (prevBody) {
-        document.body.style.setProperty('background', prevBody, prevBodyPriority || '')
-      } else {
-        document.body.style.removeProperty('background')
-      }
-      if (prevHtml) {
-        document.documentElement.style.setProperty('background', prevHtml, prevHtmlPriority || '')
-      } else {
-        document.documentElement.style.removeProperty('background')
-      }
-      if (metaTheme) metaTheme.content = prevTheme
-    }
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    if (meta) meta.content = palette.base
   }, [palette.base])
 
   return (
