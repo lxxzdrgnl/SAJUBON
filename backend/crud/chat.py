@@ -72,6 +72,31 @@ async def update_last_message_at(
         await db.commit()
 
 
+async def set_title(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+    title: str,
+) -> None:
+    """세션 제목을 단발 갱신한다 (이미 제목이 있으면 덮어쓰지 않음)."""
+    result = await db.execute(
+        select(ChatSession).where(ChatSession.id == session_id)
+    )
+    session = result.scalar_one_or_none()
+    if session and not session.title:
+        session.title = title
+        await db.commit()
+
+
+def set_partner_info(session: ChatSession, partner_info: dict) -> None:
+    """세션에 상대 사주를 첨부한다 (flush/commit은 Service가 담당)."""
+    session.partner_info = partner_info
+
+
+def clear_partner_info(session: ChatSession) -> None:
+    """세션의 상대 사주를 제거한다 (flush/commit은 Service가 담당)."""
+    session.partner_info = None
+
+
 async def create_report(
     db: AsyncSession,
     session_id: uuid.UUID,

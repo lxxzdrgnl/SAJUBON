@@ -26,6 +26,20 @@ class ChatSessionResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class PartnerAttachRequest(BaseModel):
+    profile_id: int | None = Field(default=None, description="저장된 프로필 ID")
+    birth_date: str | None = Field(default=None, description="생년월일 (YYYY-MM-DD)", examples=["1992-07-21"])
+    birth_time: str | None = Field(default=None, description="태어난 시간 (HH:MM)", examples=["09:00"])
+    gender: str | None = Field(default=None, description="성별 (male/female)", examples=["female"])
+    calendar: str = Field(default="solar", description="양력/음력")
+    is_leap_month: bool = Field(default=False)
+    name: str | None = Field(default=None, description="상대방 이름(표시용)", examples=["지민"])
+
+
+class PartnerAttachResponse(BaseModel):
+    partner_name: str
+
+
 class ChatMessageRequest(BaseModel):
     message: str = Field(min_length=1, max_length=500, description="사용자 메시지")
 

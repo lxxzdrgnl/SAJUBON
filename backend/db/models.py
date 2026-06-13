@@ -105,6 +105,7 @@ class ChatSession(Base):
     )
     title:            Mapped[str | None] = mapped_column(String(200), nullable=True)
     birth_info:       Mapped[dict]      = mapped_column(JSONB, nullable=False)
+    partner_info:     Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     created_at:       Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
     last_message_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
 

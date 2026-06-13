@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import uuid
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,9 +18,12 @@ from llm.pipelines.chat import build_chat_graph
 from schemas.chat import (
     ChatSessionCreate, ChatSessionResponse,
     ChatMessageRequest, ChatHistoryResponse, ChatHistoryMessage,
-    ChatReportResponse,
+    ChatReportResponse, PartnerAttachRequest, PartnerAttachResponse,
 )
-from services.chat import create_chat_session, generate_chat_report
+from services.chat import (
+    create_chat_session, generate_chat_report,
+    attach_partner, detach_partner,
+)
 
 router = APIRouter(prefix="/api/chat", tags=["채팅 에이전트"])
 
@@ -66,6 +69,28 @@ async def list_sessions(
     db: AsyncSession = Depends(get_db),
 ):
     return await chat_crud.list_sessions(db, user.id)
+
+
+@router.post("/{session_id}/partner", response_model=PartnerAttachResponse)
+async def attach_partner_profile(
+    session_id: uuid.UUID,
+    req: PartnerAttachRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    partner_name = await attach_partner(
+        db=db, session_id=session_id, user_id=user.id, req=req
+    )
+    return PartnerAttachResponse(partner_name=partner_name)
+
+
+@router.delete("/{session_id}/partner", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_partner_profile(
+    session_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await detach_partner(db=db, session_id=session_id, user_id=user.id)
 
 
 @router.post("/{session_id}/message")

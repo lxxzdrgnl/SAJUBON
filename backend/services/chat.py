@@ -8,9 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import CalcFailedException, LLMFailedException
 from crud import chat as chat_crud
+from crud.profile import get_profile_or_404
 from db.models import ChatSession, ChatReport
 from engine.handlers.calculate_saju import handle_calculate_saju
 from llm.tools.saju_tools import extract_summary
+from schemas.chat import PartnerAttachRequest
 
 
 async def create_chat_session(
@@ -77,3 +79,68 @@ async def generate_chat_report(
         advice=report_output.advice,
         topics_covered=report_output.topics_covered,
     )
+
+
+async def _resolve_partner_birth(
+    db: AsyncSession,
+    user_id: int,
+    req: PartnerAttachRequest,
+) -> dict:
+    """프로필 ID 또는 직접 입력에서 상대 사주 birth_info(+name) 추출."""
+    if req.profile_id:
+        profile = await get_profile_or_404(db, req.profile_id, user_id)
+        return {
+            "birth_date": str(profile.birth_date),
+            "birth_time": str(profile.birth_time) if profile.birth_time else None,
+            "gender": profile.gender,
+            "calendar": profile.calendar,
+            "is_leap_month": profile.is_leap_month,
+            "name": req.name or profile.name,
+        }
+    return {
+        "birth_date": req.birth_date,
+        "birth_time": req.birth_time,
+        "gender": req.gender,
+        "calendar": req.calendar,
+        "is_leap_month": req.is_leap_month,
+        "name": req.name,
+    }
+
+
+async def attach_partner(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+    user_id: int,
+    req: PartnerAttachRequest,
+) -> str:
+    """세션에 상대 사주를 첨부하고 표시용 이름을 반환한다.
+
+    1. 세션 소유 확인
+    2. 프로필/직접입력 → 상대 birth_info 조립
+    3. 만세력 계산으로 입력 유효성 검증
+    4. session.partner_info 저장 (단일 commit)
+    """
+    session = await chat_crud.get_session_or_404(db, session_id, user_id)
+    partner_info = await _resolve_partner_birth(db, user_id, req)
+
+    calc_input = {k: v for k, v in partner_info.items() if k != "name"}
+    try:
+        await asyncio.to_thread(handle_calculate_saju, **calc_input)
+    except ValueError as e:
+        raise CalcFailedException(str(e)) from e
+
+    chat_crud.set_partner_info(session, partner_info)
+    await db.commit()
+
+    return partner_info.get("name") or "상대방"
+
+
+async def detach_partner(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+    user_id: int,
+) -> None:
+    """세션에서 상대 사주를 제거한다."""
+    session = await chat_crud.get_session_or_404(db, session_id, user_id)
+    chat_crud.clear_partner_info(session)
+    await db.commit()
