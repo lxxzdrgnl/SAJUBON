@@ -28,8 +28,8 @@ export default async function IljuHero({ dayPillar, label }: { dayPillar: Pillar
             </span>
           )}
         </div>
-        <div className="ml-3 shrink-0">
-          <MascotTinted stem={dayPillar.stem} width={72} height={72} />
+        <div className="ml-3 flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl border-2 border-ink bg-surface/70 shadow-[3px_3px_0_#1A1A1A]">
+          <MascotTinted stem={dayPillar.stem} width={52} height={52} />
         </div>
       </div>
     </section>
