@@ -7,8 +7,9 @@ import MascotTinted from '@/components/ui/MascotTinted'
 import LogoutButton from '@/components/my/LogoutButton'
 import MyRecordsClient from '@/components/my/MyRecordsClient'
 import LanguageToggleInline from '@/components/my/LanguageToggleInline'
-import { listReports, listDailyRecords, listProfiles, listConsultations } from '@sajuguri/api-client'
-import type { ReportSummary, DailyRecordSummary, ProfileResponse, ConsultationHistoryItem } from '@sajuguri/api-client'
+import { listProfiles } from '@sajuguri/api-client'
+import type { ProfileResponse } from '@sajuguri/api-client'
+import { fetchAllRecords } from '@/lib/records/registry'
 import { STEM_BG } from '@/lib/manse/ganjiNickname'
 
 // 브라우저가 직접 여는 풀 URL — next.config rewrites를 타지 않도록 백엔드 절대 주소 사용.
@@ -68,29 +69,8 @@ export default async function MyPage() {
   // 대표 만세력
   const repProfile = profiles.find((p) => p.is_representative) ?? null
 
-  // 내 리포트 목록 (백엔드 미완성 시 빈 배열 fallback)
-  let reports: ReportSummary[] = []
-  try {
-    reports = await listReports(authApi)
-  } catch {
-    reports = []
-  }
-
-  // 운세 기록 목록 (백엔드 미완성 시 빈 배열 fallback)
-  let fortuneRecords: DailyRecordSummary[] = []
-  try {
-    fortuneRecords = await listDailyRecords(authApi)
-  } catch {
-    fortuneRecords = []
-  }
-
-  // 한줄상담 기록 목록
-  let consultations: ConsultationHistoryItem[] = []
-  try {
-    consultations = await listConsultations(authApi)
-  } catch {
-    consultations = []
-  }
+  // 내 기록 — 레코드 레지스트리로 모든 종류 병렬 fetch (개별 실패는 빈 배열)
+  const records = await fetchAllRecords(authApi)
 
   return (
     <main>
@@ -150,12 +130,7 @@ export default async function MyPage() {
       </section>
 
       {/* ── 내 기록: 리포트 / 운세 탭 + 더보기 + 삭제 ─── */}
-      <MyRecordsClient
-        reports={reports}
-        fortuneRecords={fortuneRecords}
-        consultations={consultations}
-        repProfileName={repProfile?.name ?? null}
-      />
+      <MyRecordsClient records={records} repProfileName={repProfile?.name ?? null} />
 
       {/* ── 언어 설정 (인라인) ─── */}
       <LanguageToggleInline />

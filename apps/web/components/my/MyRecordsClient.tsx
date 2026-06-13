@@ -3,30 +3,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { useRouter } from '@/i18n/navigation'
-import { ApiClient, deleteReport, deleteDailyRecord, deleteConsultation, shareConsultation } from '@sajuguri/api-client'
-import type { ReportSummary, DailyRecordSummary, ConsultationHistoryItem } from '@sajuguri/api-client'
+import { ApiClient } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
+import { RECORD_TYPES, type RecordItem, type RecordType, type Translate } from '@/lib/records/registry'
 
 interface Props {
-  reports: ReportSummary[]
-  fortuneRecords: DailyRecordSummary[]
-  consultations: ConsultationHistoryItem[]
-  /** 대표 프로필 이름 — 더보기 그룹핑 시 맨 위로 올린다. */
-  repProfileName: string | null
-  /**
-   * 탭당 표시할 최대 항목 수.
-   * undefined = 전체 표시 (history 페이지용).
-   * 기본값 3 (마이 페이지 프리뷰).
-   */
-  limit?: number
+  /** 타입 key → 레코드 목록 (서버에서 레지스트리 fetch로 채워 전달) */
+  records: Record<string, RecordItem[]>
+  /** 대표 프로필 이름 — 그룹핑 시 맨 위로 (현재 섹션 프리뷰에선 미사용, 호환용) */
+  repProfileName?: string | null
+  /** 섹션당 미리보기 카드 수 */
+  previewCount?: number
 }
 
-type Tab = 'reports' | 'fortune' | 'question'
+const PREVIEW_COUNT = 3
 
 // ── 편집 토글 버튼 ─────────────────────────────────────────────────────────────
 
-function EditToggleButton({ editMode, onToggle, t }: { editMode: boolean; onToggle: () => void; t: ReturnType<typeof useTranslations> }) {
+function EditToggleButton({ editMode, onToggle, t }: { editMode: boolean; onToggle: () => void; t: Translate }) {
   return (
     <button
       type="button"
@@ -38,23 +32,13 @@ function EditToggleButton({ editMode, onToggle, t }: { editMode: boolean; onTogg
   )
 }
 
-const PREVIEW_COUNT = 3
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
-// ── 삭제 확인 모달 (ChatListClient DeleteModal 톤 재사용) ──────────────────────
+// ── 삭제 확인 모달 ─────────────────────────────────────────────────────────────
 
 interface DeleteModalProps {
   label: string
   onConfirm: () => void
   onClose: () => void
-  t: ReturnType<typeof useTranslations>
+  t: Translate
 }
 
 function DeleteModal({ label, onConfirm, onClose, t }: DeleteModalProps) {
@@ -126,17 +110,7 @@ function DeleteIconButton({ label, onClick }: { label: string; onClick: () => vo
       onClick={onClick}
       aria-label={label}
     >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-ink"
-      >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ink">
         <polyline points="3 6 5 6 21 6" />
         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
         <path d="M10 11v6" />
@@ -147,145 +121,141 @@ function DeleteIconButton({ label, onClick }: { label: string; onClick: () => vo
   )
 }
 
-// ── 프로필별 그룹핑 ────────────────────────────────────────────────────────────
+// ── 빈 상태 ────────────────────────────────────────────────────────────────────
 
-interface Group<T> {
-  profileName: string
-  items: T[]
+function EmptyState({ message, ctaHref, ctaLabel }: { message: string; ctaHref: string; ctaLabel: string }) {
+  return (
+    <BrutalCard intensity="soft" className="flex flex-col gap-2 py-5 text-center">
+      <p className="text-[13px] text-text-sub">{message}</p>
+      <Link href={ctaHref} className="mx-auto text-[13px] font-extrabold text-orange underline underline-offset-2">
+        {ctaLabel}
+      </Link>
+    </BrutalCard>
+  )
 }
 
-function groupByProfile<T extends { profile_name: string }>(
-  items: T[],
-  repProfileName: string | null,
-): Group<T>[] {
-  const order: string[] = []
-  const map = new Map<string, T[]>()
-  for (const it of items) {
-    const key = it.profile_name || ''
-    if (!map.has(key)) {
-      map.set(key, [])
-      order.push(key)
-    }
-    map.get(key)!.push(it)
-  }
-  // 대표 프로필 그룹을 맨 위로
-  if (repProfileName && map.has(repProfileName)) {
-    const idx = order.indexOf(repProfileName)
-    if (idx > 0) {
-      order.splice(idx, 1)
-      order.unshift(repProfileName)
-    }
-  }
-  return order.map((name) => ({ profileName: name, items: map.get(name)! }))
+// ── 카드 행 (카드 + 편집 시 삭제) ──────────────────────────────────────────────
+
+function CardRow({
+  type,
+  item,
+  editMode,
+  onDelete,
+  t,
+}: {
+  type: RecordType
+  item: RecordItem
+  editMode: boolean
+  onDelete: () => void
+  t: Translate
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1">{type.renderCard(item, t)}</div>
+      {editMode && type.remove && <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />}
+    </div>
+  )
+}
+
+// ── 종류별 섹션 미리보기 ────────────────────────────────────────────────────────
+
+function TypeSection({
+  type,
+  items,
+  editMode,
+  previewCount,
+  onDelete,
+  t,
+}: {
+  type: RecordType
+  items: RecordItem[]
+  editMode: boolean
+  previewCount: number
+  onDelete: (type: RecordType, item: RecordItem) => void
+  t: Translate
+}) {
+  const label = type.label(t)
+  const preview = items.slice(0, previewCount)
+
+  return (
+    <div className="mb-5">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-[13px] font-extrabold text-ink">
+          {label}
+          {items.length > 0 && <span className="ml-1.5 text-[12px] text-text-sub">{items.length}</span>}
+        </h3>
+        {items.length > previewCount && (
+          <Link
+            href={{ pathname: '/my/history', query: { type: type.key } }}
+            className="text-[12px] font-extrabold text-orange transition-opacity hover:opacity-80"
+          >
+            {t('viewAllHistory')} →
+          </Link>
+        )}
+      </div>
+
+      {items.length === 0 ? (
+        <EmptyState message={type.empty.message(t)} ctaHref={type.empty.ctaHref} ctaLabel={type.empty.ctaLabel(t)} />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {preview.map((item) => (
+            <li key={item.id}>
+              <CardRow type={type} item={item} editMode={editMode} onDelete={() => onDelete(type, item)} t={t} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 // ── 메인 ───────────────────────────────────────────────────────────────────────
 
-type Pending =
-  | { kind: 'report'; id: number; label: string }
-  | { kind: 'fortune'; id: number; label: string }
-  | { kind: 'question'; id: number; label: string }
+interface Pending {
+  type: RecordType
+  item: RecordItem
+  label: string
+}
 
-export default function MyRecordsClient({
-  reports: initialReports,
-  fortuneRecords: initialFortune,
-  consultations: initialConsultations,
-  repProfileName,
-  limit = PREVIEW_COUNT,
-}: Props) {
-  const t = useTranslations('my.records')
-  const router = useRouter()
-  const [tab, setTab] = useState<Tab>('reports')
-  const [reports, setReports] = useState(initialReports)
-  const [fortune, setFortune] = useState(initialFortune)
-  const [consultations, setConsultations] = useState(initialConsultations)
-  const [pending, setPending] = useState<Pending | null>(null)
-  const [opening, setOpening] = useState<number | null>(null)
+export default function MyRecordsClient({ records: initial, previewCount = PREVIEW_COUNT }: Props) {
+  const t = useTranslations('my.records') as unknown as Translate
+  const [records, setRecords] = useState(initial)
   const [editMode, setEditMode] = useState(false)
+  const [pending, setPending] = useState<Pending | null>(null)
 
-  const reportGroups = useMemo(
-    () => groupByProfile(reports, repProfileName),
-    [reports, repProfileName],
-  )
-  const fortuneGroups = useMemo(
-    () => groupByProfile(fortune, repProfileName),
-    [fortune, repProfileName],
-  )
-  const consultationGroups = useMemo(
-    () => groupByProfile(consultations, repProfileName),
-    [consultations, repProfileName],
+  const totalCount = useMemo(
+    () => Object.values(records).reduce((sum, list) => sum + list.length, 0),
+    [records],
   )
 
-  // 상담 항목 클릭 → 공유 페이지로 이동. 토큰 없으면 먼저 발급.
-  async function openConsultation(c: ConsultationHistoryItem) {
-    if (opening !== null) return
-    let token = c.share_token
-    if (!token) {
-      setOpening(c.id)
-      try {
-        const res = await shareConsultation(new ApiClient(''), c.id)
-        token = res.share_token
-        setConsultations((cs) =>
-          cs.map((x) => (x.id === c.id ? { ...x, share_token: token } : x)),
-        )
-      } catch {
-        setOpening(null)
-        return
-      }
-      setOpening(null)
-    }
-    router.push(`/share/question/${token}`)
+  function requestDelete(type: RecordType, item: RecordItem) {
+    if (!type.remove) return
+    setPending({ type, item, label: type.remove.label(item) })
   }
 
   async function confirmDelete() {
     if (!pending) return
-    const target = pending
+    const { type, item } = pending
     setPending(null)
-    if (target.kind === 'report') {
-      const prev = reports
-      setReports((rs) => rs.filter((r) => r.id !== target.id))
-      try {
-        await deleteReport(new ApiClient(''), target.id)
-      } catch {
-        setReports(prev)
-      }
-    } else if (target.kind === 'fortune') {
-      const prev = fortune
-      setFortune((fs) => fs.filter((f) => f.id !== target.id))
-      try {
-        await deleteDailyRecord(new ApiClient(''), target.id)
-      } catch {
-        setFortune(prev)
-      }
-    } else {
-      const prev = consultations
-      setConsultations((cs) => cs.filter((c) => c.id !== target.id))
-      try {
-        await deleteConsultation(new ApiClient(''), target.id)
-      } catch {
-        setConsultations(prev)
-      }
+    if (!type.remove) return
+    const prev = records[type.key] ?? []
+    setRecords((r) => ({ ...r, [type.key]: prev.filter((x) => x.id !== item.id) }))
+    try {
+      await type.remove.fn(new ApiClient(''), item.id)
+    } catch {
+      setRecords((r) => ({ ...r, [type.key]: prev }))
     }
   }
-
-  const activeList = tab === 'reports' ? reports : tab === 'fortune' ? fortune : consultations
-  // limit undefined = 전체; 숫자면 슬라이스
-  const isLimited = limit !== undefined && limit < activeList.length
-  const hasMore = isLimited
-
-  const totalCount = reports.length + fortune.length + consultations.length
 
   return (
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-text-sub">
-          {t('title')}
-        </h2>
+        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-text-sub">{t('title')}</h2>
         <div className="flex items-center gap-2">
           {totalCount > 0 && (
             <EditToggleButton editMode={editMode} onToggle={() => setEditMode((v) => !v)} t={t} />
           )}
-          {limit !== undefined && totalCount > 0 && (
+          {totalCount > 0 && (
             <Link href="/my/history" className="text-[12px] font-extrabold text-orange transition-opacity hover:opacity-80">
               {t('viewAllHistory')} →
             </Link>
@@ -293,51 +263,17 @@ export default function MyRecordsClient({
         </div>
       </div>
 
-      {/* 탭 */}
-      <div className="mb-3 flex gap-2">
-        <TabButton active={tab === 'reports'} onClick={() => setTab('reports')}>
-          {t('tabReports')}
-        </TabButton>
-        <TabButton active={tab === 'fortune'} onClick={() => setTab('fortune')}>
-          {t('tabFortune')}
-        </TabButton>
-        <TabButton active={tab === 'question'} onClick={() => setTab('question')}>
-          {t('tabQuestion')}
-        </TabButton>
-      </div>
-
-      {/* 본문 */}
-      {tab === 'reports' && (
-        reports.length === 0
-          ? <EmptyState message={t('emptyReports')} ctaHref="/manse" ctaLabel={t('goReport')} ctaTone="orange" />
-          : limit !== undefined
-            ? <PreviewReports items={reports.slice(0, limit)} editMode={editMode} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
-            : <GroupedReports groups={reportGroups} editMode={editMode} onDelete={(r) => setPending({ kind: 'report', id: r.id, label: r.first_headline })} t={t} />
-      )}
-      {tab === 'fortune' && (
-        fortune.length === 0
-          ? <EmptyState message={t('emptyFortune')} ctaHref="/" ctaLabel={t('goFortune')} ctaTone="teal" />
-          : limit !== undefined
-            ? <PreviewFortune items={fortune.slice(0, limit)} editMode={editMode} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
-            : <GroupedFortune groups={fortuneGroups} editMode={editMode} onDelete={(f) => setPending({ kind: 'fortune', id: f.id, label: f.keyword })} t={t} />
-      )}
-      {tab === 'question' && (
-        consultations.length === 0
-          ? <EmptyState message={t('emptyQuestion')} ctaHref="/question" ctaLabel={t('goQuestion')} ctaTone="orange" />
-          : limit !== undefined
-            ? <PreviewConsultations items={consultations.slice(0, limit)} editMode={editMode} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
-            : <GroupedConsultations groups={consultationGroups} editMode={editMode} opening={opening} onOpen={openConsultation} onDelete={(c) => setPending({ kind: 'question', id: c.id, label: c.headline })} t={t} />
-      )}
-
-      {/* 더보기 → /my/history 링크 */}
-      {activeList.length > 0 && hasMore && (
-        <Link
-          href="/my/history"
-          className="mt-2 block w-full rounded-xl border-2 border-ink bg-surface py-2.5 text-center text-[13px] font-extrabold text-orange shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
-        >
-          {t('viewAllHistory')}
-        </Link>
-      )}
+      {RECORD_TYPES.map((type) => (
+        <TypeSection
+          key={type.key}
+          type={type}
+          items={records[type.key] ?? []}
+          editMode={editMode}
+          previewCount={previewCount}
+          onDelete={requestDelete}
+          t={t}
+        />
+      ))}
 
       {pending && (
         <DeleteModal
@@ -348,177 +284,5 @@ export default function MyRecordsClient({
         />
       )}
     </section>
-  )
-}
-
-// ── 하위 프레젠테이션 ──────────────────────────────────────────────────────────
-
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        'flex-1 rounded-xl border-2 border-ink py-2 text-[13px] font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity ' +
-        (active ? 'bg-yellow text-ink' : 'bg-surface text-text-sub hover:opacity-80')
-      }
-    >
-      {children}
-    </button>
-  )
-}
-
-function EmptyState({ message, ctaHref, ctaLabel, ctaTone }: { message: string; ctaHref: string; ctaLabel: string; ctaTone: 'orange' | 'teal' }) {
-  return (
-    <BrutalCard intensity="soft" className="flex flex-col gap-2 py-5 text-center">
-      <p className="text-[13px] text-text-sub">{message}</p>
-      <Link
-        href={ctaHref}
-        className={`mx-auto text-[13px] font-extrabold underline underline-offset-2 ${ctaTone === 'orange' ? 'text-orange' : 'text-teal'}`}
-      >
-        {ctaLabel}
-      </Link>
-    </BrutalCard>
-  )
-}
-
-function ReportRow({ r, editMode, onDelete, t }: { r: ReportSummary; editMode: boolean; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <div className="flex items-center gap-2">
-      <Link href={`/report/${r.id}`} className="min-w-0 flex-1">
-        <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
-          <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{r.first_headline}</p>
-          <p className="text-[12px] text-text-sub">
-            {new Date(r.created_at).toLocaleDateString('ko-KR')}
-            {r.request_topics && <span className="ml-1">· {r.request_topics}</span>}
-          </p>
-        </BrutalCard>
-      </Link>
-      {editMode && <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />}
-    </div>
-  )
-}
-
-function FortuneRow({ f, editMode, onDelete, t }: { f: DailyRecordSummary; editMode: boolean; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <div className="flex items-center gap-2">
-      <Link href={`/fortune?record=${f.id}`} className="min-w-0 flex-1">
-        <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
-          <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{f.keyword}</p>
-          <p className="text-[12px] text-text-sub">{new Date(f.date).toLocaleDateString('ko-KR')}</p>
-        </BrutalCard>
-      </Link>
-      {editMode && <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />}
-    </div>
-  )
-}
-
-function PreviewReports({ items, editMode, onDelete, t }: { items: ReportSummary[]; editMode: boolean; onDelete: (r: ReportSummary) => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <ul className="flex flex-col gap-2">
-      {items.map((r) => (
-        <li key={r.id}><ReportRow r={r} editMode={editMode} onDelete={() => onDelete(r)} t={t} /></li>
-      ))}
-    </ul>
-  )
-}
-
-function PreviewFortune({ items, editMode, onDelete, t }: { items: DailyRecordSummary[]; editMode: boolean; onDelete: (f: DailyRecordSummary) => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <ul className="flex flex-col gap-2">
-      {items.map((f) => (
-        <li key={f.id}><FortuneRow f={f} editMode={editMode} onDelete={() => onDelete(f)} t={t} /></li>
-      ))}
-    </ul>
-  )
-}
-
-function GroupHeader({ name }: { name: string }) {
-  return (
-    <p className="mb-1.5 mt-3 text-[12px] font-extrabold text-teal first:mt-0">
-      {name || '—'}
-    </p>
-  )
-}
-
-function GroupedReports({ groups, editMode, onDelete, t }: { groups: Group<ReportSummary>[]; editMode: boolean; onDelete: (r: ReportSummary) => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <div className="flex flex-col">
-      {groups.map((g) => (
-        <div key={g.profileName || '—'}>
-          <GroupHeader name={g.profileName} />
-          <ul className="flex flex-col gap-2">
-            {g.items.map((r) => (
-              <li key={r.id}><ReportRow r={r} editMode={editMode} onDelete={() => onDelete(r)} t={t} /></li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function GroupedFortune({ groups, editMode, onDelete, t }: { groups: Group<DailyRecordSummary>[]; editMode: boolean; onDelete: (f: DailyRecordSummary) => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <div className="flex flex-col">
-      {groups.map((g) => (
-        <div key={g.profileName || '—'}>
-          <GroupHeader name={g.profileName} />
-          <ul className="flex flex-col gap-2">
-            {g.items.map((f) => (
-              <li key={f.id}><FortuneRow f={f} editMode={editMode} onDelete={() => onDelete(f)} t={t} /></li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function ConsultationRow({ c, editMode, opening, onOpen, onDelete, t }: { c: ConsultationHistoryItem; editMode: boolean; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: () => void; t: ReturnType<typeof useTranslations> }) {
-  const busy = opening === c.id
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onOpen(c)}
-        disabled={busy}
-        className="min-w-0 flex-1 text-left disabled:opacity-60"
-      >
-        <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
-          <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{c.headline}</p>
-          <p className="truncate text-[12px] text-text-sub">{c.question}</p>
-          <p className="text-[12px] text-text-sub">{new Date(c.created_at).toLocaleDateString('ko-KR')}</p>
-        </BrutalCard>
-      </button>
-      {editMode && <DeleteIconButton label={t('delete.confirm')} onClick={onDelete} />}
-    </div>
-  )
-}
-
-function PreviewConsultations({ items, editMode, opening, onOpen, onDelete, t }: { items: ConsultationHistoryItem[]; editMode: boolean; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <ul className="flex flex-col gap-2">
-      {items.map((c) => (
-        <li key={c.id}><ConsultationRow c={c} editMode={editMode} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
-      ))}
-    </ul>
-  )
-}
-
-function GroupedConsultations({ groups, editMode, opening, onOpen, onDelete, t }: { groups: Group<ConsultationHistoryItem>[]; editMode: boolean; opening: number | null; onOpen: (c: ConsultationHistoryItem) => void; onDelete: (c: ConsultationHistoryItem) => void; t: ReturnType<typeof useTranslations> }) {
-  return (
-    <div className="flex flex-col">
-      {groups.map((g) => (
-        <div key={g.profileName || '—'}>
-          <GroupHeader name={g.profileName} />
-          <ul className="flex flex-col gap-2">
-            {g.items.map((c) => (
-              <li key={c.id}><ConsultationRow c={c} editMode={editMode} opening={opening} onOpen={onOpen} onDelete={() => onDelete(c)} t={t} /></li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
   )
 }

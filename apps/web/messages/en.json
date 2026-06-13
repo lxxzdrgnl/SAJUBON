@@ -45,7 +45,13 @@
         "yes": "Delete"
       },
       "editToggle": "Edit",
-      "editDone": "Done"
+      "editDone": "Done",
+      "tabCompatibility": "Compatibility",
+      "emptyCompatibility": "No compatibility reports yet",
+      "goCompatibility": "Check compatibility",
+      "compatAnon": "Anonymous",
+      "filterAll": "All",
+      "feedEmpty": "No records yet"
     },
     "history": {
       "title": "My Records",

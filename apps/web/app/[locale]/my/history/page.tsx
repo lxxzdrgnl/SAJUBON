@@ -1,18 +1,22 @@
 import { getTranslations } from 'next-intl/server'
 import { currentUser, serverAuthApi } from '@/lib/serverAuth'
-import { listReports, listDailyRecords, listProfiles, listConsultations } from '@sajuguri/api-client'
-import type { ReportSummary, DailyRecordSummary, ConsultationHistoryItem } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
-import MyRecordsClient from '@/components/my/MyRecordsClient'
+import HistoryFeedClient from '@/components/my/HistoryFeedClient'
 import BackButton from '@/components/my/BackButton'
+import { fetchAllRecords } from '@/lib/records/registry'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 const GOOGLE_LOGIN_URL = `${API_URL}/api/auth/google?client=web`
 
-export default async function HistoryPage() {
+export default async function HistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>
+}) {
   const t = await getTranslations('my')
   const user = await currentUser()
+  const { type } = await searchParams
 
   if (!user) {
     return (
@@ -36,30 +40,7 @@ export default async function HistoryPage() {
   }
 
   const authApi = await serverAuthApi()
-
-  let profiles = await listProfiles(authApi).catch(() => [])
-  const repProfile = profiles.find((p) => p.is_representative) ?? null
-
-  let reports: ReportSummary[] = []
-  try {
-    reports = await listReports(authApi)
-  } catch {
-    reports = []
-  }
-
-  let fortuneRecords: DailyRecordSummary[] = []
-  try {
-    fortuneRecords = await listDailyRecords(authApi)
-  } catch {
-    fortuneRecords = []
-  }
-
-  let consultations: ConsultationHistoryItem[] = []
-  try {
-    consultations = await listConsultations(authApi)
-  } catch {
-    consultations = []
-  }
+  const records = await fetchAllRecords(authApi)
 
   return (
     <main>
@@ -68,13 +49,7 @@ export default async function HistoryPage() {
         <h1 className="text-lg font-black">{t('history.title')}</h1>
       </div>
 
-      <MyRecordsClient
-        reports={reports}
-        fortuneRecords={fortuneRecords}
-        consultations={consultations}
-        repProfileName={repProfile?.name ?? null}
-        limit={undefined}
-      />
+      <HistoryFeedClient records={records} initialType={type} />
     </main>
   )
 }
