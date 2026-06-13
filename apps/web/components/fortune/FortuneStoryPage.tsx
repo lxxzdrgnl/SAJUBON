@@ -146,7 +146,11 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
       // 게스트 1일 1회: localStorage 캐시 확인
       const cached = await loadCachedStory(webStorage, birthKey, today)
       if (cached && !cancelled) {
-        setStory(cached)
+        // 캐시 저장 시 이름 없이 생성된 경우 → pname으로 profile_name 보정 (in-memory only)
+        const patched = pname && !cached.profile_name
+          ? { ...cached, profile_name: pname }
+          : cached
+        setStory(patched)
         setCardIndex(0)
         setLoading(false)
         return
