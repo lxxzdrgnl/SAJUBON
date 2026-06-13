@@ -10,21 +10,33 @@ import type {
   ConsultationHistoryItem,
   CompatibilityReportSummary,
 } from '@sajuguri/api-client'
-import BrutalCard from '@/components/ui/BrutalCard'
 import type { Translate } from './registry'
 
-function CardShell({ children }: { children: ReactNode }) {
+// ── 타입 뱃지 ──────────────────────────────────────────────────────────────────
+
+function TypeBadge({ label, tone }: { label: string; tone: string }) {
   return (
-    <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
+    <span className={`inline-block shrink-0 self-start rounded-full border-[1.5px] border-ink px-2 py-0.5 text-[10px] font-extrabold ${tone}`}>
+      {label}
+    </span>
+  )
+}
+
+// ── 카드 셸 (브루탈 잉크 테두리, 회색 금지) ──────────────────────────────────────
+
+function CardShell({ badge, children }: { badge: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-2xl border-2 border-ink bg-surface px-4 py-3 shadow-[3px_3px_0_#1A1A1A] transition-opacity hover:opacity-80">
+      {badge}
       {children}
-    </BrutalCard>
+    </div>
   )
 }
 
 export function SajuCard({ r, t }: { r: ReportSummary; t: Translate }) {
   return (
     <Link href={`/report/${r.id}`} className="block min-w-0">
-      <CardShell>
+      <CardShell badge={<TypeBadge label={t('tabReports')} tone="bg-orange text-white" />}>
         <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{r.first_headline}</p>
         <p className="text-[12px] text-text-sub">
           {new Date(r.created_at).toLocaleDateString('ko-KR')}
@@ -36,11 +48,16 @@ export function SajuCard({ r, t }: { r: ReportSummary; t: Translate }) {
 }
 
 export function FortuneCard({ f, t }: { f: DailyRecordSummary; t: Translate }) {
+  // "이용재 오늘의 운세" 형태로 표시 (키워드만 단독 표시는 무엇인지 알기 어려움)
+  const title = f.profile_name ? `${f.profile_name} ${t('fortuneCardTitle')}` : t('fortuneCardTitle')
   return (
     <Link href={`/fortune?record=${f.id}`} className="block min-w-0">
-      <CardShell>
-        <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{f.keyword}</p>
-        <p className="text-[12px] text-text-sub">{new Date(f.date).toLocaleDateString('ko-KR')}</p>
+      <CardShell badge={<TypeBadge label={t('tabFortune')} tone="bg-yellow text-ink" />}>
+        <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{title}</p>
+        <p className="text-[12px] text-text-sub">
+          {new Date(f.date).toLocaleDateString('ko-KR')}
+          {f.keyword && <span className="ml-1">· {f.keyword}</span>}
+        </p>
       </CardShell>
     </Link>
   )
@@ -70,7 +87,7 @@ export function ConsultationCard({ c, t }: { c: ConsultationHistoryItem; t: Tran
 
   return (
     <button type="button" onClick={open} disabled={busy} className="block w-full min-w-0 text-left disabled:opacity-60">
-      <CardShell>
+      <CardShell badge={<TypeBadge label={t('tabQuestion')} tone="bg-teal text-white" />}>
         <p className="truncate text-[14px] font-extrabold leading-snug text-ink">{c.headline}</p>
         <p className="truncate text-[12px] text-text-sub">{c.question}</p>
         <p className="text-[12px] text-text-sub">{new Date(c.created_at).toLocaleDateString('ko-KR')}</p>
@@ -84,7 +101,7 @@ export function CompatibilityCard({ r, t }: { r: CompatibilityReportSummary; t: 
   const nameB = r.person_b_name || t('compatAnon')
   return (
     <Link href={`/compatibility/${r.id}`} className="block min-w-0">
-      <CardShell>
+      <CardShell badge={<TypeBadge label={t('tabCompatibility')} tone="bg-sky text-white" />}>
         <p className="truncate text-[14px] font-extrabold leading-snug text-ink">
           {nameA} <span className="text-orange">♥</span> {nameB}
           <span className="ml-1 text-text-sub">· {r.total_score}</span>

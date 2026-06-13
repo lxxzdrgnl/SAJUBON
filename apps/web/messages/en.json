@@ -51,7 +51,8 @@
       "goCompatibility": "Check compatibility",
       "compatAnon": "Anonymous",
       "filterAll": "All",
-      "feedEmpty": "No records yet"
+      "feedEmpty": "No records yet",
+      "fortuneCardTitle": "Today's Fortune"
     },
     "history": {
       "title": "My Records",
