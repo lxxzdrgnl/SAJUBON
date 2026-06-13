@@ -21,7 +21,7 @@ export default function InlinePartnerCard({ profiles, onSelect }: Props) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="w-full rounded-2xl border-2 border-amber bg-yellow-tint px-3 py-3">
+    <div className="w-full rounded-2xl border-2 border-orange bg-yellow-tint px-3 py-3">
       <p className="mb-2 text-[13px] font-extrabold text-ink">{t('inlinePartner.prompt')}</p>
 
       {!expanded ? (

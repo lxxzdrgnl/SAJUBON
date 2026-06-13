@@ -143,6 +143,7 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
               {/* color 카드: 추천 색 스와치 */}
               {swatches.length > 0 && (
                 <div className="mb-4 flex items-center gap-2">
+                  {/* 흰 보더는 §4.1 잉크 보더 규칙의 의도된 예외 — 딥틸 스토리 배경 위 색 스와치라 흰 칩으로 분리 */}
                   {swatches.map((hex) => (
                     <span
                       key={hex}

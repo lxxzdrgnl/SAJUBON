@@ -53,7 +53,7 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
           return (
             <span
               key={lv}
-              className={`flex-1 py-1.5 text-center text-[10px] font-bold ${active ? 'bg-orange font-extrabold text-white' : 'bg-[#F3EDDD] text-text-sub'}`}
+              className={`flex-1 py-1.5 text-center text-[10px] font-bold ${active ? 'bg-orange font-extrabold text-white' : 'bg-border-soft text-text-sub'}`}
             >
               {lv}
             </span>
@@ -76,8 +76,8 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
         <span>{t('mid')} 50</span>
         <span>{t('strong')} 100</span>
       </div>
-      <div className="relative mb-3 h-2.5 overflow-hidden rounded-full bg-[#F3EDDD]">
-        <i className="block h-full rounded-full" style={{ width: `${score}%`, background: '#FFB200' }} />
+      <div className="relative mb-3 h-2.5 overflow-hidden rounded-full bg-border-soft">
+        <i className="block h-full rounded-full" style={{ width: `${score}%`, background: 'var(--yellow)' }} />
         <i className="absolute top-0 h-full w-1 -translate-x-1/2 rounded-full bg-orange" style={{ left: `${score}%` }} />
       </div>
 
@@ -159,7 +159,7 @@ function StrengthDistChart({
       </div>
       <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full" style={{ overflow: 'visible' }} xmlns="http://www.w3.org/2000/svg">
         {/* 내 위치 강조 컬럼 */}
-        <rect x={me.x - (plotW / 7) / 2} y={MT} width={plotW / 7} height={plotH} fill="#F3EDDD" opacity={0.9} />
+        <rect x={me.x - (plotW / 7) / 2} y={MT} width={plotW / 7} height={plotH} fill="#EBE3D2" opacity={0.9} />
         {/* Y 그리드 */}
         {yTicks.map((tick) => {
           const yy = MT + plotH - (tick / MAX_DIST) * plotH

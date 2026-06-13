@@ -39,8 +39,8 @@ export default async function TenGodsCard({ data }: { data: SajuCalcResponse }) 
                   <span className={`block text-[13px] font-black ${hot ? 'text-orange' : 'text-ink'}`}>{g.group}</span>
                   <span className="block text-[9px] text-text-sub">{g.label}</span>
                 </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#F3EDDD]">
-                  <i className="block h-full rounded-full" style={{ width: `${Math.min(g.pct, 100)}%`, background: hot ? '#FF6B00' : '#C9C0AC' }} />
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-border-soft">
+                  <i className="block h-full rounded-full" style={{ width: `${Math.min(g.pct, 100)}%`, background: hot ? 'var(--orange)' : '#A09880' }} />
                 </div>
                 <span className="w-9 text-right text-xs font-bold text-text-sub">{g.pct}%</span>
               </div>

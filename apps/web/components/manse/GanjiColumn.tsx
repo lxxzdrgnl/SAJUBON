@@ -46,7 +46,8 @@ export default function GanjiColumn({
       <Tile ch={stem} element={stemElement} />
       <Tile ch={branch} element={branchElement} />
       {branchTenGod && <span className="text-[10px] text-text-sub">{branchTenGod}</span>}
-      {twelveWun && <span className="text-[10px] font-semibold" style={{ color: '#D9A400' }}>{twelveWun}</span>}
+      {/* 12운성은 오행이 아니라 생애 단계 라벨 — 임의 머스터드(#D9A400) 대신 보조 텍스트색 (design.md §2) */}
+      {twelveWun && <span className="text-[10px] font-semibold text-text-sub">{twelveWun}</span>}
       {badge && <span className="mt-0.5 rounded-md bg-orange px-1.5 py-0.5 text-[10px] font-extrabold text-white">{badge}</span>}
     </div>
   )

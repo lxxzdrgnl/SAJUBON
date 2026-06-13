@@ -24,7 +24,7 @@ export default function Accordion({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left text-[13px] font-extrabold text-[#6a6250]"
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-[13px] font-extrabold text-text-sub"
       >
         {title}
         <svg

@@ -49,6 +49,7 @@ export default function ShareModal({
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
+      {/* 모바일=바텀시트(상향 오프셋 섀도가 정당) / 데스크탑=중앙 카드(우하향 브루탈 섀도). 의도된 분기 */}
       <div className="w-full max-w-[480px] rounded-t-3xl border-2 border-ink bg-surface p-6 shadow-[0_-4px_0_#1A1A1A] sm:rounded-3xl sm:shadow-[4px_4px_0_#1A1A1A]">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[15px] font-extrabold">{t('page.shareTitle')}</h2>

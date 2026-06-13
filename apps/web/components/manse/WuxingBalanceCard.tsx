@@ -33,7 +33,7 @@ function ToggleCheck({ checked, onToggle, label }: { checked: boolean; onToggle:
 function verdictChip(v: Verdict): string {
   if (v === '과다') return 'bg-orange-tint text-[#B34800]'
   if (v === '부족') return 'bg-teal-tint text-[#00665F]'
-  return 'bg-[#F3EDDD] text-text-sub'
+  return 'bg-border-soft text-text-sub'
 }
 
 function ElementBar({ name, pct, verdict, vLabel }: { name: string; pct: number; verdict: Verdict; vLabel: string }) {
@@ -41,7 +41,7 @@ function ElementBar({ name, pct, verdict, vLabel }: { name: string; pct: number;
   return (
     <div className="mt-2 flex items-center gap-2 text-sm">
       <span className="w-5 font-black" style={{ color }}>{name}</span>
-      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#F3EDDD]">
+      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-border-soft">
         <i className="block h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, background: color }} />
       </div>
       <span className="w-10 text-right text-xs font-bold text-text-sub">{pct}%</span>

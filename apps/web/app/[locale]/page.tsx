@@ -76,7 +76,7 @@ export default async function Home() {
           <MascotTinted stemBg={stemBg} width={44} height={44} />
           <div>
             <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
-            <p className="text-xs font-semibold text-[#5a4a00]">{fortuneSub}</p>
+            <p className="text-xs font-semibold text-ink">{fortuneSub}</p>
           </div>
         </section>
       </FortuneBannerClient>
@@ -109,14 +109,14 @@ export default async function Home() {
         <BrutalCard intensity="soft" className="flex items-center gap-3">
           <CardIcon d={ICONS.bolt} bg="#F5F0E2" color="var(--text-sub)" />
           <div>
-            <p className="text-sm font-extrabold text-[#6a6250]">{t('cards.question.title')}</p>
+            <p className="text-sm font-extrabold text-text-sub">{t('cards.question.title')}</p>
             <p className="mt-0.5 text-xs text-text-sub">{t('cards.question.desc')}</p>
           </div>
         </BrutalCard>
         <BrutalCard intensity="soft" className="flex items-center gap-3 opacity-55">
           <CardIcon d={ICONS.moon} bg="#F5F0E2" color="var(--text-sub)" />
           <div>
-            <p className="text-sm font-extrabold text-[#999]">{t('cards.soon.title')}</p>
+            <p className="text-sm font-extrabold text-text-sub">{t('cards.soon.title')}</p>
             <p className="mt-0.5 text-xs text-text-sub">{t('cards.soon.desc')}</p>
           </div>
         </BrutalCard>
