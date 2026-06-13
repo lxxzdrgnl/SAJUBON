@@ -14,13 +14,13 @@
 
 ## 3. 범위
 
-**핵심 로직: 한국어로 생성 → 공통 번역 레이어로 영어화** (로직 B). 프롬프트는 전부 한국어 단일 소스로 두고, 생성된 결과 본문만 번역 레이어 1개가 영어로 바꾼다. 한국어 프롬프트를 고쳐도 영어가 자동으로 따라오고(이중 관리 없음), RAG는 한국어 생성에만 쓰이므로 영어 RAG 불필요.
+**핵심 로직: 생성 시 영어 출력 지시(suffix)** — 별도 번역 레이어/추가 호출 없음. 한국어 프롬프트는 단일 소스, `language=="en"`일 때만 "본문은 영어로, 구조·숫자·간지는 보존, 용어는 glossary대로" 지시 + glossary를 시스템 프롬프트 끝에 덧붙여 한 번에 영어로 생성. 한국어 프롬프트를 고쳐도 영어가 자동 추종(이중 관리 없음), RAG는 한국어 생성에만 쓰이므로 영어 RAG 불필요. (표준·구조적 근거는 §5.)
 
 **In scope (UI + AI 전부):**
 - UI 라벨 en.json 전수 영어화 (명리 용어는 glossary 정책 적용).
-- AI 생성 본문 영어화: 사주 리포트·오늘의 운세·한줄 상담·궁합 리포트·챗 — **공통 번역 레이어** 적용 (챗만 예외, §5 참고).
-- 프론트의 생성 호출이 현재 로케일을 `language`로 전달 (백엔드가 번역 여부 판단).
-- 명리 용어집(glossary) 단일 소스 — UI·번역 레이어 일관성.
+- AI 생성 본문 영어화: 사주 리포트·오늘의 운세·한줄 상담·궁합 리포트·챗 — **조건부 영어 출력 지시(suffix)** 적용.
+- 프론트의 생성 호출이 현재 로케일을 `language`로 전달 (백엔드가 영어 지시 부착 판단).
+- 명리 용어집(glossary) 단일 소스 — UI·프롬프트 suffix 일관성.
 
 **Out of scope (YAGNI):**
 - 한국어/영어 외 추가 언어.
@@ -35,22 +35,21 @@ UI와 AI가 같은 표기를 쓰도록 용어집을 한 곳에 둔다.
 - **Frontend**: 동일 표기를 en.json 값에 확정 반영(필요 시 `apps/web/lib/i18n/glossary.ts` 보조).
 - 두 소스의 표기가 일치해야 함 — 용어집 표를 이 spec에 1벌 두고 양쪽이 따른다.
 
-## 5. AI 콘텐츠 영어화 — 공통 번역 레이어
+## 5. AI 콘텐츠 영어화 — 조건부 영어 출력 지시(suffix), 단일 호출
 
-프롬프트는 **전부 한국어 그대로 단일 소스**. 생성된 한국어 결과의 **본문 필드만** 공통 번역 레이어가 영어로 바꾼다. 프롬프트·RAG·ReportModule 계약은 **무수정**.
+별도 번역 레이어/추가 호출 없이, **생성 시 출력 언어를 지정**한다(생성형 LLM 앱 표준). 한국어 프롬프트는 단일 소스로 두고, `language=="en"`일 때만 **공통 영어 출력 지시 + glossary**를 시스템 프롬프트 끝에 붙인다. 점수·간지·숫자는 모델이 *같은 구조화 출력 안에서* 채우므로 보존이 보장된다(별도 번역기보다 구조적으로 안전). 호출 +0회.
 
-- **번역 레이어**: `backend/llm/translate.py` — `translate_fields(value, *, target="en") -> 동형 구조`.
-  - 지정한 텍스트 필드(헤드라인, 탭 본문, 요약, 운세 문구 등)만 번역하고 **키·숫자·간지·사람 고유명사·구조는 보존**.
-  - 모델은 저렴한 nano/mini. 시스템 프롬프트: "Translate the given Korean string values to natural English. Preserve JSON structure, numbers, and Korean personal names. Render saju terms EXACTLY per this glossary: …(glossary 주입). Keep headlines punchy and conclusion-style."
-  - 구현은 dict/list 재귀 + "번역 대상 필드 화이트리스트"로 안전하게(점수·간지 같은 비번역 필드 건드리지 않게).
-- **적용 지점 (서비스/파이프라인에서 생성 직후, `language=="en"`일 때 1회)**:
-  - 사주 리포트: `services/reports.py` — 생성된 `tabs`/`year_flow`/`dae_un_analysis` 본문 필드 번역 후 **번역본을 스냅샷 저장**(리포트는 language 고정).
-  - 궁합 리포트: `services/compatibility.py` — `run_compatibility_report` 결과 `tabs` 본문 번역 후 저장.
-  - 오늘의 운세: `pipelines/daily_story.py` 또는 서비스 — 카드 headline/body 번역.
-  - 한줄 상담: `services`/`pipelines/question.py` — 결과 본문 번역. (`QuestionRequest.language` 없으면 추가.)
-- **저장 정책**: 리포트류는 **생성 시점에 1회 번역해 영어 스냅샷 저장**. 공유 페이지는 재계산·재번역 없음(스냅샷 그대로).
-- **챗 (예외)**: 스트리밍이라 사후 번역은 UX가 나쁨(한국어 떴다가 교체). 챗만 `prompts/chat.py`에 **영어 시스템 프롬프트 분기**를 둬서 처음부터 영어로 스트리밍. language는 세션 생성 시 로케일 저장. (챗은 번역 레이어 미적용.)
-- **ReportModule 계약/`runner` 무수정** — 번역은 서비스 레이어에서 결과에 적용하므로 모듈·러너·프롬프트를 안 건드린다. 새 리포트 추가해도 번역 레이어 그대로 재사용.
+- **공통 suffix 헬퍼**: `backend/llm/prompts/lang.py` — `english_output_directive(glossary) -> str`:
+  > "Write all natural-language fields (headlines, body, summaries) in natural, fluent English. Keep the same JSON structure, all numbers, scores, and ganji (간지) exactly as-is — do not translate names of people or pillar characters. Render saju terms EXACTLY per this glossary: …(glossary 주입). Keep headlines punchy and conclusion-style; do not apply Korean speech-level (반말) instructions."
+  - ko면 빈 문자열 → 기존 한국어 프롬프트 그대로.
+- **배선**: 각 프롬프트의 `system_prompt(language="ko")`가 끝에 `english_output_directive`를 조건부로 덧붙인다. `language`를 요청→서비스→파이프라인→프롬프트로 전달.
+  - 사주 리포트: `schemas/report.py` language(존재) → `services/reports.py` → `pipelines/saju_report.py` → `prompts/report.py`. (`un_flow`도 동일.)
+  - 궁합 리포트: `CompatibilityReportRequest.language` → `services/compatibility.py` → `runner.run_report(..., language=)` → 모듈 `system_prompt(language)`.
+  - 오늘의 운세: `prompts/daily_story.py` 리라이트 시스템 프롬프트에 suffix + `pipelines/daily_story.py`에 language.
+  - 한줄 상담: `prompts/question.py` + `pipelines/question.py` + `QuestionRequest.language`(없으면 추가).
+  - 챗: `prompts/chat.py` 시스템 프롬프트에 동일 suffix. language는 세션 생성 시 로케일 저장(메시지 요청마다 재전달 불필요).
+- **저장 정책**: 리포트류는 생성 시점 언어로 본문이 나오므로 그대로 스냅샷 저장(language 고정). 공유 페이지 재생성 없음.
+- **ReportModule 계약 영향(최소)**: `system_prompt`가 `language` 인자를 받도록 확장(기본 "ko" 하위호환), `runner.run_report(module, inputs, *, request_topics, language="ko")`. `format_message`는 무관(신호 직렬화).
 
 ## 6. 프론트 로케일 배선
 
@@ -69,18 +68,17 @@ UI와 AI가 같은 표기를 쓰도록 용어집을 한 곳에 둔다.
 
 ## 9. 테스트
 
-- Backend 번역 레이어: 본문 필드만 번역하고 **점수·간지·숫자·사람 이름·구조는 보존**하는지(번역 LLM 모킹). glossary 용어가 시스템 프롬프트에 주입되는지. `language=="en"`일 때만 서비스가 번역 레이어를 호출하고 ko면 패스하는지.
-- 챗: `language="en"`에서 영어 시스템 프롬프트가 선택되는지.
+- Backend suffix: `language="en"`이면 `system_prompt`에 영어 출력 지시 + glossary가 포함되고, `"ko"`면 안 붙는지(문자열 단위 테스트, LLM 호출 불필요). glossary 용어 표기가 지시문에 들어가는지.
+- 배선: 각 서비스/파이프라인이 요청 `language`를 프롬프트까지 전달하는지.
 - Frontend: 생성 호출이 현재 로케일을 `language`로 넘기는지. en.json Hangul 가드 통과.
-- 수동 스모크: `/en`에서 리포트·운세·궁합·한줄상담·챗 생성 → 본문 영어 + 용어 음역 확인, 점수·간지 한국어/숫자 보존 확인.
+- 수동 스모크: `/en`에서 리포트·운세·궁합·한줄상담·챗 생성 → 본문 영어 + 용어 음역 확인, 점수·간지·숫자 보존 확인.
 
 ## 10. 단계 (구현 순서 후보)
 
 1. 용어집 확정(backend glossary + en.json 명리 값) + Hangul 가드.
 2. en.json 전수 영어화 + 프론트 로케일 배선(`language` 전달).
-3. 공통 번역 레이어(`llm/translate.py`) + 서비스 적용 — 리포트류(사주·궁합) 먼저, 그다음 운세·한줄상담.
-4. 챗 영어 프롬프트 분기 (번역 레이어 예외).
-5. 통합 검증 + 수동 스모크.
+3. 영어 출력 지시 헬퍼(`llm/prompts/lang.py`) + 프롬프트 suffix 부착 + `language` 배선 — 리포트류(사주·궁합) 먼저, 그다음 운세·한줄상담·챗.
+4. 통합 검증 + 수동 스모크.
 
 ## 11. 재사용·일관성
 
