@@ -35,6 +35,22 @@ export async function saveRecentInput(s: StorageAdapter, input: RecentBirthInput
 }
 
 /**
+ * 최근 항목에서 특정 항목을 제거한다 — dedupKey가 일치하는 첫 번째 항목을 삭제.
+ * @returns 실제로 제거됐으면 true
+ */
+export async function removeRecentInput(
+  s: StorageAdapter,
+  match: Pick<RecentBirthInput, 'birth_date' | 'birth_time' | 'gender' | 'calendar'>,
+): Promise<boolean> {
+  const list = await loadRecentInputs(s)
+  const k = dedupKey(match)
+  const next = list.filter((i) => dedupKey(i) !== k)
+  if (next.length === list.length) return false
+  await s.set(KEY, JSON.stringify(next))
+  return true
+}
+
+/**
  * 기존 최근 항목에 일간(day_stem)을 보강한다 — 결과 페이지에서 사주 계산 후 호출.
  * 입력 키(생일·시각·성별·양/음력)가 일치하는 항목에만 써넣으며, 이미 같은 값이면 쓰지 않는다.
  * @returns 실제로 갱신했으면 true (불필요한 쓰기 방지용)

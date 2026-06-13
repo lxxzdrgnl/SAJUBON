@@ -41,7 +41,7 @@ export default async function ManseIndex() {
       )}
 
       <h2 className="mb-3 text-[15px] font-extrabold">{t('recent')}</h2>
-      <RecentList />
+      <RecentList isLoggedIn={!!user} />
 
       {!user && (
         <Link

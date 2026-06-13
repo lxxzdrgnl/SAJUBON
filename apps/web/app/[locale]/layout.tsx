@@ -7,12 +7,14 @@ import TabBar from '@/components/TabBar'
 import '../globals.css'
 
 // 간지(천간·지지) 명조체 — font-serif(--font-serif)에 한글·한자 세리프 글리프를 공급한다.
-// 기본 ui-serif 스택은 CJK 글리프가 없어 고딕으로 폴백되므로 명시적으로 로드한다.
+// subsets:['latin']은 라틴 글리프만 받아 한글·한자가 고딕으로 폴백됐다.
+// 한국어 폰트는 'korean' 서브셋을 직접 못 받으므로 subsets를 비우고 preload:false로 둔다
+// (거대한 CJK 글리프를 preload하진 않되 모든 unicode-range @font-face를 포함해 필요 시 로드).
 const notoSerifKR = Noto_Serif_KR({
-  subsets: ['latin'],
   weight: ['700', '900'],
   variable: '--font-serif-kr',
   display: 'swap',
+  preload: false,
 })
 
 export const metadata = { title: '사주구리' }
