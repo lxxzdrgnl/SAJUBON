@@ -1,11 +1,11 @@
 import { getTranslations } from 'next-intl/server'
-import { Link } from '@/i18n/navigation'
 import { currentUser, serverAuthApi } from '@/lib/serverAuth'
 import { listReports, listDailyRecords, listProfiles, listConsultations } from '@sajuguri/api-client'
 import type { ReportSummary, DailyRecordSummary, ConsultationHistoryItem } from '@sajuguri/api-client'
 import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
 import MyRecordsClient from '@/components/my/MyRecordsClient'
+import BackButton from '@/components/my/BackButton'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 const GOOGLE_LOGIN_URL = `${API_URL}/api/auth/google?client=web`
@@ -18,12 +18,7 @@ export default async function HistoryPage() {
     return (
       <main>
         <div className="mb-4 flex items-center gap-2">
-          <Link
-            href="/my"
-            className="rounded-xl border-2 border-ink bg-surface px-3 py-1.5 text-[13px] font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
-          >
-            {t('history.back')}
-          </Link>
+          <BackButton fallback="/my" label={t('history.back')} />
           <h1 className="text-lg font-black">{t('history.title')}</h1>
         </div>
         <BrutalCard className="flex flex-col items-center gap-4 py-8 text-center">
@@ -69,12 +64,7 @@ export default async function HistoryPage() {
   return (
     <main>
       <div className="mb-4 flex items-center gap-2">
-        <Link
-          href="/my"
-          className="rounded-xl border-2 border-ink bg-surface px-3 py-1.5 text-[13px] font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
-        >
-          {t('history.back')}
-        </Link>
+        <BackButton fallback="/my" label={t('history.back')} />
         <h1 className="text-lg font-black">{t('history.title')}</h1>
       </div>
 
