@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation'
 import { parseSSEStream } from '@sajuguri/core'
 import type { ChatStreamEvent } from '@sajuguri/core'
 import type { ProfileResponse } from '@sajuguri/api-client'
-import { getHistory, attachPartner, sendMessage as apiSendMessage } from '@sajuguri/api-client'
+import { getHistory, attachPartner, detachPartner, sendMessage as apiSendMessage } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import type { ChatMessage } from '@sajuguri/api-client'
 import ToolCard from './ToolCard'
@@ -69,6 +69,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
   const [attachOpen, setAttachOpen] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [partnerChipExpanded, setPartnerChipExpanded] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const textRef = useRef<HTMLTextAreaElement | null>(null)
@@ -268,6 +269,18 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
     [sessionId, appendPartnerAttachedMessages],
   )
 
+  // 상대 만세력 제거
+  const handleDetachPartner = useCallback(async () => {
+    try {
+      await detachPartner(api, sessionId)
+    } catch {
+      /* silent — 로컬 상태는 어차피 지운다 */
+    } finally {
+      setPartnerName(null)
+      setPartnerChipExpanded(false)
+    }
+  }, [sessionId])
+
   // textarea 자동 높이
   const autoResize = useCallback(() => {
     if (textRef.current) {
@@ -321,9 +334,24 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
             </button>
           )}
           {partnerName && (
-            <span className="inline-flex items-center gap-1 rounded-[10px] border-2 border-ink bg-yellow-tint px-2.5 py-1 text-xs font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]">
+            <button
+              type="button"
+              onClick={() => setPartnerChipExpanded((v) => !v)}
+              className="inline-flex items-center gap-1 rounded-[10px] border-2 border-ink bg-yellow-tint px-2.5 py-1 text-xs font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+              aria-label={t('chip.partnerToggle')}
+            >
               {t('chip.partner')}: {partnerName}
-            </span>
+              {partnerChipExpanded && (
+                <span
+                  role="button"
+                  aria-label={t('chip.partnerRemove')}
+                  onClick={(e) => { e.stopPropagation(); handleDetachPartner() }}
+                  className="ml-1 flex h-4 w-4 items-center justify-center rounded-full border border-ink bg-ink text-[9px] font-black text-yellow leading-none"
+                >
+                  ✕
+                </span>
+              )}
+            </button>
           )}
         </div>
       )}
@@ -372,7 +400,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                 if (block.kind === 'tool_result') {
                   const isLastCompat = lastCheckCompatIdx?.mi === i && lastCheckCompatIdx?.bi === bi
                   return (
-                    <div key={bi} className="flex flex-col gap-2">
+                    <div key={bi} className="flex flex-col gap-2 w-full min-w-0">
                       <ToolCard tool={block.tool} payload={block.payload} />
                       {isLastCompat && (
                         <CompatibilityReportCTA sessionId={sessionId} />

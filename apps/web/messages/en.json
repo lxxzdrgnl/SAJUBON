@@ -451,7 +451,9 @@
     "chip": {
       "my": "My chart",
       "partner": "Partner chart",
-      "addPartner": "+ Partner chart"
+      "addPartner": "+ Partner chart",
+      "partnerToggle": "Partner chip",
+      "partnerRemove": "Remove partner"
     },
     "input": {
       "placeholder": "Type your question freely",

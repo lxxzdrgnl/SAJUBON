@@ -147,11 +147,11 @@ function IlJinSummary({ payload }: { payload: Record<string, unknown> }) {
       )}
       {/* 이달 일진 미니 그리드 (첫 14일) */}
       {days.length > 1 && (
-        <div className="overflow-x-auto">
+        <div className="w-full min-w-0 overflow-x-auto">
           <p className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-text-sub">
             {year}년 {month}월
           </p>
-          <div className="flex gap-1 pb-1">
+          <div className="flex gap-1 pb-1" style={{ width: 'max-content' }}>
             {days.slice(0, 14).map((d) => {
               const isToday = d.date === todayStr
               return (
@@ -533,7 +533,7 @@ export default function ToolCard({ tool, payload }: Props) {
   const label = t.has(`labels.${tool}`) ? t(`labels.${tool}`) : tool
 
   return (
-    <div className="w-full rounded-2xl border-[1.5px] border-teal bg-teal-tint px-3 py-2.5">
+    <div className="w-full min-w-0 rounded-2xl border-[1.5px] border-teal bg-teal-tint px-3 py-2.5 overflow-hidden">
       <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-teal-deep">
         {label}
       </p>

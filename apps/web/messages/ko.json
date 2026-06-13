@@ -414,7 +414,9 @@
     "chip": {
       "my": "내 만세력",
       "partner": "상대 만세력",
-      "addPartner": "+ 상대 만세력"
+      "addPartner": "+ 상대 만세력",
+      "partnerToggle": "상대 만세력 칩",
+      "partnerRemove": "상대 만세력 제거"
     },
     "input": {
       "placeholder": "고민을 자유롭게 적어보세요",
