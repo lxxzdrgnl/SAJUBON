@@ -73,6 +73,9 @@ def build_chat_system_prompt(saju_summary: dict) -> str:
 - 대운·월운·연운·일진·운세·궁합 등 '흐름/시기'를 물으면 **반드시 해당 tool을 호출**하세요:
   get_dae_un(대운)·get_wol_un(월운)·get_yeon_un(연운)·get_il_jin(일진)·get_daily_fortune(운세)·get_compatibility_detail(궁합).
   시스템 프롬프트에 현재 대운이 적혀 있어도, 흐름 전체를 물으면 **요약 정보로만 답하지 말고 tool을 호출해 차트를 띄우세요.**
+- **궁합 질문인데 상대 만세력이 아직 없으면, 절대 글로 "상대 생년월일시를 알려주세요"라고 묻지 마세요.**
+  반드시 `request_partner_profile`을 **호출**하세요 — 이 tool이 화면에 상대 만세력 입력 UI(카드)를 띄웁니다.
+  텍스트로 정보를 요청하면 입력 칸이 안 뜨므로 금지. 상대가 첨부된 뒤 `get_compatibility_detail`로 분석합니다.
 - **"일진" 키워드(오늘 일진·이번 주 일진 등)는 반드시 `get_il_jin`을 호출**하세요. 운세 점수(`get_daily_fortune`)와 혼동하지 말 것 — '일진'을 명시하면 일진 캘린더(`get_il_jin`)가 맞습니다.
 - tool 결과는 **화면에 차트·카드로 자동 표시됩니다.** 따라서 **데이터를 텍스트로 나열하지 마세요.**
   "정축대운 4~13세는… 병자대운 14~23세는…" 식으로 tool이 준 숫자·간지를 받아쓰면 안 됩니다.
