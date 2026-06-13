@@ -81,7 +81,7 @@ const sajuType: RecordType<ReportSummary> = {
     return rows.map((r) => ({ id: r.id, createdAt: r.created_at, payload: r }))
   },
   href: (item) => `/report/${item.id}`,
-  renderCard: (item, t) => SajuCard({ r: item.payload, t }),
+  renderCard: (item, t) => <SajuCard r={item.payload} t={t} />,
   groupBy: (item) => item.payload.profile_name || '',
   empty: { message: (t) => t('emptyReports'), ctaHref: '/manse', ctaLabel: (t) => t('goReport') },
   remove: { fn: deleteReport, label: (item) => item.payload.first_headline },
@@ -96,7 +96,7 @@ const fortuneType: RecordType<DailyRecordSummary> = {
     return rows.map((f) => ({ id: f.id, createdAt: f.date, payload: f }))
   },
   href: (item) => `/fortune?record=${item.id}`,
-  renderCard: (item, t) => FortuneCard({ f: item.payload, t }),
+  renderCard: (item, t) => <FortuneCard f={item.payload} t={t} />,
   groupBy: (item) => item.payload.profile_name || '',
   empty: { message: (t) => t('emptyFortune'), ctaHref: '/', ctaLabel: (t) => t('goFortune') },
   remove: { fn: deleteDailyRecord, label: (item) => item.payload.keyword },
@@ -112,7 +112,8 @@ const consultationType: RecordType<ConsultationHistoryItem> = {
   // 상담은 공유 토큰을 통해 열린다 — 토큰이 없으면 카드에서 발급 후 이동(ConsultationCard 내부 처리).
   href: (item) =>
     item.payload.share_token ? `/share/question/${item.payload.share_token}` : `/question`,
-  renderCard: (item, t) => ConsultationCard({ c: item.payload, t }),
+  // ConsultationCard uses useState/useRouter hooks — must render as JSX element, never as a direct function call.
+  renderCard: (item, t) => <ConsultationCard c={item.payload} t={t} />,
   groupBy: (item) => item.payload.profile_name || '',
   empty: { message: (t) => t('emptyQuestion'), ctaHref: '/question', ctaLabel: (t) => t('goQuestion') },
   remove: { fn: deleteConsultation, label: (item) => item.payload.headline },
@@ -126,7 +127,7 @@ const compatibilityType: RecordType<CompatibilityReportSummary> = {
     return rows.map((r) => ({ id: r.id, createdAt: r.created_at, payload: r }))
   },
   href: (item) => `/compatibility/${item.id}`,
-  renderCard: (item, t) => CompatibilityCard({ r: item.payload, t }),
+  renderCard: (item, t) => <CompatibilityCard r={item.payload} t={t} />,
   // 두 사람이라 프로필 그룹핑 부적합 — 단순 목록.
   empty: { message: (t) => t('emptyCompatibility'), ctaHref: '/compatibility/new', ctaLabel: (t) => t('goCompatibility') },
 }

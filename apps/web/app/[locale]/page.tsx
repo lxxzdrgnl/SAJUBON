@@ -98,10 +98,24 @@ export default async function Home() {
           <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
             <MascotTinted stem={repStem} width={40} height={40} />
           </span>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
             <p className="text-xs font-semibold text-ink">{fortuneSub}</p>
           </div>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0 text-ink opacity-60"
+            aria-hidden="true"
+          >
+            <path d="M9 6l6 6-6 6" />
+          </svg>
         </section>
       </FortuneBannerClient>
 
