@@ -260,7 +260,7 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
           {filtered.length > preview.length && (
             <Link
               href="/my/history"
-              className="mt-3 block rounded-xl border-2 border-ink bg-surface py-3 text-center text-[13px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+              className="mt-3 block rounded-xl border-2 border-ink bg-surface py-3 text-center text-[13px] font-extrabold text-teal-deep shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
             >
               {t('viewAllHistory')} →
             </Link>
