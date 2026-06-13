@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Viewport } from 'next'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { notFound } from 'next/navigation'
 import { Noto_Serif_KR } from 'next/font/google'
@@ -19,6 +20,15 @@ const notoSerifKR = Noto_Serif_KR({
 
 export const metadata = { title: '사주구리' }
 
+// viewport-fit=cover — iOS 세이프에어리어(노치·홈인디케이터)까지 페이지가 칠해지게.
+// 이게 없으면 풀스크린 오버레이(운세 스토리)가 상하 세이프에어리어를 못 덮어
+// 기본 배경(청록)이 띠로 남는다. env(safe-area-inset-*)도 이 설정이 있어야 동작.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
+
 export default async function LocaleLayout({
   children,
   params,
@@ -33,7 +43,7 @@ export default async function LocaleLayout({
       <body>
         <NextIntlClientProvider>
           {/* 모바일 단일 컬럼 — design.md §7 */}
-          <div className="mx-auto min-h-dvh max-w-[640px] px-4 pb-24 pt-5 md:pb-8 md:pt-24">
+          <div className="mx-auto min-h-dvh max-w-[640px] px-4 pb-24 pt-[calc(1.25rem+env(safe-area-inset-top))] md:pb-8 md:pt-24">
             {children}
           </div>
           <TabBar />

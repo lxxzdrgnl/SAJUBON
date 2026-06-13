@@ -344,8 +344,8 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
       {/* 중앙 정렬 컨테이너 */}
       <div className="relative mx-auto flex h-full w-full max-w-[640px] flex-col">
 
-        {/* 상단 세그먼트 프로그레스 바 (인스타 스토리식) + 닫기 */}
-        <div className="flex shrink-0 items-center gap-3 px-4 pt-4 pb-2">
+        {/* 상단 세그먼트 프로그레스 바 (인스타 스토리식) + 닫기 — 노치 클리어 */}
+        <div className="flex shrink-0 items-center gap-3 px-4 pb-2 pt-[calc(1rem+env(safe-area-inset-top))]">
           {/* 카드 개수만큼 세그먼트 — 잉크색으로 채움(배경 대비) */}
           <div className="flex flex-1 items-center gap-1">
             {segments.length === 0 ? (
@@ -438,7 +438,7 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
 
         {/* 하단 페이지 인디케이터 (점) */}
         {!loading && !error && story && (
-          <div className="flex shrink-0 justify-center gap-1.5 py-3">
+          <div className="flex shrink-0 justify-center gap-1.5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             {story.cards.map((_, i) => (
               <div
                 key={i}
