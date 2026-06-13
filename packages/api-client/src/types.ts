@@ -253,6 +253,7 @@ export interface ConsultationResponse {
 
 export interface ConsultationHistoryItem {
   id: number
+  profile_name: string
   question: string
   category: string
   headline: string
