@@ -207,7 +207,7 @@ export default function RecentList({
                   </button>
                 ) : (
                   <span
-                    className="rounded-lg border-2 border-border-soft px-2 py-1 text-[11px] font-bold text-text-sub"
+                    className="rounded-lg border-2 border-ink px-2 py-1 text-[11px] font-bold text-text-sub"
                     title={t('recentSaveLoginHint')}
                   >
                     {t('recentSave')}

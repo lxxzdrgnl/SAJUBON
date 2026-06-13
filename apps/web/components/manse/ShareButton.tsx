@@ -71,7 +71,7 @@ export default function ShareButton({
         {loading ? t('loading') : copied ? t('copied') : t('label')}
       </button>
       {shareUrl && !copied && (
-        <p className="truncate rounded-xl border-[1.5px] border-border-soft bg-surface px-3 py-2 text-[12px] text-text-sub">
+        <p className="truncate rounded-xl border-2 border-ink bg-surface px-3 py-2 text-[12px] text-text-sub">
           {shareUrl}
         </p>
       )}

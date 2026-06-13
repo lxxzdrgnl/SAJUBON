@@ -81,7 +81,7 @@ export default function IlJinCalendar() {
               )
             })}
           </div>
-          <div className="mt-2 flex flex-wrap gap-3 border-t-[1.5px] border-border-soft pt-2 text-[11px] text-text-sub">
+          <div className="mt-2 flex flex-wrap gap-3 border-t-2 border-ink pt-2 text-[11px] text-text-sub">
             <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded border-2 border-ink bg-yellow-tint" />{t('today')}</span>
             <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-[#FBF3D9]" />{t('solarTerm')}</span>
             <span className="flex items-center gap-1"><span className="text-[#0090A8]">{t('leapMark')}</span>{t('leap')}</span>

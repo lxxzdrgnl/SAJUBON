@@ -29,7 +29,7 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
     return (
       <div
         className={`flex h-14 w-full flex-col items-center justify-center rounded-lg border-2 ${
-          on ? 'border-orange bg-orange' : 'border-border-soft bg-surface'
+          on ? 'border-orange bg-orange' : 'border-ink bg-surface'
         }`}
       >
         <span className={`font-serif text-xl font-black leading-none ${on ? 'text-white' : 'text-ink'}`}>
@@ -78,7 +78,7 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
                   ? 'border-ink bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]'
                   : has
                     ? 'border-ink bg-surface text-ink shadow-[2px_2px_0_#1A1A1A]'
-                    : 'border-border-soft bg-surface text-text-sub'
+                    : 'border-ink bg-surface text-text-sub'
               }`}
             >
               {tabDef.label}
@@ -87,7 +87,7 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
         })}
       </div>
 
-      <div className="border-t-[1.5px] border-border-soft px-4 py-3">
+      <div className="border-t-2 border-ink px-4 py-3">
         {showWeight ? (
           <>
             <p className="mb-2 text-xs leading-relaxed text-text-sub">{t('gungSeongDesc')}</p>

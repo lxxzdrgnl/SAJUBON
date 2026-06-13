@@ -40,7 +40,7 @@ export default async function WuxingFeatureTable({ data }: { data: SajuCalcRespo
               return (
                 <tr
                   key={f.el}
-                  className={`${isLast ? '' : 'border-b border-border-soft'}`}
+                  className={`${isLast ? '' : 'border-b border-ink'}`}
                   style={isOver || isLack ? { background: tint } : undefined}
                 >
                   <td className="py-2.5 pr-2">

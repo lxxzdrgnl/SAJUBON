@@ -101,7 +101,7 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
       </div>
 
       {/* 용신 / 희신 / 기신 */}
-      <div className="flex flex-col gap-2 border-t-[1.5px] border-dashed border-border-soft pt-3">
+      <div className="flex flex-col gap-2 border-t-2 border-dashed border-ink pt-3">
         <div className="flex items-center gap-2">
           <span className="w-8 shrink-0 text-[11px] font-bold text-text-sub">{t('yongSin')}</span>
           <ElPill el={y.primary} />

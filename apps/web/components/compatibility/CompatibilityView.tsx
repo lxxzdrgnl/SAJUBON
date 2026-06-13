@@ -71,7 +71,7 @@ function ShareModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-border-soft text-text-sub"
+            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink text-text-sub"
           >
             <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
               <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -80,7 +80,7 @@ function ShareModal({
         </div>
 
         {/* 생년월일시 공개 토글 */}
-        <div className="mb-5 flex items-center justify-between rounded-xl border-[1.5px] border-border-soft bg-surface px-4 py-3">
+        <div className="mb-5 flex items-center justify-between rounded-xl border-2 border-ink bg-surface px-4 py-3">
           <span className="text-[14px] font-bold text-ink">{t('share.maskBirthLabel')}</span>
           <button
             type="button"
@@ -103,7 +103,7 @@ function ShareModal({
 
         {shareUrl ? (
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 rounded-xl border-2 border-border-soft bg-surface px-3 py-2">
+            <div className="flex items-center gap-2 rounded-xl border-2 border-ink bg-surface px-3 py-2">
               <span className="flex-1 truncate text-[12px] text-text-sub">{shareUrl}</span>
             </div>
             <button

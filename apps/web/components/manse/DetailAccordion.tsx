@@ -32,7 +32,7 @@ export default async function DetailAccordion({ data }: { data: SajuCalcResponse
           </thead>
           <tbody className="align-top">
             {/* 12운성 행 */}
-            <tr className="border-b border-border-soft">
+            <tr className="border-b border-ink">
               <td className="py-2.5 pr-1 text-[11px] font-extrabold text-text-sub">{t('twelveWun')}</td>
               {slots.map((s) => (
                 <td key={s.loc} className="py-2.5 text-sm font-extrabold" style={{ color: s.pillar ? ohaengColor(s.pillar.branch_element) : undefined }}>
@@ -41,7 +41,7 @@ export default async function DetailAccordion({ data }: { data: SajuCalcResponse
               ))}
             </tr>
             {/* 지장간 행 */}
-            <tr className="border-b border-border-soft">
+            <tr className="border-b border-ink">
               <td className="py-2.5 pr-1 text-[11px] font-extrabold text-text-sub">{t('jiJangGan')}</td>
               {slots.map((s) => (
                 <td key={s.loc} className="py-2.5 text-xs font-bold tracking-wide text-ink">

@@ -93,7 +93,7 @@ export default async function ManseResult({
         <button
           type="button"
           disabled
-          className="flex-1 cursor-not-allowed rounded-xl border-2 border-border-soft bg-surface py-3 text-center text-sm font-extrabold text-text-sub opacity-60"
+          className="flex-1 cursor-not-allowed rounded-xl border-2 border-ink bg-surface py-3 text-center text-sm font-extrabold text-text-sub opacity-60"
         >
           {tc('chat')}
           <span className="ml-1 text-[10px] font-bold">· {tc('soon')}</span>
