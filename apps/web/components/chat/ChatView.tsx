@@ -286,9 +286,13 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
       {(profiles.length > 0 || partnerName) && (
         <div className="flex shrink-0 flex-wrap gap-1.5 border-b border-border-soft py-2">
           {profiles.length > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-[10px] border-2 border-teal bg-teal-tint px-2.5 py-1 text-xs font-extrabold text-teal-deep shadow-[2px_2px_0_#1A1A1A]">
+            <button
+              type="button"
+              onClick={() => setAttachOpen(true)}
+              className="inline-flex items-center gap-1 rounded-[10px] border-2 border-teal bg-teal-tint px-2.5 py-1 text-xs font-extrabold text-teal-deep shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
+            >
               {t('chip.my')}
-            </span>
+            </button>
           )}
           {partnerName && (
             <span className="inline-flex items-center gap-1 rounded-[10px] border-2 border-ink bg-yellow-tint px-2.5 py-1 text-xs font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]">
@@ -305,14 +309,6 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
             key={i}
             className={`flex gap-2 ${m.role === 'human' ? 'flex-row-reverse' : 'flex-row'}`}
           >
-            {/* AI 아바타 */}
-            {m.role === 'ai' && (
-              <div className="shrink-0 mt-auto">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/mascot.svg" alt="" width={28} height={28} className="rounded-full border border-border-soft" />
-              </div>
-            )}
-
             {/* 블록들 */}
             <div className={`flex flex-col gap-2 max-w-[78%] ${m.role === 'human' ? 'items-end' : 'items-start'}`}>
               {m.blocks.map((block, bi) => {
@@ -398,7 +394,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
           {/* 텍스트 입력 */}
           <textarea
             ref={textRef}
-            className="flex-1 resize-none rounded-2xl border-2 border-ink bg-surface px-3 py-2 text-sm text-ink outline-none"
+            className="flex-1 resize-none rounded-2xl border-2 border-ink bg-surface px-3 py-2 text-base text-ink outline-none"
             rows={1}
             placeholder={t('input.placeholder')}
             value={input}

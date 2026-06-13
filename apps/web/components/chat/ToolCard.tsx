@@ -60,7 +60,8 @@ function DaeUnMini({ payload }: { payload: Record<string, unknown> }) {
 /** 월운/연운 미니 바 */
 function UnMini({ payload, label }: { payload: Record<string, unknown>; label: string }) {
   type UnEntry = { month?: number; year?: number; ganji_name?: string; stem?: string; branch?: string }
-  const entries = (payload.entries ?? payload.wol_un_list ?? payload.yeon_un_list ?? []) as UnEntry[]
+  // 백엔드 payload 키: 월운 → months, 연운 → years, 구버전 대비 fallback 유지
+  const entries = (payload.months ?? payload.years ?? payload.entries ?? payload.wol_un_list ?? payload.yeon_un_list ?? []) as UnEntry[]
 
   if (entries.length === 0) return null
 
@@ -105,18 +106,69 @@ function FortuneScoreCard({ payload }: { payload: Record<string, unknown> }) {
   )
 }
 
-/** 일진 요약 */
+/** 일진 달력 요약 — 오늘 날짜 항목(또는 첫 항목)을 강조 표시 */
 function IlJinSummary({ payload }: { payload: Record<string, unknown> }) {
-  const date = payload.date as string | undefined
-  const ganji = payload.ganji_name as string | undefined
-  const stem = payload.stem as string | undefined
-  const branch = payload.branch as string | undefined
+  type IlJinEntry = { date: string; stem: string; branch: string; ganji_name?: string; solar_term?: string | null }
+  // payload 구조: {year, month, days: IlJinEntry[]}
+  const days = (payload.days ?? []) as IlJinEntry[]
+
+  // 오늘 날짜 항목을 강조, 없으면 첫 항목
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayEntry = days.find((d) => d.date === todayStr) ?? days[0]
+
+  if (!todayEntry && !payload.stem) {
+    // 구버전 flat payload fallback
+    const date = payload.date as string | undefined
+    const ganji = payload.ganji_name as string | undefined
+    const stem = payload.stem as string | undefined
+    const branch = payload.branch as string | undefined
+    return (
+      <div className="flex items-center gap-3">
+        {date && <span className="text-xs text-text-sub">{date}</span>}
+        <span className="font-serif text-xl font-extrabold">{stem}{branch}</span>
+        {ganji && <span className="text-sm text-text-sub">{ganji}</span>}
+      </div>
+    )
+  }
+
+  const year = payload.year as number | undefined
+  const month = payload.month as number | undefined
 
   return (
-    <div className="flex items-center gap-3">
-      {date && <span className="text-xs text-text-sub">{date}</span>}
-      <span className="font-serif text-xl font-extrabold">{stem}{branch}</span>
-      {ganji && <span className="text-sm text-text-sub">{ganji}</span>}
+    <div className="flex flex-col gap-2">
+      {/* 오늘 일진 강조 */}
+      {todayEntry && (
+        <div className="flex items-center gap-3">
+          <span className="rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-xs font-extrabold">{todayEntry.date}</span>
+          <span className="font-serif text-xl font-extrabold">{todayEntry.stem}{todayEntry.branch}</span>
+          {todayEntry.ganji_name && <span className="text-sm text-text-sub">{todayEntry.ganji_name}</span>}
+          {todayEntry.solar_term && <span className="rounded-md bg-teal-tint px-1.5 py-0.5 text-[10px] font-extrabold text-teal-deep">{todayEntry.solar_term}</span>}
+        </div>
+      )}
+      {/* 이달 일진 미니 그리드 (첫 14일) */}
+      {days.length > 1 && (
+        <div className="overflow-x-auto">
+          <p className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-text-sub">
+            {year}년 {month}월
+          </p>
+          <div className="flex gap-1 pb-1">
+            {days.slice(0, 14).map((d) => {
+              const isToday = d.date === todayStr
+              return (
+                <div
+                  key={d.date}
+                  className={`flex shrink-0 flex-col items-center gap-0.5 rounded-lg border px-1.5 py-1 text-center ${
+                    isToday ? 'border-orange bg-orange-tint font-extrabold' : 'border-border-soft bg-surface'
+                  }`}
+                >
+                  <span className="text-[9px] text-text-sub">{d.date.slice(8)}</span>
+                  <span className="font-serif text-[12px] font-bold leading-none">{d.stem}{d.branch}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

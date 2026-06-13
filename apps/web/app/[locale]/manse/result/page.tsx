@@ -90,14 +90,12 @@ export default async function ManseResult({
         >
           {tc('report')}
         </Link>
-        <button
-          type="button"
-          disabled
-          className="flex-1 cursor-not-allowed rounded-xl border-2 border-ink bg-surface py-3 text-center text-sm font-extrabold text-text-sub opacity-60"
+        <Link
+          href="/chat"
+          className="flex-1 rounded-xl border-2 border-teal bg-teal-tint py-3 text-center text-sm font-extrabold text-teal-deep shadow-[4px_4px_0_#1A1A1A]"
         >
           {tc('chat')}
-          <span className="ml-1 text-[10px] font-bold">· {tc('soon')}</span>
-        </button>
+        </Link>
       </div>
 
       <ShareButton calcSnapshot={data} birthInput={shareBirthInput} />
