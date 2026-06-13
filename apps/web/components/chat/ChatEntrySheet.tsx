@@ -77,8 +77,9 @@ export default function ChatEntrySheet({ open, onClose, profiles }: Props) {
                       disabled={creating}
                       onClick={() => handleProfile(p)}
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-yellow text-xs font-extrabold">
-                        {p.name.charAt(0)}
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/mascot.svg" alt="" width={38} height={38} />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2">

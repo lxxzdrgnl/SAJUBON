@@ -110,8 +110,9 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                         className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
                         onClick={() => goFortune(toResultQuery(profileToQueryInput(p)) + `&pname=${encodeURIComponent(p.name)}`)}
                       >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-yellow text-xs font-extrabold">
-                          {p.name.charAt(0)}
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/mascot.svg" alt="" width={38} height={38} />
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">
@@ -157,8 +158,9 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                         className="flex w-full items-center gap-3 rounded-2xl border-[1.5px] border-border-soft bg-surface p-4 text-left hover:border-ink hover:shadow-[2px_2px_0_#1A1A1A] transition-all"
                         onClick={() => goFortune(q + `&pname=${encodeURIComponent(r.name)}`)}
                       >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-yellow-tint text-xs font-extrabold">
-                          {r.name.charAt(0)}
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/mascot.svg" alt="" width={38} height={38} />
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">

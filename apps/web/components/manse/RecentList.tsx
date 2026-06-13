@@ -21,7 +21,10 @@ export default function RecentList() {
       {items.map((i) => (
         <Link key={toResultQuery(i)} href={`/manse/result?${toResultQuery(i)}`}>
           <BrutalCard className="flex items-center gap-3">
-            <span className="h-11 w-11 shrink-0 rounded-xl border-2 border-ink bg-yellow" />
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/mascot.svg" alt="" width={40} height={40} />
+            </span>
             <span>
               <span className="block text-[15px] font-extrabold">{i.name}</span>
               <span className="block text-xs text-text-sub">

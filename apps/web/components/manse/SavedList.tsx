@@ -3,6 +3,13 @@ import type { ProfileResponse } from '@sajuguri/api-client'
 import { Link } from '@/i18n/navigation'
 import BrutalCard from '@/components/ui/BrutalCard'
 import { toResultQuery, profileToQueryInput } from '@/lib/manse/query'
+import MascotTinted from '@/components/ui/MascotTinted'
+
+const STEM_BG: Record<string, string> = {
+  갑: '#8FD6A8', 을: '#8FD6A8', 병: '#FF9466', 정: '#FF9466',
+  무: '#FFD900', 기: '#FFD900', 경: '#D7D9DD', 신: '#D7D9DD',
+  임: '#B9C4CC', 계: '#B9C4CC',
+}
 
 /** 로그인 유저의 서버 저장 만세력 목록 (대표 뱃지·탭=분석). */
 export default async function SavedList({ profiles }: { profiles: ProfileResponse[] }) {
@@ -17,7 +24,9 @@ export default async function SavedList({ profiles }: { profiles: ProfileRespons
       {profiles.map((p) => (
         <Link key={p.id} href={`/manse/result?${toResultQuery(profileToQueryInput(p))}`}>
           <BrutalCard className="flex items-center gap-3">
-            <span className="h-11 w-11 shrink-0 rounded-xl border-2 border-ink bg-yellow" />
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
+              <MascotTinted stemBg={STEM_BG[p.day_stem ?? ''] ?? '#FFD900'} width={40} height={40} />
+            </span>
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5">
                 <span className="truncate text-[15px] font-extrabold">{p.name}</span>
