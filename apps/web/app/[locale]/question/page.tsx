@@ -8,7 +8,7 @@
  * - 선택된 만세력 카드에서 "다시 선택" 버튼으로 시트 재오픈
  */
 import { useEffect, useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import type { ProfileResponse, QuestionRequest, ToolChartItem } from '@sajuguri/api-client'
 import { askQuestion, shareConsultation } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
@@ -22,6 +22,7 @@ import Markdown from '@/components/ui/Markdown'
 export default function QuestionPage() {
   const t = useTranslations('question')
   const tToolCard = useTranslations('chat.toolCard')
+  const locale = useLocale()
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedInput, setSelectedInput] = useState<MansePick | null>(null)
@@ -86,6 +87,7 @@ export default function QuestionPage() {
           : {}),
         name: selectedInput.name || undefined,
         question: q,
+        language: locale,
       }
       const res = await askQuestion(api, body)
       setResult(res)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { api } from '@/lib/api'
@@ -20,6 +20,7 @@ const LOADING_PHRASES = [
 
 export default function ReportNewPage() {
   const t = useTranslations('report')
+  const locale = useLocale()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -79,7 +80,7 @@ export default function ReportNewPage() {
       const report = await createReport(api, {
         birth_input: birthInput,
         ...(topics.trim() ? { request_topics: topics.trim() } : {}),
-        language: 'ko',
+        language: locale,
       })
       router.replace(`/report/${report.id}`)
     } catch (err: unknown) {

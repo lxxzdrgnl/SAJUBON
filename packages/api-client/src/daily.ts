@@ -26,7 +26,7 @@ export interface DailyStoryResponse {
 export interface DailyStoryRequest {
   birth_input: SajuCalcRequest
   date: string               // YYYY-MM-DD (사용자 로컬 날짜)
-  language?: 'ko'
+  language?: string          // 생성 언어 ('ko' | 'en'), 기본 'ko'
 }
 
 export interface DailyRecordSummary {

@@ -232,6 +232,7 @@ export type QuestionCategory = 'career' | 'love' | 'money' | 'health' | 'general
 export interface QuestionRequest extends SajuCalcRequest {
   question: string
   category?: QuestionCategory  // 생략 시 백엔드 LLM이 자동 분류
+  language?: string            // 생성 언어 ('ko' | 'en'), 기본 'ko'
 }
 
 /** 차트/칩 항목 — tool 이름 + 백엔드 payload */
@@ -314,6 +315,7 @@ export interface ChatSessionCreate {
   gender?: string
   calendar?: string
   is_leap_month?: boolean
+  language?: string  // 생성 언어 ('ko' | 'en'), 기본 'ko'
 }
 
 // ── 궁합 리포트 ──────────────────────────────────────────────────────────────

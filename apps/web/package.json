@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check-en": "node scripts/check-en-untranslated.mjs"
   },
   "dependencies": {
     "@sajuguri/api-client": "workspace:*",

@@ -11,7 +11,7 @@
  */
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import { createDailyStory, getDailyRecord } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
@@ -47,6 +47,7 @@ interface FortuneStoryPageProps {
 
 export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps = {}) {
   const t = useTranslations('fortune.story')
+  const locale = useLocale()
   const router = useRouter()
   const params = useSearchParams()
 
@@ -157,7 +158,7 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
       }
 
       try {
-        const data = await createDailyStory(api, { birth_input: birthInput, date: today })
+        const data = await createDailyStory(api, { birth_input: birthInput, date: today, language: locale })
         if (!cancelled) {
           setStory(data)
           setCardIndex(0)

@@ -5,7 +5,7 @@
  */
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import type { ProfileResponse, ChatSessionCreate } from '@sajuguri/api-client'
 import { createSession } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
@@ -19,6 +19,7 @@ interface Props {
 
 export default function ChatEntrySheet({ open, onClose, profiles }: Props) {
   const t = useTranslations('chat')
+  const locale = useLocale()
   const router = useRouter()
   const [creating, setCreating] = useState(false)
 
@@ -41,7 +42,7 @@ export default function ChatEntrySheet({ open, onClose, profiles }: Props) {
     (pick: MansePick) => {
       if (creating) return
       if (pick.profile_id != null) {
-        startSession({ profile_id: pick.profile_id })
+        startSession({ profile_id: pick.profile_id, language: locale })
       } else {
         startSession({
           birth_date: pick.birth_date,
@@ -49,10 +50,11 @@ export default function ChatEntrySheet({ open, onClose, profiles }: Props) {
           gender: pick.gender,
           calendar: pick.calendar,
           is_leap_month: pick.is_leap_month,
+          language: locale,
         })
       }
     },
-    [creating, startSession],
+    [creating, locale, startSession],
   )
 
   return (

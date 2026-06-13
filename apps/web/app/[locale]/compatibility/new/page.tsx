@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import type { ProfileResponse, BirthInput } from '@sajuguri/api-client'
@@ -11,6 +11,7 @@ import PersonSlotPicker, { type PersonPick } from '@/components/compatibility/Pe
 
 export default function CompatibilityNewPage() {
   const t = useTranslations('compatibility')
+  const locale = useLocale()
   const router = useRouter()
 
   const [profiles, setProfiles] = useState<ProfileResponse[]>([])
@@ -74,7 +75,7 @@ export default function CompatibilityNewPage() {
         person_a: toBirthInput(a),
         person_b: toBirthInput(b),
         ...(topics.trim() ? { request_topics: topics.trim() } : {}),
-        language: 'ko',
+        language: locale,
       })
       router.replace(`/compatibility/${report.id}`)
     } catch (err: unknown) {

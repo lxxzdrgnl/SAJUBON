@@ -49,7 +49,7 @@ export interface CreateReportBody {
   birth_input: SajuCalcRequest
   request_topics?: string
   profile_id?: number
-  language?: 'ko'
+  language?: string  // 생성 언어 ('ko' | 'en'), 기본 'ko'
 }
 
 export interface ShareReportResponse {

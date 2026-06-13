@@ -197,9 +197,9 @@
     "charts": {
       "detail": {
         "title": "12-stage cycle · Sinsals · Hidden stems",
-        "twelveWun": "12운성",
-        "jiJangGan": "지장간",
-        "sinSal": "신살",
+        "twelveWun": "Twelve Growth Stages",
+        "jiJangGan": "Jijanggan (hidden stems)",
+        "sinSal": "Sinsal (symbolic stars)",
         "none": "—"
       },
       "wuxing": {
@@ -207,15 +207,15 @@
         "balance": "Balance score",
         "tabBar": "Bars",
         "tabPentagram": "Pentagram",
-        "verdictOver": "과다",
-        "verdictLack": "부족",
-        "verdictOk": "적정",
+        "verdictOver": "Excess",
+        "verdictLack": "Deficient",
+        "verdictOk": "Balanced",
         "balanced": "A well-balanced five-element makeup",
-        "over": "과다",
-        "lack": "결핍",
-        "saeng": "상생",
-        "geuk": "상극",
-        "dayLabel": "일간",
+        "over": "Excess",
+        "lack": "Deficient",
+        "saeng": "generating cycle",
+        "geuk": "controlling cycle",
+        "dayLabel": "Day Master",
         "applyHap": "Apply element shifts from combinations",
         "applyJohu": "Apply seasonal & palace weighting"
       },
@@ -223,7 +223,7 @@
         "title": "Ten Gods Structure",
         "core": "Core",
         "summary": "Structure summary",
-        "coreLabel": "핵심 구조"
+        "coreLabel": "Core Structure"
       },
       "strength": {
         "title": "Day Master Strength · Yongsin",
@@ -231,14 +231,14 @@
         "weak": "Weak",
         "mid": "Balanced",
         "strong": "Strong",
-        "deukRyeong": "득령",
-        "deukJi": "득지",
-        "deukSi": "득시",
-        "deukSe": "득세",
-        "yongSin": "용신",
-        "xiSin": "희신",
-        "jiSin": "기신",
-        "gyeokGuk": "격국",
+        "deukRyeong": "Deukryeong (seasonal support)",
+        "deukJi": "Deukji (positional support)",
+        "deukSi": "Deuksi (hour support)",
+        "deukSe": "Deukse (peer support)",
+        "yongSin": "Yongsin (favorable element)",
+        "xiSin": "Xisin (supporting element)",
+        "jiSin": "Gisin (unfavorable element)",
+        "gyeokGuk": "Gyeokguk (chart structure)",
         "distTitle": "Strength Index",
         "distPercentile": "{pct}% of people fall here",
         "distUnit": "(10k)",
@@ -262,8 +262,8 @@
       },
       "yeonWol": {
         "title": "Yearly · Monthly Luck",
-        "tabYeon": "연운",
-        "tabWol": "월운",
+        "tabYeon": "Yearly Luck",
+        "tabWol": "Monthly Luck",
         "thisYear": "This year",
         "thisMonth": "This month",
         "loading": "Loading...",
@@ -274,9 +274,9 @@
         "loading": "Loading almanac...",
         "error": "Could not load almanac data",
         "today": "Today",
-        "solarTerm": "절기",
+        "solarTerm": "Solar Term",
         "leap": "Leap",
-        "leapMark": "(윤)"
+        "leapMark": "(Leap)"
       },
       "hapChung": {
         "title": "Combinations & Clashes",
@@ -291,8 +291,8 @@
         "colTraits": "Traits",
         "colBody": "Body",
         "colJobs": "Careers",
-        "over": "과다",
-        "lack": "부족"
+        "over": "Excess",
+        "lack": "Deficient"
       },
       "cta": {
         "report": "Generate AI Report",
@@ -516,7 +516,7 @@
       },
       "hints": {
         "twelveUnSeong": "12-stage cycle = which life phase each pillar's energy is in",
-        "hapChung": "Comb./Clash = whether pillars attract each other (합) or collide (충)"
+        "hapChung": "Comb./Clash = whether pillars attract each other (combination) or collide (clash)"
       }
     }
   },
