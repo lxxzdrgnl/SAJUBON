@@ -1,18 +1,16 @@
 'use client'
 
 /**
- * 운세 요약 카드 (kind=summary) — Spotify Wrapped / Apple Music Recap 급 에디토리얼 포스터.
+ * 운세 요약 카드 (kind=summary) — Wrapped식 공유용 "오늘의 카드" 디자인.
  * design.md §5.6:
- *   - 브랜드 헤더 (사주구리 + 날짜)
- *   - 총점 히어로 — 96px+ 디스플레이 숫자
- *   - 키워드 — 굵은 선언 한 줄 (큰 타이포, 박스 없음)
- *   - 카테고리 점수 — 에디토리얼 랭킹 (큰 숫자 + 카테고리명, 바 없음)
- *   - 총운 한 줄 (summaryCard.headline)
- *   - [이미지 저장] [링크 공유] CTA
- * 이모지 없음 (G2). frosted 흰 막 없음. 다크 톤 유지.
+ *   - 브랜드 헤더 + 이름·일진·총점 히어로
+ *   - 카테고리 가로 점수 바 6개 (저점 #FF8A2E, 피크 화이트 그라디언트)
+ *   - "오늘의 키워드" 인용 타이포
+ *   - [이미지 저장(옐로 필)] [링크 공유(고스트)]
+ * 이모지 없음 (G2).
  * B4: 이미지 저장 — Canvas API, document.fonts.ready 대기 후 한글 렌더.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import { calcScoreBars } from '@/lib/fortune/canvas'
@@ -37,11 +35,13 @@ interface Props {
 
 export default function SummaryCard({ story, onClose }: Props) {
   const t = useTranslations('fortune.summary')
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // 마운트 후 리빌 — reduced-motion 시 즉시.
+  // 마운트 시 점수 바 0 → 점수 차오름 (DOM 전용, 캔버스는 정적 최종값 사용).
+  // reduced-motion 시 즉시 채움.
   const [revealed, setRevealed] = useState(false)
   useEffect(() => {
     const reduce =
@@ -67,10 +67,7 @@ export default function SummaryCard({ story, onClose }: Props) {
       : undefined
   )
 
-  // 점수 높은 순 정렬 — 랭킹 표시용
-  const rankedKeys = [...orderedKeys].sort((a, b) => (story.scores[b] ?? 0) - (story.scores[a] ?? 0))
-
-  /** 요약 카드 캔버스 렌더 → 이미지 다운로드 — Recap 포스터 스타일 */
+  /** 요약 카드 캔버스 렌더 → 이미지 다운로드 */
   async function handleSaveImage() {
     setSaving(true)
     try {
@@ -83,123 +80,93 @@ export default function SummaryCard({ story, onClose }: Props) {
       // 한글 폰트 준비 대기
       await document.fonts.ready
 
-      // 배경 그라디언트 — 다크 에디토리얼
+      // 배경 그라디언트 — 골드 상단 브랜드 느낌
       const grad = ctx.createLinearGradient(0, 0, 0, 1920)
-      grad.addColorStop(0, '#1E0F00')
-      grad.addColorStop(0.45, '#04332F')
-      grad.addColorStop(1, '#020D0C')
+      grad.addColorStop(0, '#3A2800')
+      grad.addColorStop(0.5, '#1E1600')
+      grad.addColorStop(1, '#04332F')
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, 1080, 1920)
-
-      // 미세 노이즈 대신 세련된 수평 분리선 1개
-      ctx.strokeStyle = 'rgba(255,217,0,0.12)'
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(80, 160)
-      ctx.lineTo(1000, 160)
-      ctx.stroke()
 
       const PAD = 80
       ctx.textBaseline = 'top'
 
-      // 브랜드 헤더
-      ctx.fillStyle = '#FFD900'
-      ctx.font = '900 32px "Pretendard", "Noto Sans KR", sans-serif'
+      // 브랜드 워터마크 상단
+      ctx.fillStyle = 'rgba(255,217,0,0.7)'
+      ctx.font = '700 28px "Pretendard", "Noto Sans KR", sans-serif'
       ctx.fillText('사주구리', PAD, PAD)
 
-      // 날짜 — 우측 정렬
-      ctx.fillStyle = 'rgba(255,255,255,0.4)'
-      ctx.font = '500 28px "Pretendard", "Noto Sans KR", sans-serif'
-      ctx.textAlign = 'right'
-      ctx.fillText(story.date, 1080 - PAD, PAD + 4)
-      ctx.textAlign = 'left'
+      // 날짜
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'
+      ctx.font = '400 34px "Pretendard", "Noto Sans KR", sans-serif'
+      ctx.fillText(story.date, PAD, PAD + 50)
 
-      // 이름 (있을 때)
-      if (story.profile_name) {
-        ctx.fillStyle = 'rgba(255,255,255,0.55)'
-        ctx.font = '600 34px "Pretendard", "Noto Sans KR", sans-serif'
-        ctx.fillText(story.profile_name, PAD, PAD + 200)
-      }
+      // 제목 "너의 하루 요약"
+      ctx.fillStyle = '#FFFFFF'
+      ctx.font = '900 70px "Pretendard", "Noto Sans KR", sans-serif'
+      ctx.fillText(t('headerTitle'), PAD, PAD + 110)
 
-      // 총점 히어로 — 초대형
+      // 총점 히어로
       if (avgScore !== undefined) {
         ctx.fillStyle = SCORE_COLOR
-        ctx.font = `900 ${avgScore >= 90 ? 220 : 200}px "Pretendard", "Noto Sans KR", sans-serif`
-        ctx.fillText(String(avgScore), PAD - 8, PAD + 240)
-        ctx.fillStyle = 'rgba(255,255,255,0.25)'
-        ctx.font = '500 40px "Pretendard", "Noto Sans KR", sans-serif'
-        ctx.fillText('/ 100', PAD + 8, PAD + 460)
+        ctx.font = '900 140px "Pretendard", "Noto Sans KR", sans-serif'
+        ctx.fillText(String(avgScore), PAD, PAD + 210)
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'
+        ctx.font = '600 36px "Pretendard", "Noto Sans KR", sans-serif'
+        ctx.fillText('/ 100', PAD + 200, PAD + 320)
       }
 
-      // 키워드 — 굵고 큰 선언
+      // 키워드 인용 타이포
       if (story.keyword) {
         ctx.fillStyle = '#FFD900'
-        ctx.font = '900 72px "Pretendard", "Noto Sans KR", sans-serif'
-        ctx.fillText(story.keyword, PAD, PAD + 540)
+        ctx.font = '900 56px "Pretendard", "Noto Sans KR", sans-serif'
+        ctx.fillText(`"${story.keyword}"`, PAD, PAD + 420)
       }
 
       // 구분선
-      ctx.strokeStyle = 'rgba(255,255,255,0.10)'
-      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)'
+      ctx.lineWidth = 2
       ctx.beginPath()
-      ctx.moveTo(PAD, PAD + 650)
-      ctx.lineTo(1080 - PAD, PAD + 650)
+      ctx.moveTo(PAD, PAD + 520)
+      ctx.lineTo(1080 - PAD, PAD + 520)
       ctx.stroke()
 
-      // 카테고리 랭킹 — 점수 높은 순, 에디토리얼 숫자
+      // 점수 바 6개
       const bars = calcScoreBars(story.scores, 700)
-      const sorted = [...bars].sort((a, b) => b.score - a.score)
-      const ROW_H = 130
-      for (let i = 0; i < sorted.length; i++) {
-        const bar = sorted[i]
-        const y = PAD + 670 + i * ROW_H
+      const BAR_H = 40
+      for (const bar of bars) {
         const isLow = bar.score < BAR_LOW_THRESHOLD
 
-        // 순위 번호
-        ctx.fillStyle = 'rgba(255,255,255,0.18)'
-        ctx.font = '700 28px "Pretendard", "Noto Sans KR", sans-serif'
-        ctx.fillText(String(i + 1).padStart(2, '0'), PAD, y)
+        // 라벨
+        ctx.fillStyle = 'rgba(255,255,255,0.7)'
+        ctx.font = '600 34px "Pretendard", "Noto Sans KR", sans-serif'
+        ctx.fillText(bar.label, bar.labelX, bar.y + 60 + 2)
 
-        // 카테고리명
-        ctx.fillStyle = isLow ? 'rgba(255,138,46,0.85)' : 'rgba(255,255,255,0.65)'
-        ctx.font = '700 42px "Pretendard", "Noto Sans KR", sans-serif'
-        ctx.fillText(bar.label, PAD + 90, y - 8)
+        // 바 배경
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'
+        ctx.beginPath()
+        ctx.roundRect(bar.barX, bar.y + 60, bar.barMaxWidth, BAR_H, 8)
+        ctx.fill()
 
-        // 점수 숫자 — 우측
+        // 바 채움
+        const fillW = Math.round((bar.score / 100) * bar.barMaxWidth)
         ctx.fillStyle = isLow ? SCORE_COLOR : SCORE_NORMAL
-        ctx.font = '900 72px "Pretendard", "Noto Sans KR", sans-serif'
+        ctx.beginPath()
+        ctx.roundRect(bar.barX, bar.y + 60, fillW, BAR_H, 8)
+        ctx.fill()
+
+        // 점수 숫자
+        ctx.fillStyle = isLow ? SCORE_COLOR : '#FFFFFF'
+        ctx.font = '700 32px "Pretendard", "Noto Sans KR", sans-serif'
         ctx.textAlign = 'right'
-        ctx.fillText(String(bar.score), 1080 - PAD, y - 18)
+        ctx.fillText(String(bar.score), bar.valueX, bar.y + 60 + 2)
         ctx.textAlign = 'left'
       }
 
-      // 총운 한 줄
-      if (summaryCard?.headline) {
-        const summaryY = PAD + 670 + sorted.length * ROW_H + 40
-        ctx.fillStyle = 'rgba(255,255,255,0.85)'
-        ctx.font = '700 44px "Pretendard", "Noto Sans KR", sans-serif'
-        // 긴 텍스트 줄바꿈 (최대 800px)
-        const words = summaryCard.headline
-        const maxW = 1080 - PAD * 2
-        let line = ''
-        let lineY = summaryY
-        for (const char of words) {
-          const test = line + char
-          if (ctx.measureText(test).width > maxW) {
-            ctx.fillText(line, PAD, lineY)
-            line = char
-            lineY += 56
-          } else {
-            line = test
-          }
-        }
-        if (line) ctx.fillText(line, PAD, lineY)
-      }
-
-      // 하단 브랜드 워터마크
-      ctx.fillStyle = 'rgba(255,255,255,0.2)'
-      ctx.font = '500 28px "Pretendard", "Noto Sans KR", sans-serif'
-      ctx.fillText('sajuguri.app', PAD, 1920 - PAD - 30)
+      // 하단 워터마크
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'
+      ctx.font = '500 30px "Pretendard", "Noto Sans KR", sans-serif'
+      ctx.fillText('사주구리 sajuguri', PAD, 1920 - PAD - 40)
 
       // 다운로드
       canvas.toBlob((blob) => {
@@ -207,7 +174,7 @@ export default function SummaryCard({ story, onClose }: Props) {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `sajuguri-${story.date}.png`
+        a.download = `sajuguri-fortune-${story.date}.png`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -235,147 +202,123 @@ export default function SummaryCard({ story, onClose }: Props) {
     }
   }
 
+  // 탭 전파를 막지 않는다 — 다른 카드처럼 좌측 1/3 탭=뒤로가 동작.
+  // 스크롤·버튼만 개별적으로 전파 차단(아래 CTA).
   return (
     <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-6 pt-4 select-none">
-
-      {/* ── 브랜드 헤더 ── */}
-      <div
-        className="mb-6 flex items-center justify-between"
-        style={{
-          opacity: revealed ? 1 : 0,
-          transition: 'opacity 350ms ease-out',
-        }}
-      >
-        <div className="flex items-center gap-2">
+      {/* 브랜드 헤더 — 공유용 카드 느낌, 한 줄 수평 배치 */}
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/mascot.svg" alt="" width={26} height={26} />
+          <img src="/mascot.svg" alt="" width={32} height={32} />
           <span
-            className="text-[12px] font-black tracking-widest uppercase"
+            className="text-[13px] font-black tracking-widest uppercase"
             style={{ color: '#FFD900' }}
           >
             사주구리
           </span>
         </div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-white/35">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-white/40">
           {story.date}
         </p>
       </div>
 
-      {/* ── 이름 라벨 ── */}
-      {story.profile_name && (
-        <p
-          className="mb-1 text-[13px] font-semibold tracking-wide text-white/50"
-          style={{
-            opacity: revealed ? 1 : 0,
-            transition: 'opacity 400ms ease-out 80ms',
-          }}
-        >
-          {story.profile_name}
-        </p>
-      )}
-
-      {/* ── 총점 히어로 — 핵심 숫자 ── */}
+      {/* 총점 히어로 블록 — 공유 카드의 핵심 */}
       {avgScore !== undefined && (
         <div
-          className="mb-2"
+          className="mb-4 rounded-2xl border border-white/15 px-5 py-4"
           style={{
+            background: 'linear-gradient(135deg, rgba(255,138,46,0.2) 0%, rgba(255,217,0,0.07) 100%)',
+            boxShadow: '0 0 36px rgba(255,138,46,0.18)',
             opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(12px)',
-            transition: 'opacity 500ms ease-out 120ms, transform 500ms cubic-bezier(0.22,1,0.36,1) 120ms',
+            transform: revealed ? 'translateY(0)' : 'translateY(8px)',
+            transition: 'opacity 500ms ease-out, transform 500ms cubic-bezier(0.22,1,0.36,1)',
           }}
         >
-          <div className="flex items-end gap-3 leading-none">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-white/40">
+            {t('headerTitle')}
+          </p>
+          <div className="flex items-end gap-3">
             <span
-              className="font-black tabular-nums leading-none"
-              style={{
-                color: SCORE_COLOR,
-                fontSize: 'clamp(88px, 24vw, 108px)',
-                lineHeight: 0.9,
-              }}
+              className="font-black leading-none tabular-nums"
+              style={{ color: SCORE_COLOR, fontSize: '76px' }}
             >
               {avgScore}
             </span>
-            <span
-              className="pb-3 text-[15px] font-semibold text-white/30"
-            >
-              / 100
-            </span>
+            <div className="mb-2 flex flex-col gap-0.5">
+              <span className="text-[14px] text-white/50">/ 100</span>
+              {story.profile_name && (
+                <span className="text-[15px] font-bold text-white/85">
+                  {story.profile_name}
+                </span>
+              )}
+            </div>
           </div>
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
-            {t('headerTitle')}
+        </div>
+      )}
+
+      {/* 오늘의 키워드 */}
+      {story.keyword && (
+        <div
+          className="mb-4 rounded-2xl border border-white/20 px-5 py-4"
+          style={{
+            background: 'rgba(255,217,0,0.06)',
+            borderColor: 'rgba(255,217,0,0.3)',
+            opacity: revealed ? 1 : 0,
+            transform: revealed ? 'translateY(0)' : 'translateY(8px)',
+            transition: 'opacity 500ms ease-out, transform 500ms cubic-bezier(0.22,1,0.36,1)',
+            transitionDelay: '100ms',
+          }}
+        >
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-1.5">
+            {t('keyword')}
+          </p>
+          <p
+            className="text-[26px] font-black leading-tight"
+            style={{ color: '#FFD900', wordBreak: 'keep-all' }}
+          >
+            {story.keyword}
           </p>
         </div>
       )}
 
-      {/* ── 수평 구분선 ── */}
-      <div
-        className="mb-5 mt-4 h-px w-full"
-        style={{
-          background: 'rgba(255,255,255,0.10)',
-          opacity: revealed ? 1 : 0,
-          transition: 'opacity 400ms ease-out 250ms',
-        }}
-      />
-
-      {/* ── 키워드 — 굵은 선언 한 줄 ── */}
-      {story.keyword && (
-        <p
-          className="mb-5 font-black leading-tight"
-          style={{
-            color: '#FFD900',
-            fontSize: 'clamp(28px, 7.5vw, 36px)',
-            wordBreak: 'keep-all',
-            opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(8px)',
-            transition: 'opacity 500ms ease-out 300ms, transform 500ms cubic-bezier(0.22,1,0.36,1) 300ms',
-          }}
-        >
-          {story.keyword}
-        </p>
-      )}
-
-      {/* ── 카테고리 점수 — 에디토리얼 랭킹 ── */}
-      <div className="mb-5 flex flex-col gap-2.5">
-        {rankedKeys.map((key, i) => {
+      {/* 점수 바 6개 — 스태거 리빌 */}
+      <div className="mb-4 flex flex-col gap-2">
+        {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
+          const isPeak = score >= 85
+          const barColor = isLow ? SCORE_COLOR : SCORE_NORMAL
           return (
-            <div
-              key={key}
-              className="flex items-baseline justify-between"
-              style={{
-                opacity: revealed ? 1 : 0,
-                transform: revealed ? 'translateX(0)' : 'translateX(-10px)',
-                transition: `opacity 400ms ease-out ${380 + i * 55}ms, transform 400ms cubic-bezier(0.22,1,0.36,1) ${380 + i * 55}ms`,
-              }}
-            >
-              {/* 순위 + 카테고리명 */}
-              <div className="flex items-baseline gap-2.5">
-                <span
-                  className="font-bold tabular-nums text-white/25"
-                  style={{ fontSize: '11px', letterSpacing: '0.05em', minWidth: '18px' }}
-                >
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span
-                  className="font-extrabold"
-                  style={{
-                    color: isLow ? 'rgba(255,138,46,0.8)' : 'rgba(255,255,255,0.75)',
-                    fontSize: 'clamp(14px, 3.8vw, 17px)',
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  {CATEGORY_LABELS[key]}
-                </span>
-              </div>
-              {/* 점수 숫자 */}
-              <span
-                className="font-black tabular-nums leading-none"
+            <div key={key} className="flex items-center gap-3">
+              <span className="w-10 shrink-0 text-[11px] font-extrabold tracking-wide text-white/70">
+                {CATEGORY_LABELS[key]}
+              </span>
+              <div
+                className="relative h-4 flex-1 overflow-hidden rounded-full"
                 style={{
-                  color: isLow ? SCORE_COLOR : SCORE_NORMAL,
-                  fontSize: 'clamp(28px, 7.5vw, 36px)',
-                  lineHeight: 1,
+                  background: 'rgba(255,255,255,0.1)',
+                  boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)',
                 }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: revealed ? `${score}%` : '0%',
+                    background: isPeak
+                      ? `linear-gradient(90deg, ${barColor} 0%, #FFFFFF 100%)`
+                      : barColor,
+                    transition: 'width 750ms cubic-bezier(0.22,1,0.36,1)',
+                    transitionDelay: `${i * 90 + 200}ms`,
+                    boxShadow: `0 0 ${isPeak ? 12 : 5}px ${barColor}99`,
+                  }}
+                />
+                {/* 상단 하이라이트 — 입체감 */}
+                <div className="pointer-events-none absolute inset-0 h-1/2 rounded-full bg-white/15" />
+              </div>
+              <span
+                className="w-8 shrink-0 text-right text-[15px] font-black tabular-nums"
+                style={{ color: isLow ? SCORE_COLOR : '#FFFFFF' }}
               >
                 {score}
               </span>
@@ -384,25 +327,32 @@ export default function SummaryCard({ story, onClose }: Props) {
         })}
       </div>
 
-      {/* ── 총운 한 줄 — 굵고 간결하게 ── */}
-      {summaryCard?.headline && (
-        <p
-          className="mb-5 font-bold text-white/80 leading-snug"
+      {/* 요약 헤드라인 */}
+      {summaryCard && (
+        <div
+          className="mb-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-4"
           style={{
-            fontSize: 'clamp(15px, 4vw, 17px)',
-            wordBreak: 'keep-all',
             opacity: revealed ? 1 : 0,
             transform: revealed ? 'translateY(0)' : 'translateY(6px)',
-            transition: `opacity 500ms ease-out ${400 + rankedKeys.length * 55 + 100}ms, transform 500ms cubic-bezier(0.22,1,0.36,1) ${400 + rankedKeys.length * 55 + 100}ms`,
+            transition: 'opacity 600ms ease-out, transform 600ms cubic-bezier(0.22,1,0.36,1)',
+            transitionDelay: `${orderedKeys.length * 90 + 350}ms`,
           }}
         >
-          {summaryCard.headline}
-        </p>
+          <p
+            className="font-black text-white leading-snug"
+            style={{ fontSize: 'clamp(18px, 4.8vw, 21px)', wordBreak: 'keep-all' }}
+          >
+            {summaryCard.headline}
+          </p>
+          <p className="mt-2 text-[14px] text-white/70 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
+            {summaryCard.body}
+          </p>
+        </div>
       )}
 
-      {/* ── CTA 버튼 ── */}
+      {/* CTA 버튼 — 공유 동선 강조 */}
       <div className="mt-auto flex gap-3 pt-3">
-        {/* 이미지 저장 */}
+        {/* 이미지 저장 (옐로 필) */}
         <button
           className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-yellow py-3.5 text-[14px] font-extrabold text-ink shadow-[3px_3px_0_#1A1A1A] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] disabled:opacity-50 transition-all duration-100"
           onClick={(e) => { e.stopPropagation(); handleSaveImage() }}
@@ -411,13 +361,13 @@ export default function SummaryCard({ story, onClose }: Props) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
           </svg>
-          {saving ? '...' : t('saveImage')}
+          {saving ? '저장 중...' : t('saveImage')}
         </button>
 
-        {/* 링크 공유 */}
+        {/* 링크 공유 (고스트) */}
         <button
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/25 py-3.5 text-[14px] font-extrabold text-white disabled:opacity-50 transition-colors duration-200"
-          style={{ background: copied ? 'rgba(255,255,255,0.08)' : 'transparent' }}
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-white/40 py-3.5 text-[14px] font-extrabold text-white disabled:opacity-50"
+          style={{ background: copied ? 'rgba(255,255,255,0.12)' : undefined, transition: 'background 200ms ease' }}
           onClick={(e) => { e.stopPropagation(); handleShareLink() }}
           disabled={sharing}
         >
@@ -427,6 +377,9 @@ export default function SummaryCard({ story, onClose }: Props) {
           {copied ? t('copied') : t('shareLink')}
         </button>
       </div>
+
+      {/* 숨겨진 캔버스 (이미지 생성용) */}
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   )
 }
