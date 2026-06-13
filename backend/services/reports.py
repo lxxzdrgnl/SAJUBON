@@ -86,6 +86,7 @@ async def create_report(
         concern=req.request_topics,
         birth_longitude=b.birth_longitude,
         birth_utc_offset=b.birth_utc_offset,
+        language=req.language,
     )
 
     # 4. 저장 (birth_input은 입력 원본 + name 보존)

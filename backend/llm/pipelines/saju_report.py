@@ -40,6 +40,7 @@ async def run_saju_report(
     birth_longitude: float | None = None,
     birth_utc_offset: int | None = None,
     llm_provider: str | None = None,
+    language: str = "ko",
 ) -> tuple[dict, WriterOutput]:
     """
     사주 계산 → RAG 조회 → Writer LLM 생성을 순차 실행한다.
@@ -69,7 +70,7 @@ async def run_saju_report(
 
     # ── 3. Writer LLM 호출 (비동기) ──
     logger.info("Writer LLM 호출 시작")
-    writer_output: WriterOutput = await generate_report(saju, rag_ctx, concern, llm_provider)
+    writer_output: WriterOutput = await generate_report(saju, rag_ctx, concern, llm_provider, language)
     logger.info("Writer LLM 완료: 탭 %d개 생성", len(writer_output.tabs))
 
     return saju, writer_output
@@ -130,6 +131,7 @@ async def run_saju_report_full(
     birth_utc_offset: int | None = None,
     llm_provider: str | None = None,
     year: int | None = None,
+    language: str = "ko",
 ) -> tuple[dict, WriterOutput, UnFlowOutput]:
     """사주 계산·RAG를 1회만 하고, 본 리포트(Writer)와 올해의 흐름(UnFlow) LLM을
     **동시에** 호출한다. 두 호출은 같은 saju만 의존하므로 병렬이 안전하며,
@@ -148,8 +150,8 @@ async def run_saju_report_full(
 
     logger.info("Writer·UnFlow LLM 동시 호출 시작")
     writer_output, un_flow = await asyncio.gather(
-        generate_report(saju, rag_ctx, concern, llm_provider),
-        run_un_flow(saju, year, llm_provider),
+        generate_report(saju, rag_ctx, concern, llm_provider, language),
+        run_un_flow(saju, year, llm_provider, language=language),
     )
     logger.info("Writer·UnFlow 완료: 탭 %d개", len(writer_output.tabs))
     return saju, writer_output, un_flow
@@ -159,6 +161,7 @@ async def run_un_flow(
     saju: dict,
     year: int | None = None,
     llm_provider: str | None = None,
+    language: str = "ko",
 ) -> UnFlowOutput:
     """
     이미 계산된 사주 dict로 올해의 흐름·대운 해설을 생성한다.
@@ -181,7 +184,7 @@ async def run_un_flow(
 
     # ── 올해의 흐름·대운 해설 LLM 호출 ──
     logger.info("UnFlow LLM 호출 시작: year=%d", target_year)
-    un_flow: UnFlowOutput = await generate_un_flow(saju, months, target_year, llm_provider)
+    un_flow: UnFlowOutput = await generate_un_flow(saju, months, target_year, llm_provider, language)
     logger.info("UnFlow LLM 완료: 월 %d개", len(un_flow.year_flow.months))
 
     return un_flow

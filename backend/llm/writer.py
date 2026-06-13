@@ -16,7 +16,9 @@ from schemas.report import WriterOutput, UnFlowOutput
 from schemas.question import ConsultationOutput
 from llm.providers import get_llm
 from llm.prompts import SYSTEM_PROMPT, format_user_message, QUESTION_SYSTEM_PROMPT, format_question_message
-from llm.prompts.un_flow import UN_FLOW_SYSTEM_PROMPT, format_un_flow_message
+from llm.prompts.report import build_system_prompt
+from llm.prompts.un_flow import UN_FLOW_SYSTEM_PROMPT, format_un_flow_message, build_un_flow_system_prompt
+from llm.prompts.question import build_question_system_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,7 @@ async def generate_report(
     rag_ctx: dict,
     concern: str | None = None,
     provider: str | None = None,
+    language: str = "ko",
 ) -> WriterOutput:
     """
     사주 데이터 + RAG 컨텍스트를 받아 WriterOutput을 생성한다.
@@ -82,7 +85,7 @@ async def generate_report(
     # ── 2. 메시지 조립 ──
     user_text = format_user_message(saju, rag_ctx, concern, format_instructions)
     messages = [
-        SystemMessage(content=SYSTEM_PROMPT),
+        SystemMessage(content=build_system_prompt(language)),
         HumanMessage(content=user_text),
     ]
 
@@ -118,6 +121,7 @@ async def generate_consultation(
     question: str,
     category: str = "general",
     provider: str | None = None,
+    language: str = "ko",
 ) -> ConsultationOutput:
     """
     한줄 상담 LLM 호출 — ConsultationOutput(headline, content) 반환.
@@ -131,7 +135,7 @@ async def generate_consultation(
 
     user_text = format_question_message(saju, rag_ctx, question, category, format_instructions)
     messages = [
-        SystemMessage(content=QUESTION_SYSTEM_PROMPT),
+        SystemMessage(content=build_question_system_prompt(language)),
         HumanMessage(content=user_text),
     ]
 
@@ -150,6 +154,7 @@ async def generate_un_flow(
     months: list[dict],
     year: int,
     provider: str | None = None,
+    language: str = "ko",
 ) -> UnFlowOutput:
     """
     사주 + 올해 월운 12개 + 대상 연도를 받아 올해의 흐름·대운 해설을 생성한다.
@@ -173,7 +178,7 @@ async def generate_un_flow(
 
     user_text = format_un_flow_message(saju, months, year, format_instructions)
     messages = [
-        SystemMessage(content=UN_FLOW_SYSTEM_PROMPT),
+        SystemMessage(content=build_un_flow_system_prompt(language)),
         HumanMessage(content=user_text),
     ]
 

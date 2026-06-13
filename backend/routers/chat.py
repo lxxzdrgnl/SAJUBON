@@ -59,7 +59,8 @@ async def create_session(
         }
 
     session = await create_chat_session(
-        db=db, user_id=user.id, birth_info=birth_info, checkpointer=checkpointer
+        db=db, user_id=user.id, birth_info=birth_info, checkpointer=checkpointer,
+        language=getattr(req, "language", "ko"),
     )
     return session
 

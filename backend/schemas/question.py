@@ -27,6 +27,7 @@ class QuestionRequest(SajuCalcRequest):
         description="고민 카테고리. 생략 시 LLM이 자동 분류",
         examples=["career"],
     )
+    language: str = Field(default="ko", description="응답 언어 (ko | en)")
 
     model_config = {
         "json_schema_extra": {

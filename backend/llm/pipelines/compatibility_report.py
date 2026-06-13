@@ -51,6 +51,7 @@ async def run_compatibility_report(
     }
 
     request_topics = inputs["request_topics"]
+    language = req.language if hasattr(req, "language") else req.get("language", "ko")
 
     logger.info(
         "궁합 리포트 파이프라인 시작: person_a=%s, person_b=%s",
@@ -58,7 +59,7 @@ async def run_compatibility_report(
         getattr(inputs["person_b"], "birth_date", None) or inputs["person_b"].get("birth_date", "?"),
     )
 
-    signals, tabs = await run_report(module, inputs, request_topics=request_topics)
+    signals, tabs = await run_report(module, inputs, request_topics=request_topics, language=language)
 
     score = signals["score"]
     synastry = signals["synastry"]

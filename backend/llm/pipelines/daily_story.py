@@ -16,6 +16,7 @@ from core.config import settings
 from llm.prompts.daily_story import (
     DAILY_STORY_SYSTEM_PROMPT,
     format_daily_story_message,
+    build_daily_story_system_prompt,
 )
 from llm.providers import get_llm
 from schemas.daily import DailyFortuneRequest
@@ -153,7 +154,7 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
     return cards, scores, keyword
 
 
-async def _rewrite(cards: list[dict]) -> bool:
+async def _rewrite(cards: list[dict], language: str = "ko") -> bool:
     """카드 headline·body를 반말 톤으로 리라이트 — 작은 청크로 쪼개 **병렬** 호출.
 
     한 번에 11장을 리라이트하면 느려 타임아웃이 나므로, 3장씩 동시에 호출해
@@ -170,13 +171,14 @@ async def _rewrite(cards: list[dict]) -> bool:
     from langchain_core.messages import HumanMessage, SystemMessage
 
     llm = get_llm("openai", temperature=0.8, model="gpt-4.1-nano")
+    system_prompt = build_daily_story_system_prompt(language)
 
     async def rewrite_chunk(chunk: list[dict]) -> bool:
         """청크(카드 dict 참조 리스트)를 제자리 리라이트. format_daily_story_message가
         부여하는 id는 청크 내 0-based이므로 chunk[idx]에 그대로 적용된다."""
         try:
             messages = [
-                SystemMessage(content=DAILY_STORY_SYSTEM_PROMPT),
+                SystemMessage(content=system_prompt),
                 HumanMessage(content=format_daily_story_message(chunk)),
             ]
             resp = await llm.ainvoke(messages)
@@ -222,12 +224,13 @@ async def build_daily_story(
     *,
     profile_name: str,
     date: str,
+    language: str = "ko",
 ) -> DailyStoryResponse:
     """엔진 조립 + 리라이트 → DailyStoryResponse (record_id 미설정 — Service가 채움)."""
     data = get_daily_fortune(req).model_dump()
     cards, scores, keyword = assemble_story(data, profile_name)
 
-    rewritten = await _rewrite(cards)
+    rewritten = await _rewrite(cards, language)
 
     # 리라이트 실패·누락 시 빈 headline 폴백 (UI 빈 칸 방지)
     for c in cards:

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 
+from llm.prompts.lang import english_output_directive
+
 DAILY_STORY_SYSTEM_PROMPT = """\
 너는 오늘의 운세를 담백하고 또렷하게 전해주는 사람이다.
 과장 없이 자연스럽게, 읽는 사람이 "맞아, 그렇네" 하고 고개 끄덕이게 써라.
@@ -81,6 +83,11 @@ caution 카드 (kind=caution): headline이 빈 문자열로 들어온다 → bod
 - 각 원소: {"id": <원본 id>, "headline": "...", "body": "..."}
 - JSON 외 어떤 설명도 출력하지 마라.
 """
+
+
+def build_daily_story_system_prompt(language: str = "ko") -> str:
+    """language에 맞는 daily story 시스템 프롬프트를 반환한다."""
+    return DAILY_STORY_SYSTEM_PROMPT + english_output_directive(language)
 
 
 def format_daily_story_message(cards: list[dict]) -> str:

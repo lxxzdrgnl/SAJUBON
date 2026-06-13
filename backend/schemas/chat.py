@@ -14,6 +14,7 @@ class ChatSessionCreate(BaseModel):
     gender: str | None = Field(default=None, description="성별 (male/female)", examples=["male"])
     calendar: str = Field(default="solar", description="양력/음력")
     is_leap_month: bool = Field(default=False)
+    language: str = Field(default="ko", description="응답 언어 (ko | en)")
 
 
 class ChatSessionResponse(BaseModel):

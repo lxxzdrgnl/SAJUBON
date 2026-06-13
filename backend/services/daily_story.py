@@ -88,6 +88,7 @@ async def create_story(
         _to_engine_request(req),
         profile_name=profile_name,
         date=req.date,
+        language=getattr(req, "language", "ko"),
     )
 
     # 게스트 → 저장 안 함

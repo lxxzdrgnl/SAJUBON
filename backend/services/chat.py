@@ -20,6 +20,7 @@ async def create_chat_session(
     user_id: int,
     birth_info: dict,
     checkpointer,
+    language: str = "ko",
 ) -> ChatSession:
     """
     1. 만세력 1회 계산
@@ -38,7 +39,7 @@ async def create_chat_session(
     from llm.pipelines.chat import build_chat_graph
     graph = build_chat_graph(checkpointer)
     config = {"configurable": {"thread_id": str(session_id), "birth_info": birth_info}}
-    await graph.aupdate_state(config, {"birth_info": birth_info, "saju_summary": saju_summary})
+    await graph.aupdate_state(config, {"birth_info": birth_info, "saju_summary": saju_summary, "language": language})
 
     return await chat_crud.create_session(
         db=db,

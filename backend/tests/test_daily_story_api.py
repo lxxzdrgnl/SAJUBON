@@ -48,7 +48,7 @@ def _fake_story(date: str) -> DailyStoryResponse:
 def _stub_pipeline(monkeypatch):
     _calls["n"] = 0
 
-    async def _fake_build(req, *, profile_name, date):
+    async def _fake_build(req, *, profile_name, date, language="ko"):
         _calls["n"] += 1
         s = _fake_story(date)
         s.profile_name = profile_name

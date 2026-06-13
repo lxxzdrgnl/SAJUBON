@@ -20,7 +20,7 @@ from engine.handlers.calculate_saju import handle_calculate_saju
 from engine.calc.synastry import synastry_for_report
 from engine.calc.compatibility import check_compatibility
 from llm.reports.base import ReportTab
-from llm.prompts.compatibility_report import SYSTEM_PROMPT, format_message as _fmt_msg
+from llm.prompts.compatibility_report import build_compatibility_system_prompt, format_message as _fmt_msg
 
 logger = logging.getLogger(__name__)
 
@@ -148,8 +148,8 @@ class CompatibilityReportModule:
 
     # ── system_prompt ───────────────────────────────────────────────────────
 
-    def system_prompt(self) -> str:
-        return SYSTEM_PROMPT
+    def system_prompt(self, language: str = "ko") -> str:
+        return build_compatibility_system_prompt(language)
 
     # ── format_message ──────────────────────────────────────────────────────
 

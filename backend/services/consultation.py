@@ -46,6 +46,7 @@ async def create_consultation_flow(
             birth_longitude=req.birth_longitude,
             birth_utc_offset=req.birth_utc_offset,
             question=req.question,
+            language=getattr(req, "language", "ko"),
         )
     except AppException:
         raise

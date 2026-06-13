@@ -8,6 +8,8 @@
 from __future__ import annotations
 import json
 
+from llm.prompts.lang import english_output_directive
+
 
 # ─── 시스템 프롬프트 ──────────────────────────────────────────────────────────
 
@@ -56,6 +58,11 @@ SYSTEM_PROMPT = """당신은 명리학(사주팔자)에 정통한 모던 궁합 
 ## 출력 형식
 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 절대 포함하지 마세요.
 """
+
+
+def build_compatibility_system_prompt(language: str = "ko") -> str:
+    """language에 맞는 궁합 시스템 프롬프트를 반환한다."""
+    return SYSTEM_PROMPT + english_output_directive(language)
 
 
 # ─── 포맷터 ──────────────────────────────────────────────────────────────────

@@ -38,6 +38,7 @@ class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     birth_info: dict
     saju_summary: dict
+    language: str  # "ko" | "en" — 기본 "ko", 세션 생성 시 설정
 
 
 async def guard_node(state: ChatState) -> dict:
@@ -73,7 +74,8 @@ async def agent_node(state: ChatState) -> dict:
     품질을 위해 nano보다 mini로.
     """
     llm = get_llm(provider="openai", model="gpt-4.1-mini").bind_tools(CHAT_TOOLS)
-    system = build_chat_system_prompt(state["saju_summary"])
+    language = state.get("language", "ko")
+    system = build_chat_system_prompt(state["saju_summary"], language=language)
     messages = [SystemMessage(content=system)] + list(state["messages"])
     response = await llm.ainvoke(messages)
     return {"messages": [response]}

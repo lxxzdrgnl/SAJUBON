@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm.prompts.lang import english_output_directive
+
 
 def build_chat_title_prompt(first_message: str, first_response: str) -> str:
     """첫 턴 대화 기반 세션 제목 생성 프롬프트 (≤20자, 결론형 명사구)."""
@@ -20,8 +22,8 @@ def build_chat_title_prompt(first_message: str, first_response: str) -> str:
 """
 
 
-def build_chat_system_prompt(saju_summary: dict) -> str:
-    """매 턴 saju_summary를 시스템 프롬프트에 주입."""
+def build_chat_system_prompt(saju_summary: dict, language: str = "ko") -> str:
+    """매 턴 saju_summary를 시스템 프롬프트에 주입. language="en"이면 영어 지시 suffix 추가."""
     pillars = saju_summary.get("pillars", {})
 
     def pillar_str(p: dict) -> str:
@@ -44,7 +46,7 @@ def build_chat_system_prompt(saju_summary: dict) -> str:
     yong_sin = saju_summary.get("yong_sin", [])
     ji_sin = saju_summary.get("ji_sin", [])
 
-    return f"""당신은 '사주구리'의 AI 사주 상담가입니다. 명리에 정통하되, 말투는 군더더기 없이 또렷한 '모던 해설가'입니다.
+    return (f"""당신은 '사주구리'의 AI 사주 상담가입니다. 명리에 정통하되, 말투는 군더더기 없이 또렷한 '모던 해설가'입니다.
 
 [페르소나·말투]
 - 존댓말, 단문 위주. 결론을 먼저 말하고 근거는 한두 문장으로 압축합니다.
@@ -104,6 +106,8 @@ def build_chat_system_prompt(saju_summary: dict) -> str:
 - 고민이 불명확하면 tool 호출 전 핵심 질문 1개만 먼저 물어보세요. 한 번에 질문은 1개 이하.
 - 결론을 먼저, 근거는 압축. 어려운 용어는 짧게 풀어주세요.
 - 궁합·연애 상대 관계 질문인데 상대 만세력이 없으면, 다른 tool보다 먼저 request_partner_profile을 호출해 상대 정보를 요청하세요. 첨부된 뒤 get_compatibility_detail로 분석합니다."""
+        + english_output_directive(language)
+    )
 
 
 def build_chat_report_prompt(saju_summary: dict, conversation: str) -> str:

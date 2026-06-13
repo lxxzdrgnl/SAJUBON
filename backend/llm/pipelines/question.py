@@ -208,6 +208,7 @@ async def run_question_consultation(
     birth_utc_offset: int | None = None,
     question: str = "",
     llm_provider: str | None = None,
+    language: str = "ko",
 ) -> dict:
     """
     한줄 상담 파이프라인.
@@ -277,7 +278,7 @@ async def run_question_consultation(
         f"5. 마지막 문장은 반드시 '구체적인 치료 결정은 의료진과 상담하세요'로 끝내세요."
         if is_medical else question
     )
-    output = await generate_consultation(saju, rag_ctx, effective_question, category, llm_provider)
+    output = await generate_consultation(saju, rag_ctx, effective_question, category, llm_provider, language)
 
     # 4. 차트 선별 — 카테고리 규칙, LLM 미사용
     # MEDICAL은 의료 민감 — 차트 없음

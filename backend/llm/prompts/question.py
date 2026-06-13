@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+from llm.prompts.lang import english_output_directive
+
 
 CATEGORY_LABEL: dict[str, str] = {
     "career": "직업·이직",
@@ -78,6 +80,11 @@ QUESTION_SYSTEM_PROMPT = """당신은 명리학(사주팔자)에 정통한 AI �
 ## 출력 형식
 아래 JSON 형식으로만 응답하세요:
 """
+
+
+def build_question_system_prompt(language: str = "ko") -> str:
+    """language에 맞는 질문 시스템 프롬프트를 반환한다."""
+    return QUESTION_SYSTEM_PROMPT + english_output_directive(language)
 
 
 def format_question_message(
