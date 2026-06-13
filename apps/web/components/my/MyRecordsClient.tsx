@@ -260,9 +260,16 @@ export default function MyRecordsClient({
 
   return (
     <section className="mb-6">
-      <h2 className="mb-3 text-[13px] font-extrabold uppercase tracking-wide text-text-sub">
-        {t('title')}
-      </h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-text-sub">
+          {t('title')}
+        </h2>
+        {limit !== undefined && (reports.length + fortune.length + consultations.length) > 0 && (
+          <Link href="/my/history" className="text-[12px] font-extrabold text-orange transition-opacity hover:opacity-80">
+            {t('viewAllHistory')} →
+          </Link>
+        )}
+      </div>
 
       {/* 탭 */}
       <div className="mb-3 flex gap-2">
