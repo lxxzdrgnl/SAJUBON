@@ -65,7 +65,9 @@ class TestPromptInstructions:
             assert kw in SYSTEM_PROMPT
 
     def test_system_prompt_mentions_paragraph_count(self):
-        assert "3~4문단" in SYSTEM_PROMPT or "3-4문단" in SYSTEM_PROMPT
+        assert "4~5문단" in SYSTEM_PROMPT or "4-5문단" in SYSTEM_PROMPT
+        # 충분한 분량 — 한두 문장으로 끝내지 않도록 최소 문장 수를 명시
+        assert "최소 6문장" in SYSTEM_PROMPT
 
     def test_system_prompt_mentions_modern_tone(self):
         assert "결론부터 말씀드리면" in SYSTEM_PROMPT
