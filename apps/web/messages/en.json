@@ -8,6 +8,11 @@
   "auth": {
     "signingIn": "Signing in…"
   },
+  "notFound": {
+    "title": "Page not found",
+    "desc": "The address is wrong or the page is gone.",
+    "home": "Go home"
+  },
   "my": {
     "title": "My",
     "loginRequired": "Sign in to continue",
