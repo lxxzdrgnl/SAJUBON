@@ -367,7 +367,9 @@
         "get_ten_gods": "Ten Gods",
         "get_sin_sal": "Spirits",
         "get_palja": "Four Pillars",
-        "get_strength": "Strength & Yongsin"
+        "get_strength": "Strength & Yongsin",
+        "get_twelve_un_seong": "12-Stage Cycle",
+        "get_hap_chung": "Combinations & Clashes"
       },
       "fields": {
         "dayMaster": "Day Master",
@@ -381,6 +383,10 @@
       "sinSal": {
         "lucky": "Auspicious",
         "unlucky": "Inauspicious"
+      },
+      "hints": {
+        "twelveUnSeong": "12-stage cycle = which life phase each pillar's energy is in",
+        "hapChung": "Comb./Clash = whether pillars attract each other (합) or collide (충)"
       }
     }
   },

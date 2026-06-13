@@ -367,7 +367,9 @@
         "get_ten_gods": "십성 분포",
         "get_sin_sal": "신살",
         "get_palja": "사주팔자",
-        "get_strength": "강약·용신"
+        "get_strength": "강약·용신",
+        "get_twelve_un_seong": "12운성",
+        "get_hap_chung": "합충 관계"
       },
       "fields": {
         "dayMaster": "일간",
@@ -381,6 +383,10 @@
       "sinSal": {
         "lucky": "길신",
         "unlucky": "흉살"
+      },
+      "hints": {
+        "twelveUnSeong": "12운성 = 각 기둥의 기운이 어느 생애 단계에 있는지",
+        "hapChung": "합충 = 기둥끼리 끌어당기거나(합) 부딪히는(충) 관계"
       }
     }
   },

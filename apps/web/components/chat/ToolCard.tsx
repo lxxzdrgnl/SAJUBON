@@ -333,6 +333,105 @@ function StrengthMini({ payload, t }: { payload: Record<string, unknown>; t: Ret
   )
 }
 
+/** 12운성 — 4기둥 × 운성 라벨 스트립 */
+function TwelveUnSeongMini({ payload, t }: { payload: Record<string, unknown>; t: ReturnType<typeof useTranslations> }) {
+  const pillarsWun = (payload.pillars_wun ?? {}) as Record<string, { stem: string; branch: string; twelve_wun: string } | undefined>
+  const order: Array<[string, string]> = [
+    ['year_pillar', '연'],
+    ['month_pillar', '월'],
+    ['day_pillar', '일'],
+    ['hour_pillar', '시'],
+  ]
+  const active = order.filter(([k]) => pillarsWun[k])
+  if (active.length === 0) return null
+
+  return (
+    <div>
+      <div className="flex gap-1.5">
+        {active.map(([key, label]) => {
+          const p = pillarsWun[key]!
+          return (
+            <div key={key} className="flex flex-1 flex-col items-center gap-0.5 rounded-xl border-[1.5px] border-border-soft bg-surface px-1.5 py-2 text-center">
+              <span className="text-[9px] font-bold text-text-sub">{label}주</span>
+              <span className="font-serif text-base font-black leading-none text-ink">{p.stem}{p.branch}</span>
+              <span className="mt-0.5 rounded-md bg-yellow-tint px-1.5 py-0.5 text-[10px] font-extrabold text-ink">{p.twelve_wun}</span>
+            </div>
+          )
+        })}
+      </div>
+      <p className="mt-2 text-[10px] text-text-sub">{t('hints.twelveUnSeong')}</p>
+    </div>
+  )
+}
+
+/** 합충 관계 — 활성 관계 타입별 컴팩트 표시 */
+function HapChungMini({ payload, t }: { payload: Record<string, unknown>; t: ReturnType<typeof useTranslations> }) {
+  const br = (payload.branch_relations ?? {}) as Record<string, unknown>
+  const gm = (payload.gong_mang ?? { vacant_branches: [], affected_pillars: [] }) as {
+    vacant_branches: string[]
+    affected_pillars: string[]
+  }
+
+  type RelEntry = { label: string; items: string[] }
+  const relations: RelEntry[] = []
+
+  // 충
+  const chung = br.chung as Array<{ pair?: string[]; pillars?: string[] }> | undefined
+  if (chung?.length) {
+    relations.push({ label: '충', items: chung.map((v) => (v.pair ?? []).join('↔')) })
+  }
+  // 육합
+  const yukHap = br.yuk_hap as Array<{ pair?: string[]; element?: string; is_effective?: boolean }> | undefined
+  if (yukHap?.length) {
+    relations.push({
+      label: '육합',
+      items: yukHap.map((v) => {
+        const pair = (v.pair ?? []).join('')
+        const broken = v.is_effective === false ? '(파괴)' : ''
+        return `${pair}합${broken}`
+      }),
+    })
+  }
+  // 삼합
+  const samHap = br.sam_hap as Array<{ name?: string; branches?: string[] }> | undefined
+  if (samHap?.length) {
+    relations.push({ label: '삼합', items: samHap.map((v) => v.name ?? (v.branches ?? []).join('')) })
+  }
+  // 공망
+  if (gm.affected_pillars.length) {
+    const PLABEL: Record<string, string> = { year: '연', month: '월', day: '일', hour: '시' }
+    relations.push({ label: '공망', items: gm.affected_pillars.map((p) => PLABEL[p] ?? p) })
+  }
+
+  const HAP_COLOR = '#00A86B'
+  const CHUNG_COLOR = '#FF6B00'
+
+  return (
+    <div>
+      {relations.length === 0 ? (
+        <p className="text-xs text-text-sub">{t('fields.none')}</p>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          {relations.map((rel) => (
+            <div key={rel.label} className="flex flex-wrap items-center gap-1">
+              <span
+                className="rounded-md px-1.5 py-0.5 text-[10px] font-extrabold"
+                style={{ color: rel.label === '충' || rel.label === '공망' ? CHUNG_COLOR : HAP_COLOR, background: `${rel.label === '충' || rel.label === '공망' ? CHUNG_COLOR : HAP_COLOR}1A` }}
+              >
+                {rel.label}
+              </span>
+              {rel.items.map((item, i) => (
+                <span key={i} className="text-xs font-bold text-ink">{item}</span>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="mt-2 text-[10px] text-text-sub">{t('hints.hapChung')}</p>
+    </div>
+  )
+}
+
 // ── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
 
 /** 미매핑 tool → null 반환하면 렌더 생략 */
@@ -360,6 +459,10 @@ function renderContent(tool: string, payload: Record<string, unknown>, t: Return
       return <PaljaMini payload={payload} />
     case 'get_strength':
       return <StrengthMini payload={payload} t={t} />
+    case 'get_twelve_un_seong':
+      return <TwelveUnSeongMini payload={payload} t={t} />
+    case 'get_hap_chung':
+      return <HapChungMini payload={payload} t={t} />
     default:
       return null
   }
