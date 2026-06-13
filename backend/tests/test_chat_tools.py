@@ -1,8 +1,17 @@
 """채팅 에이전트 tool 단위 테스트."""
 
+import asyncio
+import json
+
 import pytest
+from langchain_core.runnables import RunnableConfig
+
 from llm.tools.saju_tools import (
     extract_summary,
+    request_partner_profile,
+    get_compatibility_detail,
+    REQUEST_PARTNER_SIGNAL,
+    CHART_TOOL_NAMES,
     _compute_current_luck_overview,
     _compute_find_favorable_periods,
     _compute_evaluate_specific_date,
@@ -91,3 +100,79 @@ class TestNewEngineTools:
         assert "in_sam_jae" in result
         assert "active_sin_sals" in result
         assert isinstance(result["in_sam_jae"], bool)
+
+
+# ─── A1: 궁합 + 상대 프로필 요청 tool ──────────────────────────────────────────
+
+_BIRTH_SELF = {
+    "birth_date": "1990-03-15",
+    "birth_time": "14:30",
+    "gender": "male",
+    "calendar": "solar",
+    "is_leap_month": False,
+}
+_BIRTH_PARTNER = {
+    "birth_date": "1992-07-21",
+    "birth_time": "09:00",
+    "gender": "female",
+    "calendar": "solar",
+    "is_leap_month": False,
+}
+
+
+def _invoke(tool, args: dict, config: RunnableConfig) -> str:
+    """LangChain async tool을 동기 테스트에서 호출."""
+    return asyncio.run(tool.ainvoke(args, config=config))
+
+
+class TestRequestPartnerProfile:
+    def test_returns_signal_string(self):
+        config = {"configurable": {"birth_info": _BIRTH_SELF}}
+        out = _invoke(request_partner_profile, {}, config)
+        assert out == REQUEST_PARTNER_SIGNAL
+
+    def test_tool_name_registered(self):
+        assert request_partner_profile.name == "request_partner_profile"
+
+
+class TestCompatibilityDetail:
+    def test_need_partner_when_missing(self):
+        """partner 미첨부 → 구조화된 need_partner 신호 반환 (엔진 미호출)."""
+        config = {"configurable": {"birth_info": _BIRTH_SELF}}
+        out = _invoke(get_compatibility_detail, {}, config)
+        parsed = json.loads(out)
+        assert parsed["data"]["need_partner"] is True
+        assert "summary" in parsed
+
+    def test_compatibility_with_partner(self):
+        """partner 첨부 → 엔진 호출, total_score 포함 구조화 data 반환."""
+        config = {
+            "configurable": {
+                "birth_info": _BIRTH_SELF,
+                "partner_info": _BIRTH_PARTNER,
+            }
+        }
+        out = _invoke(get_compatibility_detail, {}, config)
+        parsed = json.loads(out)
+        assert "summary" in parsed
+        assert "data" in parsed
+        data = parsed["data"]
+        assert "total_score" in data
+        assert isinstance(data["total_score"], int)
+        assert 0 <= data["total_score"] <= 100
+        assert "need_partner" not in data or data.get("need_partner") is False
+
+    def test_partner_name_in_summary_when_provided(self):
+        config = {
+            "configurable": {
+                "birth_info": _BIRTH_SELF,
+                "partner_info": {**_BIRTH_PARTNER, "name": "지민"},
+            }
+        }
+        out = _invoke(get_compatibility_detail, {}, config)
+        parsed = json.loads(out)
+        assert "지민" in parsed["summary"]
+
+    def test_in_chart_whitelist(self):
+        assert "get_compatibility_detail" in CHART_TOOL_NAMES
+        assert "request_partner_profile" not in CHART_TOOL_NAMES

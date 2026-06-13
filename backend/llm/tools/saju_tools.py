@@ -15,15 +15,44 @@ from engine.handlers.get_dae_un import handle_get_dae_un
 from engine.handlers.get_yeon_un import handle_get_yeon_un
 from engine.handlers.get_il_jin import handle_get_il_jin
 from engine.handlers.convert_calendar import handle_convert_calendar
+from engine.handlers.check_compatibility import handle_check_compatibility
 from rag.search import handle_search_by_context
 from engine.calc.ten_gods import calculate_ten_god, get_branch_ten_god
 from engine.calc.se_un import calc_year_ganji, calc_month_ganji, get_element_interaction
 from engine.calc.twelve_wun import get_twelve_wun
 
+# request_partner_profile tool이 반환하는 시그널 문자열.
+# SSE 레이어(routers/chat.py)가 이 tool 호출을 감지해 request_partner 이벤트를 방출한다.
+REQUEST_PARTNER_SIGNAL = "상대 만세력 첨부 요청됨"
+
+# 차트 렌더 대상 tool — on_tool_end에서 payload(data)를 tool_result SSE로 방출한다.
+# 이 목록의 tool은 모두 {"summary": str, "data": dict} JSON 문자열을 반환해야 한다.
+CHART_TOOL_NAMES = frozenset({
+    "get_dae_un",
+    "get_wol_un",
+    "get_yeon_un",
+    "get_daily_fortune",
+    "get_il_jin",
+    "get_compatibility_detail",
+})
+
+
+def _envelope(summary: str, data: dict) -> str:
+    """차트 tool 공통 반환 형식.
+
+    agent 추론은 summary 텍스트를, 프론트(SSE tool_result)는 data를 쓴다.
+    """
+    return json.dumps({"summary": summary, "data": data}, ensure_ascii=False, default=str)
+
 
 def _birth_info(config: RunnableConfig) -> dict:
     """RunnableConfig에서 birth_info 추출."""
     return config["configurable"]["birth_info"]
+
+
+def _partner_info(config: RunnableConfig) -> dict | None:
+    """RunnableConfig에서 첨부된 상대 사주 추출 (없으면 None)."""
+    return (config or {}).get("configurable", {}).get("partner_info")
 
 
 def extract_summary(saju: dict) -> dict:
@@ -88,7 +117,8 @@ async def get_daily_fortune(target_date: str | None = None, config: RunnableConf
         calendar=birth_info.get("calendar", "solar"),
         target_date=target_date,
     )
-    return json.dumps(result, ensure_ascii=False)
+    day_label = target_date or "오늘"
+    return _envelope(f"{day_label}의 일진 운세 데이터입니다.", result)
 
 
 @tool
@@ -99,7 +129,7 @@ async def get_wol_un(year: int | None = None, config: RunnableConfig = None) -> 
     day_stem = saju["day_pillar"]["stem"]
     target_year = year or date_type.today().year
     result = await asyncio.to_thread(handle_get_wol_un, year=target_year, day_stem=day_stem)
-    return json.dumps(result, ensure_ascii=False)
+    return _envelope(f"{target_year}년 월운 12개월 데이터입니다.", {"year": target_year, "months": result})
 
 
 @tool
@@ -107,7 +137,7 @@ async def get_dae_un(config: RunnableConfig = None) -> str:
     """대운 전체 목록 (12개)."""
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
-    return json.dumps(saju["dae_un_list"], ensure_ascii=False)
+    return _envelope("대운 전체 타임라인 데이터입니다.", {"dae_un_list": saju["dae_un_list"]})
 
 
 @tool
@@ -118,19 +148,17 @@ async def get_yeon_un(start_year: int | None = None, count: int = 5, config: Run
     day_stem = saju["day_pillar"]["stem"]
     start = start_year or date_type.today().year
     result = await asyncio.to_thread(handle_get_yeon_un, start_year=start, count=min(count, 10), day_stem=day_stem)
-    return json.dumps(result, ensure_ascii=False)
+    return _envelope(f"{start}년부터 {len(result)}년치 연운 데이터입니다.", {"start_year": start, "years": result})
 
 
 @tool
 async def get_il_jin(year: int | None = None, month: int | None = None, config: RunnableConfig = None) -> str:
     """특정 월의 일진 달력. 생략 시 이번 달."""
     today = date_type.today()
-    result = await asyncio.to_thread(
-        handle_get_il_jin,
-        year=year or today.year,
-        month=month or today.month,
-    )
-    return json.dumps(result, ensure_ascii=False, default=str)
+    y = year or today.year
+    m = month or today.month
+    result = await asyncio.to_thread(handle_get_il_jin, year=y, month=m)
+    return _envelope(f"{y}년 {m}월 일진 달력 데이터입니다.", {"year": y, "month": m, "days": result})
 
 
 @tool
@@ -347,3 +375,54 @@ async def check_current_sin_sal_timing(config: RunnableConfig = None) -> str:
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
     result = _compute_check_current_sin_sal_timing(saju)
     return json.dumps(result, ensure_ascii=False)
+
+
+# ─── 궁합 + 상대 프로필 요청 ───────────────────────────────────────────────────
+
+_SCORE_LABEL = [
+    (85, "천생연분에 가까운 궁합"),
+    (70, "서로를 북돋는 좋은 궁합"),
+    (55, "노력으로 빛나는 궁합"),
+    (0,  "다름을 이해해야 하는 궁합"),
+]
+
+
+def _score_label(total: int) -> str:
+    for threshold, label in _SCORE_LABEL:
+        if total >= threshold:
+            return label
+    return "다름을 이해해야 하는 궁합"
+
+
+@tool
+async def request_partner_profile(config: RunnableConfig = None) -> str:
+    """궁합 상담 시 상대방의 만세력이 아직 없을 때 호출. 사용자에게 상대 생년월일시 입력을 요청한다."""
+    return REQUEST_PARTNER_SIGNAL
+
+
+@tool
+async def get_compatibility_detail(config: RunnableConfig = None) -> str:
+    """본인과 첨부된 상대방의 궁합 점수 상세 분석.
+
+    상대 만세력이 첨부돼 있어야 한다. 없으면 상대 정보가 필요하다는 신호를 반환한다.
+    """
+    partner = _partner_info(config)
+    if not partner:
+        return _envelope(
+            "상대 정보가 필요합니다. request_partner_profile로 상대 만세력을 먼저 요청하세요.",
+            {"need_partner": True},
+        )
+
+    birth_info = _birth_info(config)
+    partner_name = partner.get("name") or "상대방"
+    person2 = {k: v for k, v in partner.items() if k != "name"}
+
+    result = await asyncio.to_thread(handle_check_compatibility, birth_info, person2)
+    label = _score_label(result["total_score"])
+    summary = (
+        f"{partner_name}와의 궁합 총점은 {result['total_score']}점으로 '{label}'입니다. "
+        f"(일주 {result['day_pillar_score']} / 오행조화 {result['element_harmony_score']} / "
+        f"지지관계 {result['branch_relation_score']} / 십성 {result['ten_gods_score']})"
+    )
+    data = {**result, "partner_name": partner_name, "score_label": label, "need_partner": False}
+    return _envelope(summary, data)

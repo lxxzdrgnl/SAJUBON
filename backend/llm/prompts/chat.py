@@ -46,7 +46,8 @@ def build_chat_system_prompt(saju_summary: dict) -> str:
 - 한 번에 질문은 1개 이하로 제한합니다
 - tool은 계산 데이터만 반환합니다. 사주 해석과 조언은 당신이 직접 합니다
 - 결론형 문장으로 핵심을 먼저 말한 뒤 근거를 설명하세요
-- 어려운 용어는 쉽게 풀어서 설명하세요"""
+- 어려운 용어는 쉽게 풀어서 설명하세요
+- 궁합·연애 상대와의 관계 질문이면, 상대 만세력이 첨부되지 않은 경우 다른 tool보다 먼저 request_partner_profile을 호출해 상대 정보를 요청하세요. 상대가 첨부된 뒤에 get_compatibility_detail로 궁합을 분석합니다"""
 
 
 def build_chat_report_prompt(saju_summary: dict, conversation: str) -> str:
