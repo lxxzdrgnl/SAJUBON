@@ -14,6 +14,11 @@
     "loginWithGoogle": "구글로 로그인",
     "logout": "로그아웃",
     "soon": "준비 중",
+    "repCard": {
+      "noProfile": "만세력 등록하기",
+      "noProfileDesc": "내 사주를 저장하면 여기서 바로 확인해요",
+      "born": "생년월일"
+    },
     "menu": {
       "reports": "내 리포트",
       "fortuneHistory": "운세 기록",
