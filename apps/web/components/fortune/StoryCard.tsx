@@ -4,8 +4,9 @@
  * 스토리 단일 카드 렌더 — kind별 레이아웃 분기.
  * design.md §5.6:
  *   - intro: 마스코트(MascotTinted 일간색) + 일진 (큰 세리프 + 오행색 강조)
- *   - overall/category: 점수 54px(카운트업) + 원형 게이지 링 + 헤드라인 32px/900 + 본문
+ *   - overall/category: 점수 54px(카운트업) + 원형 게이지 링 + 헤드라인 34px/900 + 본문 18px
  *                       점수 ≥ 90 → 컨페티 파티클 버스트 + 글로우 펄스 + 하이라이트 뱃지
+ *                       점수 ≤ 35 → 절제된 주의 분위기 — 붉은/머스타드 링 + 주의 뱃지, 컨페티 없음
  *   - caution/color: 헤드라인 + 본문 (color는 색 스와치)
  *   - summary: SummaryCard에서 처리
  * 텍스트 stagger 등장(헤드라인 먼저, body 늦게). 이모지 없음 (G2).
@@ -74,15 +75,21 @@ const GAUGE_STROKE = 7   // 선 두께
 const GAUGE_SIZE = (GAUGE_R + GAUGE_STROKE) * 2
 const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_R
 
+// 경고 색 팔레트 (35 이하)
+const CAUTION_GAUGE_COLOR = '#FF6B00'   // design.md §2.1 주황-경고
+const CAUTION_SCORE_COLOR = '#FF8A2E'   // design.md §2.4
+
 interface ScoreGaugeProps {
   score: number        // 0..100
   displayValue: number // 카운트업 중인 표시값
   color: string        // 오행색 또는 SCORE_COLOR
   isHigh: boolean      // 90+ 글로우 펄스
+  isLow: boolean       // 35 이하 주의
 }
 
-function ScoreGauge({ score, displayValue, color, isHigh }: ScoreGaugeProps) {
+function ScoreGauge({ score, displayValue, color, isHigh, isLow }: ScoreGaugeProps) {
   const cx = GAUGE_SIZE / 2
+  const gaugeStrokeColor = isLow ? CAUTION_GAUGE_COLOR : color
   return (
     <div
       className="relative inline-flex items-center justify-center"
@@ -117,7 +124,7 @@ function ScoreGauge({ score, displayValue, color, isHigh }: ScoreGaugeProps) {
           cy={cx}
           r={GAUGE_R}
           fill="none"
-          stroke={color}
+          stroke={gaugeStrokeColor}
           strokeWidth={GAUGE_STROKE}
           strokeLinecap="round"
           strokeDasharray={GAUGE_CIRCUMFERENCE}
@@ -129,7 +136,7 @@ function ScoreGauge({ score, displayValue, color, isHigh }: ScoreGaugeProps) {
       <span
         className="relative font-black leading-none tabular-nums"
         style={{
-          color: SCORE_COLOR,
+          color: isLow ? CAUTION_SCORE_COLOR : SCORE_COLOR,
           fontSize: isHigh ? '72px' : '64px',
         }}
       >
@@ -228,6 +235,8 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
 
   // 컨페티: overall/category에서 점수 ≥ 90
   const isHighScore = (card.kind === 'overall' || card.kind === 'category') && (card.score ?? 0) >= 90
+  // 주의: overall/category에서 점수 ≤ 35 (컨페티 없음, 절제된 경고 분위기)
+  const isLowScore = (card.kind === 'overall' || card.kind === 'category') && (card.score ?? 100) <= 35
   const confettiRef = useConfetti(isHighScore)
 
   // 카드 종류별 강조 오행색 — intro는 stemColor, category는 catColor, 나머지는 null
@@ -268,15 +277,22 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
               <p className="mt-2 text-[16px] font-bold text-white/70">{profileName}의 오늘</p>
             </div>
             <div className="w-full rounded-2xl border border-white/20 bg-white/10 px-6 py-5 text-center">
-              <p className="text-[22px] font-black text-white leading-snug">{card.headline}</p>
-              <p className="mt-3 text-[15px] text-white/75 leading-relaxed">{card.body}</p>
+              <p
+                className="font-black text-white leading-snug"
+                style={{ fontSize: 'clamp(20px, 5.5vw, 24px)', wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+              >
+                {card.headline}
+              </p>
+              <p className="mt-3 text-[17px] text-white/75 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
+                {card.body}
+              </p>
             </div>
           </div>
         )}
 
         {/* overall / category: 점수 원형 게이지 + 헤드라인 + 본문 + 컨페티 */}
         {(card.kind === 'overall' || card.kind === 'category') && (
-          <div className="story-stagger flex flex-1 flex-col justify-center gap-5">
+          <div className="story-stagger flex flex-1 flex-col justify-center gap-6">
             {card.score !== undefined && (
               <div className="relative w-fit" ref={confettiRef as React.RefObject<HTMLDivElement>}>
                 <ScoreGauge
@@ -284,6 +300,7 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
                   displayValue={scoreValue}
                   color={gaugeColor}
                   isHigh={isHighScore}
+                  isLow={isLowScore}
                 />
                 {/* 90+ 하이라이트 뱃지 */}
                 {isHighScore && (
@@ -299,13 +316,45 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
                     오늘의 하이라이트
                   </div>
                 )}
+                {/* 35 이하 주의 뱃지 — 절제된 경고 톤 */}
+                {isLowScore && (
+                  <div
+                    className="absolute -top-2 -right-3 rounded-full px-2 py-0.5 text-[11px] font-black tracking-wider"
+                    style={{
+                      background: '#FF6B00',
+                      color: '#FFFBF2',
+                      boxShadow: '0 2px 8px rgba(255,107,0,0.45)',
+                      animation: 'badge-pop 400ms cubic-bezier(0.34,1.56,0.64,1) 900ms both',
+                    }}
+                  >
+                    주의
+                  </div>
+                )}
               </div>
             )}
-            {/* 헤드라인 — Wrapped식 한 방 타이포 */}
-            <p className="text-[32px] font-black text-white leading-tight">
+            {/* 35 이하 — 절제된 주의 오버레이 (어두운 붉은 베일, 정적 강조) */}
+            {isLowScore && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background: 'radial-gradient(60% 45% at 50% 40%, rgba(180,40,0,0.22) 0%, transparent 70%)',
+                  animation: 'caution-pulse 3s ease-in-out infinite',
+                }}
+              />
+            )}
+            {/* 헤드라인 — Wrapped식 한 방 타이포, 긴 텍스트도 줄바꿈 안전 */}
+            <p
+              className="font-black text-white leading-tight"
+              style={{
+                fontSize: 'clamp(26px, 7vw, 34px)',
+                wordBreak: 'keep-all',
+                overflowWrap: 'break-word',
+              }}
+            >
               {card.headline}
             </p>
-            <p className="text-[15px] text-white/80 leading-relaxed">
+            <p className="text-[18px] text-white/85 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
               {card.body}
             </p>
           </div>
@@ -327,10 +376,13 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
                   ))}
                 </div>
               )}
-              <p className="text-[26px] font-black text-white leading-snug">
+              <p
+                className="font-black text-white leading-snug"
+                style={{ fontSize: 'clamp(22px, 6vw, 28px)', wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+              >
                 {card.headline}
               </p>
-              <p className="mt-3 text-[15px] text-white/80 leading-relaxed">
+              <p className="mt-3 text-[17px] text-white/80 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
                 {card.body}
               </p>
             </div>
