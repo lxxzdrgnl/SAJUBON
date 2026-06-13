@@ -139,9 +139,7 @@ export default function ReportNewPage() {
     <main className="flex flex-col gap-5">
       <h1 className="text-lg font-black">{t('title')}</h1>
 
-      <div className="rounded-2xl border-[1.5px] border-border-soft bg-surface p-4">
-        <p className="text-[13px] text-text-sub">{t('guideline')}</p>
-      </div>
+      <p className="text-[13px] leading-relaxed text-text-sub">{t('guideline')}</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
