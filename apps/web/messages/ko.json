@@ -13,7 +13,6 @@
     "loginRequired": "로그인이 필요해요",
     "loginWithGoogle": "구글로 로그인",
     "logout": "로그아웃",
-    "soon": "준비 중",
     "repCard": {
       "noProfile": "대표 만세력이 없습니다",
       "noProfileDesc": "만세력 탭에서 대표로 지정할 수 있어요",
@@ -21,20 +20,26 @@
       "born": "생년월일",
       "badge": "대표"
     },
-    "menu": {
-      "reports": "내 리포트",
-      "fortuneHistory": "운세 기록",
-      "settings": "설정"
-    },
-    "history": {
+    "records": {
       "title": "내 기록",
       "tabReports": "리포트",
       "tabFortune": "운세",
-      "viewAll": "전체 보기",
+      "viewMore": "더보기",
+      "collapse": "접기",
       "emptyReports": "아직 생성한 리포트가 없어요",
       "emptyFortune": "아직 운세 기록이 없어요",
       "goReport": "리포트 생성하러 가기",
-      "goFortune": "오늘의 운세 보러 가기"
+      "goFortune": "오늘의 운세 보러 가기",
+      "delete": {
+        "confirm": "이 기록을 삭제할까요?",
+        "cancel": "취소",
+        "yes": "삭제"
+      }
+    },
+    "language": {
+      "title": "언어",
+      "ko": "한국어",
+      "en": "English"
     }
   },
   "settings": {

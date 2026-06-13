@@ -13,7 +13,6 @@
     "loginRequired": "Sign in to continue",
     "loginWithGoogle": "Sign in with Google",
     "logout": "Sign out",
-    "soon": "Coming soon",
     "repCard": {
       "noProfile": "No default chart set",
       "noProfileDesc": "You can set a default chart in the Chart tab",
@@ -21,20 +20,26 @@
       "born": "Born",
       "badge": "Default"
     },
-    "menu": {
-      "reports": "My reports",
-      "fortuneHistory": "Fortune history",
-      "settings": "Settings"
-    },
-    "history": {
+    "records": {
       "title": "My Records",
       "tabReports": "Reports",
       "tabFortune": "Fortune",
-      "viewAll": "View all",
+      "viewMore": "View more",
+      "collapse": "Collapse",
       "emptyReports": "No reports yet",
       "emptyFortune": "No fortune records yet",
       "goReport": "Generate a report",
-      "goFortune": "Check today's fortune"
+      "goFortune": "Check today's fortune",
+      "delete": {
+        "confirm": "Delete this record?",
+        "cancel": "Cancel",
+        "yes": "Delete"
+      }
+    },
+    "language": {
+      "title": "Language",
+      "ko": "한국어",
+      "en": "English"
     }
   },
   "settings": {

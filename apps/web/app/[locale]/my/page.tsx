@@ -5,6 +5,8 @@ import { maskEmail } from '@/lib/mask'
 import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
 import LogoutButton from '@/components/my/LogoutButton'
+import MyRecordsClient from '@/components/my/MyRecordsClient'
+import LanguageToggleInline from '@/components/my/LanguageToggleInline'
 import { listReports, listDailyRecords, listProfiles } from '@sajuguri/api-client'
 import type { ReportSummary, DailyRecordSummary, ProfileResponse } from '@sajuguri/api-client'
 import { STEM_BG } from '@/lib/manse/ganjiNickname'
@@ -33,8 +35,6 @@ function formatDate(date: string): string {
 
 export default async function MyPage() {
   const t = await getTranslations('my')
-  const tr = await getTranslations('report')
-  const tf = await getTranslations('fortune')
   const user = await currentUser()
 
   if (!user) {
@@ -84,11 +84,6 @@ export default async function MyPage() {
     fortuneRecords = []
   }
 
-  const menu = [
-    { key: 'shares', soon: true },
-    { key: 'settings', soon: true },
-  ] as const
-
   return (
     <main>
       {/* ── 상단 히어로: 대표 만세력 카드 (이메일 포함) ─── */}
@@ -118,8 +113,8 @@ export default async function MyPage() {
                   {maskEmail(user.email)}
                 </p>
               </div>
-              {/* 대표 뱃지 */}
-              <span className="shrink-0 rounded-full border-2 border-ink bg-surface px-2 py-0.5 text-[10px] font-extrabold shadow-[2px_2px_0_#1A1A1A]">
+              {/* 대표 뱃지 — 주황 */}
+              <span className="shrink-0 rounded-full border-2 border-ink bg-orange px-2 py-0.5 text-[10px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A]">
                 {t('repCard.badge')}
               </span>
             </div>
@@ -146,101 +141,15 @@ export default async function MyPage() {
         )}
       </section>
 
-      {/* ── 내 리포트 목록 ─── */}
-      <section className="mb-5">
-        <h2 className="mb-2 text-[13px] font-extrabold uppercase tracking-wide text-text-sub">
-          {t('menu.reports')}
-        </h2>
-        {reports.length === 0 ? (
-          <BrutalCard intensity="soft" className="flex flex-col gap-2 py-4 text-center">
-            <p className="text-[13px] text-text-sub">{tr('list.empty')}</p>
-            <Link
-              href="/manse"
-              className="mx-auto text-[13px] font-extrabold text-orange underline underline-offset-2"
-            >
-              {tr('list.generate')}
-            </Link>
-          </BrutalCard>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {reports.map(r => (
-              <li key={r.id}>
-                <Link href={`/report/${r.id}`}>
-                  <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
-                    <p className="text-[14px] font-extrabold leading-snug text-ink">
-                      {r.first_headline}
-                    </p>
-                    <p className="text-[12px] text-text-sub">
-                      {new Date(r.created_at).toLocaleDateString('ko-KR')}
-                      {' · '}
-                      <span className="font-bold text-teal">{r.profile_name}</span>
-                      {r.request_topics && (
-                        <span className="ml-1 text-text-sub">· {r.request_topics}</span>
-                      )}
-                    </p>
-                  </BrutalCard>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {/* ── 내 기록: 리포트 / 운세 탭 + 더보기 + 삭제 ─── */}
+      <MyRecordsClient
+        reports={reports}
+        fortuneRecords={fortuneRecords}
+        repProfileName={repProfile?.name ?? null}
+      />
 
-      {/* ── 운세 기록 목록 ─── */}
-      <section className="mb-5">
-        <h2 className="mb-2 text-[13px] font-extrabold uppercase tracking-wide text-text-sub">
-          {tf('my.title')}
-        </h2>
-        {fortuneRecords.length === 0 ? (
-          <BrutalCard intensity="soft" className="flex flex-col gap-2 py-4 text-center">
-            <p className="text-[13px] text-text-sub">{tf('my.empty')}</p>
-            <Link
-              href="/"
-              className="mx-auto text-[13px] font-extrabold text-teal underline underline-offset-2"
-            >
-              {tf('my.goFortune')}
-            </Link>
-          </BrutalCard>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {fortuneRecords.map((r) => (
-              <li key={r.id}>
-                <Link href={`/fortune?record=${r.id}`}>
-                  <BrutalCard intensity="soft" className="flex flex-col gap-1 hover:border-border-soft">
-                    <p className="text-[14px] font-extrabold leading-snug text-ink">
-                      {r.keyword}
-                    </p>
-                    <p className="text-[12px] text-text-sub">
-                      {new Date(r.date).toLocaleDateString('ko-KR')}
-                      {' · '}
-                      <span className="font-bold text-teal">{r.profile_name}</span>
-                    </p>
-                  </BrutalCard>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* ── 기타 메뉴 ─── */}
-      <ul className="mb-5 flex flex-col gap-2">
-        {menu.map(({ key, soon }) => (
-          <li key={key}>
-            <BrutalCard
-              intensity="soft"
-              className="flex items-center justify-between"
-            >
-              <span className="text-sm font-extrabold text-text-sub">{t(`menu.${key}`)}</span>
-              {soon && (
-                <span className="rounded-full border-[1.5px] border-border-soft px-2 py-0.5 text-[10px] font-extrabold text-text-sub">
-                  {t('soon')}
-                </span>
-              )}
-            </BrutalCard>
-          </li>
-        ))}
-      </ul>
+      {/* ── 언어 설정 (인라인) ─── */}
+      <LanguageToggleInline />
 
       <LogoutButton />
     </main>
