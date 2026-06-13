@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { ApiClient, deleteSession } from '@sajuguri/api-client'
@@ -27,15 +27,81 @@ function formatDate(dt: string) {
   return new Intl.DateTimeFormat('ko-KR', { month: 'short', day: 'numeric' }).format(new Date(dt))
 }
 
+interface DeleteModalProps {
+  sessionTitle: string
+  onConfirm: () => void
+  onClose: () => void
+  t: ReturnType<typeof useTranslations>
+}
+
+function DeleteModal({ sessionTitle, onConfirm, onClose, t }: DeleteModalProps) {
+  useEffect(() => {
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.body.style.overflow = original
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="w-full max-w-[480px] rounded-t-3xl border-2 border-ink bg-surface p-6 shadow-[0_-4px_0_#1A1A1A] sm:rounded-3xl sm:shadow-[4px_4px_0_#1A1A1A]">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-[15px] font-extrabold text-ink">{t('deleteConfirm')}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-border-soft text-text-sub"
+            aria-label={t('deleteConfirmCancel')}
+          >
+            <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <p className="mb-6 truncate rounded-xl border-[1.5px] border-border-soft bg-surface px-4 py-3 text-[14px] font-bold text-ink">
+          {sessionTitle}
+        </p>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border-2 border-ink bg-surface py-3 text-sm font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+          >
+            {t('deleteConfirmCancel')}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 rounded-xl border-2 border-ink bg-ink py-3 text-sm font-extrabold text-surface shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+          >
+            {t('deleteConfirmYes')}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ChatListClient({ sessions: initialSessions, profiles }: Props) {
   const t = useTranslations('chat')
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sessions, setSessions] = useState(initialSessions)
-  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [deletingSession, setDeletingSession] = useState<ChatSession | null>(null)
 
   async function handleDelete(id: string) {
     setSessions((prev) => prev.filter((s) => s.id !== id))
-    setConfirmingId(null)
+    setDeletingSession(null)
     try {
       const api = new ApiClient('')
       await deleteSession(api, id)
@@ -50,7 +116,7 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-lg font-black">{t('title')}</h1>
         <button
-          className="rounded-xl border-2 border-[#4DA8E8] bg-surface px-4 py-1.5 text-sm font-extrabold text-[#4DA8E8] shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+          className="rounded-xl border-2 border-sky bg-surface px-4 py-1.5 text-sm font-extrabold text-sky shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
           onClick={() => setSheetOpen(true)}
         >
           {t('newSession')}
@@ -64,7 +130,7 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
           <p className="text-[15px] font-extrabold">{t('empty')}</p>
           <p className="text-sm text-text-sub">{t('emptyHint')}</p>
           <button
-            className="mt-1 rounded-xl border-2 border-[#4DA8E8] bg-surface px-6 py-2.5 text-sm font-extrabold text-[#4DA8E8] shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="mt-1 rounded-xl border-2 border-sky bg-surface px-6 py-2.5 text-sm font-extrabold text-sky shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
             onClick={() => setSheetOpen(true)}
           >
             {t('newSession')}
@@ -74,77 +140,57 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
         <ul className="flex flex-col gap-3">
           {sessions.map((s) => (
             <li key={s.id}>
-              {confirmingId === s.id ? (
-                <BrutalCard className="flex items-center gap-3">
-                  <span className="flex-1 text-[14px] font-extrabold text-ink">
-                    {t('deleteConfirm')}
-                  </span>
-                  <button
-                    className="rounded-lg border-2 border-ink bg-ink px-3 py-1 text-xs font-extrabold text-surface transition-opacity hover:opacity-80"
-                    onClick={() => handleDelete(s.id)}
-                  >
-                    {t('deleteConfirmYes')}
-                  </button>
-                  <button
-                    className="rounded-lg border-2 border-ink px-3 py-1 text-xs font-extrabold text-ink transition-opacity hover:opacity-80"
-                    onClick={() => setConfirmingId(null)}
-                  >
-                    {t('deleteConfirmCancel')}
-                  </button>
-                </BrutalCard>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Link href={`/chat/${s.id}`} className="min-w-0 flex-1">
-                    <BrutalCard className="flex items-center gap-3 transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-                      <span
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink"
-                        style={{ backgroundColor: sessionColor(s.id) }}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#fff"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M4 6 a3 3 0 0 1 3-3 h10 a3 3 0 0 1 3 3 v7 a3 3 0 0 1-3 3 H10 l-4.5 4 v-4 H7 a3 3 0 0 1-3-3 Z" />
-                        </svg>
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-[15px] font-extrabold text-ink">
-                        {s.title || t('sessionFallback')}
-                      </span>
-                      <span className="ml-2 shrink-0 text-xs font-semibold text-text-sub">
-                        {formatDate(s.last_message_at)}
-                      </span>
-                    </BrutalCard>
-                  </Link>
-                  <button
-                    className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
-                    onClick={() => setConfirmingId(s.id)}
-                    aria-label="delete session"
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+              <div className="flex items-center gap-2">
+                <Link href={`/chat/${s.id}`} className="min-w-0 flex-1">
+                  <BrutalCard className="flex items-center gap-3 transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+                    <span
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink"
+                      style={{ backgroundColor: sessionColor(s.id) }}
                     >
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                      <path d="M10 11v6" />
-                      <path d="M14 11v6" />
-                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                    </svg>
-                  </button>
-                </div>
-              )}
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#fff"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M4 6 a3 3 0 0 1 3-3 h10 a3 3 0 0 1 3 3 v7 a3 3 0 0 1-3 3 H10 l-4.5 4 v-4 H7 a3 3 0 0 1-3-3 Z" />
+                      </svg>
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[15px] font-extrabold text-ink">
+                      {s.title || t('sessionFallback')}
+                    </span>
+                    <span className="ml-2 shrink-0 text-xs font-semibold text-text-sub">
+                      {formatDate(s.last_message_at)}
+                    </span>
+                  </BrutalCard>
+                </Link>
+                <button
+                  className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
+                  onClick={() => setDeletingSession(s)}
+                  aria-label={t('deleteConfirm')}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6" />
+                    <path d="M14 11v6" />
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
+                </button>
+              </div>
             </li>
           ))}
         </ul>
@@ -155,6 +201,15 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
         onClose={() => setSheetOpen(false)}
         profiles={profiles}
       />
+
+      {deletingSession && (
+        <DeleteModal
+          sessionTitle={deletingSession.title || t('sessionFallback')}
+          onConfirm={() => handleDelete(deletingSession.id)}
+          onClose={() => setDeletingSession(null)}
+          t={t}
+        />
+      )}
     </>
   )
 }

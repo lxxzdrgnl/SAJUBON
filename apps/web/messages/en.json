@@ -15,9 +15,11 @@
     "logout": "Sign out",
     "soon": "Coming soon",
     "repCard": {
-      "noProfile": "Add a birth chart",
-      "noProfileDesc": "Save your saju chart to see it here",
-      "born": "Born"
+      "noProfile": "No default chart set",
+      "noProfileDesc": "You can set a default chart in the Chart tab",
+      "goManse": "Go to Chart list",
+      "born": "Born",
+      "badge": "Default"
     },
     "menu": {
       "reports": "My reports",
@@ -225,7 +227,15 @@
       "new": "+ New Saju Chart",
       "recent": "Recent Charts",
       "empty": "No charts yet. Try adding one",
-      "loginHint": "Sign in to save and manage your charts"
+      "loginHint": "Sign in to save and manage your charts",
+      "recentSave": "Save",
+      "recentSaved": "Saved",
+      "recentSaveError": "Save failed",
+      "recentSaveLoginHint": "Sign in to save",
+      "recentDelete": "Delete",
+      "recentDeleteConfirm": "Remove this entry?",
+      "recentDeleteConfirmYes": "Remove",
+      "recentDeleteConfirmCancel": "Cancel"
     },
     "saved": {
       "title": "Saved Charts",
