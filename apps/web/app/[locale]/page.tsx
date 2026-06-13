@@ -40,10 +40,6 @@ export default async function Home() {
   const t = await getTranslations('home')
   const locale = (await getLocale()) === 'en' ? 'en' : 'ko'
   const user = await currentUser()
-  // 이메일 로컬파트(@ 앞)를 표시 이름으로 — 로그인 시 시간대별 랜덤 인사말 (KST 기준)
-  const name = user?.email ? user.email.split('@')[0] : null
-  const hourKST = (new Date().getUTCHours() + 9) % 24
-  const fortuneSub = name ? pickGreeting(locale, name, hourKST) : t('fortuneSub')
 
   // 저장 만세력 — 로그인 시 시트에 보여줄 목록 (비로그인 시 빈 배열)
   let profiles: ProfileResponse[] = []
@@ -54,6 +50,12 @@ export default async function Home() {
       profiles = []
     }
   }
+
+  // 대표 만세력 이름 → 없으면 이메일 로컬파트 폴백 — 로그인 시 시간대별 랜덤 인사말 (KST 기준)
+  const repProfile = profiles.find((p) => p.is_representative)
+  const name = repProfile?.name ?? (user?.email ? user.email.split('@')[0] : null)
+  const hourKST = (new Date().getUTCHours() + 9) % 24
+  const fortuneSub = name ? pickGreeting(locale, name, hourKST) : t('fortuneSub')
 
   return (
     <main>
