@@ -45,8 +45,10 @@ class ChatMessageRequest(BaseModel):
 
 
 class ChatHistoryMessage(BaseModel):
-    role: str          # "human" | "ai" | "tool"
-    content: str
+    role: str                              # "human" | "ai" | "tool"
+    content: str = ""
+    tool: str | None = None                # role == "tool" 일 때 tool 이름
+    payload: dict | None = None            # role == "tool" 일 때 차트 data
     created_at: str | None = None
 
 

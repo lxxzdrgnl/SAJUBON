@@ -164,16 +164,35 @@ async def get_history(
     snapshot = await graph.aget_state(config)
     messages = snapshot.values.get("messages", []) if snapshot else []
 
-    from langchain_core.messages import HumanMessage as HM, AIMessage as AM
+    import json as _json
+    from langchain_core.messages import HumanMessage as HM, AIMessage as AM, ToolMessage as TM
+    from llm.tools.saju_tools import CHART_TOOL_NAMES
+
     result = []
     for m in messages:
-        # ToolMessage(도구 봉투 JSON)·tool_calls만 있는 중간 AIMessage는 히스토리에서 제외 —
-        # 사용자에게 보일 텍스트(Human·AI 응답)만 반환한다.
-        if not isinstance(m, (HM, AM)):
-            continue
-        if hasattr(m, "content") and m.content:
-            role = "human" if isinstance(m, HM) else "ai"
-            result.append(ChatHistoryMessage(role=role, content=m.content))
+        if isinstance(m, HM):
+            if m.content:
+                result.append(ChatHistoryMessage(role="human", content=m.content))
+        elif isinstance(m, TM):
+            # 차트 tool 결과만 포함 — search_rag 등 비차트 tool은 제외
+            if getattr(m, "name", None) not in CHART_TOOL_NAMES:
+                continue
+            try:
+                envelope = _json.loads(m.content)
+                data = envelope.get("data")
+                if data is None:
+                    continue
+                result.append(ChatHistoryMessage(
+                    role="tool",
+                    tool=m.name,
+                    payload=data,
+                ))
+            except (ValueError, TypeError, AttributeError):
+                continue
+        elif isinstance(m, AM):
+            # tool_calls-only 중간 AIMessage(content 없음)는 제외
+            if m.content:
+                result.append(ChatHistoryMessage(role="ai", content=m.content))
 
     return ChatHistoryResponse(session_id=session_id, messages=result)
 
