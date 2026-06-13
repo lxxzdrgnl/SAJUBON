@@ -29,3 +29,13 @@ export function createProfile(
 ): Promise<ProfileResponse> {
   return api.post<ProfileResponse>('/api/profiles', body)
 }
+
+/** PATCH /api/profiles/{id}/representative — 대표 만세력 설정. */
+export function setRepresentative(api: ApiClient, id: number): Promise<ProfileResponse> {
+  return api.patch<ProfileResponse>(`/api/profiles/${id}/representative`)
+}
+
+/** DELETE /api/profiles/{id} — 만세력 삭제. */
+export function deleteProfile(api: ApiClient, id: number): Promise<void> {
+  return api.delete(`/api/profiles/${id}`)
+}

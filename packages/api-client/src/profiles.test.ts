@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ApiClient } from './client'
-import { listProfiles, createProfile } from './profiles'
+import { listProfiles, createProfile, setRepresentative, deleteProfile } from './profiles'
 
 const mockFetch = vi.fn()
 beforeEach(() => { vi.stubGlobal('fetch', mockFetch); mockFetch.mockReset() })
@@ -31,5 +31,28 @@ describe('createProfile', () => {
     expect(init.method).toBe('POST')
     expect(JSON.parse(init.body)).toEqual(body)
     expect(r.id).toBe(9)
+  })
+})
+
+describe('setRepresentative', () => {
+  it('PATCH /api/profiles/{id}/representative', async () => {
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ id: 3, name: '나', is_representative: true }), { status: 200 }))
+    const api = new ApiClient('http://x')
+    const r = await setRepresentative(api, 3)
+    const [url, init] = mockFetch.mock.calls[0]
+    expect(url).toBe('http://x/api/profiles/3/representative')
+    expect(init.method).toBe('PATCH')
+    expect(r.is_representative).toBe(true)
+  })
+})
+
+describe('deleteProfile', () => {
+  it('DELETE /api/profiles/{id} — 204 No Content', async () => {
+    mockFetch.mockResolvedValue(new Response(null, { status: 204 }))
+    const api = new ApiClient('http://x')
+    await deleteProfile(api, 5)
+    const [url, init] = mockFetch.mock.calls[0]
+    expect(url).toBe('http://x/api/profiles/5')
+    expect(init.method).toBe('DELETE')
   })
 })

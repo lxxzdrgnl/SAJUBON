@@ -229,7 +229,12 @@
       "loginPrompt": "매번 입력하기 번거로우시죠? 로그인하고 저장하기",
       "save": "이 만세력 저장",
       "saved": "저장됨",
-      "saveError": "저장 실패 · 다시 시도"
+      "saveError": "저장 실패 · 다시 시도",
+      "setRepresentative": "대표로",
+      "delete": "삭제",
+      "deleteConfirm": "정말 삭제할까요?",
+      "deleteConfirmYes": "삭제",
+      "deleteConfirmCancel": "취소"
     }
   },
   "report": {
@@ -318,7 +323,34 @@
       "load": "상담 내역을 불러올 수 없어요",
       "send": "전송에 실패했어요. 다시 시도해 주세요."
     },
-    "streaming": "답변 생성 중…"
+    "streaming": "답변 생성 중…",
+    "toolCard": {
+      "labels": {
+        "get_dae_un": "대운",
+        "get_wol_un": "월운",
+        "get_yeon_un": "연운",
+        "get_daily_fortune": "오늘의 운세",
+        "get_il_jin": "일진",
+        "get_compatibility_detail": "궁합",
+        "get_wuxing_balance": "오행 균형",
+        "get_ten_gods": "십성 분포",
+        "get_sin_sal": "신살",
+        "get_palja": "사주팔자",
+        "get_strength": "강약·용신"
+      },
+      "fields": {
+        "dayMaster": "일간",
+        "yongSin": "용신",
+        "strength": "강약",
+        "dominant": "강한 기운",
+        "weak": "약한 기운",
+        "none": "없음"
+      },
+      "sinSal": {
+        "lucky": "길신",
+        "unlucky": "흉살"
+      }
+    }
   },
   "fortune": {
     "banner": {

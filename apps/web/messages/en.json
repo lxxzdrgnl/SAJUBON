@@ -229,7 +229,12 @@
       "loginPrompt": "Tired of typing it every time? Sign in to save",
       "save": "Save this chart",
       "saved": "Saved",
-      "saveError": "Failed · Try again"
+      "saveError": "Failed · Try again",
+      "setRepresentative": "Set as default",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this chart?",
+      "deleteConfirmYes": "Delete",
+      "deleteConfirmCancel": "Cancel"
     }
   },
   "report": {
@@ -318,7 +323,34 @@
       "load": "Could not load chat history",
       "send": "Send failed. Please try again."
     },
-    "streaming": "Generating response…"
+    "streaming": "Generating response…",
+    "toolCard": {
+      "labels": {
+        "get_dae_un": "Major Luck",
+        "get_wol_un": "Monthly Luck",
+        "get_yeon_un": "Yearly Luck",
+        "get_daily_fortune": "Today's Fortune",
+        "get_il_jin": "Daily",
+        "get_compatibility_detail": "Compatibility",
+        "get_wuxing_balance": "Five Elements",
+        "get_ten_gods": "Ten Gods",
+        "get_sin_sal": "Spirits",
+        "get_palja": "Four Pillars",
+        "get_strength": "Strength & Yongsin"
+      },
+      "fields": {
+        "dayMaster": "Day Master",
+        "yongSin": "Yongsin",
+        "strength": "Strength",
+        "dominant": "Strong",
+        "weak": "Weak",
+        "none": "None"
+      },
+      "sinSal": {
+        "lucky": "Auspicious",
+        "unlucky": "Inauspicious"
+      }
+    }
   },
   "fortune": {
     "banner": {

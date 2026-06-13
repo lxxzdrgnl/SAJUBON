@@ -32,6 +32,30 @@ export class ApiClient {
     })
   }
 
+  async patch<T>(path: string, body?: unknown): Promise<T> {
+    return this.request<T>(path, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  }
+
+  async delete(path: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}${path}`, {
+      method: 'DELETE',
+      headers: { ...this.defaultHeaders },
+      credentials: 'include',
+    })
+    if (!res.ok) {
+      let detail = res.statusText
+      try {
+        const data = await res.json()
+        if (typeof data?.detail === 'string') detail = data.detail
+      } catch { /* 본문이 JSON이 아니면 statusText 유지 */ }
+      throw new ApiError(res.status, detail)
+    }
+  }
+
   private async request<T>(path: string, init: RequestInit): Promise<T> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       ...init,
