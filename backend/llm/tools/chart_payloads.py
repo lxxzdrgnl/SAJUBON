@@ -30,6 +30,8 @@ def payload_wuxing_balance(saju: dict) -> dict:
         "dominant_elements":         saju.get("dominant_elements", []),
         "weak_elements":             saju.get("weak_elements", []),
         "day_stem_element":          saju["day_pillar"]["stem_element"],
+        # 조후(調候): 월지 기후 맥락 — 엔진 계산값, 수치 조정 분포 없음
+        "climate_vibe":              saju.get("meta", {}).get("climate_vibe", {}),
     }
 
 

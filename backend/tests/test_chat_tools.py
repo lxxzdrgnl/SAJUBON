@@ -202,7 +202,7 @@ _CARD_DATA_KEYS = {
     "get_wuxing_balance": [
         "wuxing_count_hap", "wuxing_count", "wuxing_chars",
         "wuxing_hap_contributions", "dominant_elements", "weak_elements",
-        "day_stem_element",
+        "day_stem_element", "climate_vibe",
     ],
     "get_ten_gods":  ["ten_gods_distribution", "structure_patterns"],
     "get_sin_sal":   ["sin_sals"],
@@ -379,3 +379,76 @@ class TestChatSystemPromptHapInstruction:
         assert "과다" in prompt or "부족" in prompt, (
             "시스템 프롬프트에 과다/부족 판단 지시 없음"
         )
+
+
+# ─── 시스템 프롬프트 조후·궁성 안내 ──────────────────────────────────────────────
+
+class TestChatSystemPromptJohuInstruction:
+    """build_chat_system_prompt 출력에 조후·궁성 설명 지시가 포함되어야 한다.
+
+    엔진이 조후·궁성 보정 수치 분포를 계산하지 않으므로, 프롬프트는
+    climate_vibe 필드를 활용해 개념 설명만 하도록 지시해야 한다.
+    """
+
+    _SUMMARY: dict = {
+        "day_stem": "갑", "day_element": "목",
+        "gyeok_guk": "정관격", "yong_sin": ["화", "토"], "ji_sin": ["금", "수"],
+        "strength": "신약",
+        "pillars": {
+            "year":  {"stem": "경", "branch": "오"},
+            "month": {"stem": "무", "branch": "자"},
+            "day":   {"stem": "갑", "branch": "진"},
+            "hour":  {"stem": "병", "branch": "인"},
+        },
+        "current_dae_un": {"stem": "임", "branch": "술", "start_age": 32, "end_age": 42},
+        "sin_sals": [],
+        "life_domains": {},
+    }
+
+    def test_prompt_contains_johu_instruction(self):
+        """시스템 프롬프트가 조후 설명 지시를 포함해야 한다."""
+        prompt = build_chat_system_prompt(self._SUMMARY)
+        assert "조후" in prompt, "시스템 프롬프트에 '조후' 지시 없음"
+        assert "궁성" in prompt, "시스템 프롬프트에 '궁성' 지시 없음"
+
+    def test_prompt_references_climate_vibe(self):
+        """시스템 프롬프트가 climate_vibe 필드를 언급해야 한다."""
+        prompt = build_chat_system_prompt(self._SUMMARY)
+        assert "climate_vibe" in prompt, "시스템 프롬프트에 climate_vibe 참조 없음"
+
+    def test_prompt_warns_no_numeric_johu(self):
+        """프롬프트가 수치 보정 분포를 만들어내지 말 것을 지시해야 한다."""
+        prompt = build_chat_system_prompt(self._SUMMARY)
+        # 엔진이 수치 분포를 계산하지 않음을 명시
+        assert "수치" in prompt or "퍼센트" in prompt, (
+            "시스템 프롬프트에 수치/퍼센트 관련 경고 없음"
+        )
+
+
+class TestWuxingBalanceClimateVibeData:
+    """get_wuxing_balance 결과에 climate_vibe가 포함되어야 한다."""
+
+    _CONFIG: dict = {"configurable": {"birth_info": _BIRTH_SELF}}
+
+    def test_data_contains_climate_vibe(self):
+        """get_wuxing_balance data에 climate_vibe 필드가 있어야 한다."""
+        out = json.loads(_invoke(get_wuxing_balance, {}, self._CONFIG))
+        data = out["data"]
+        assert "climate_vibe" in data, "data에 climate_vibe 없음"
+        assert isinstance(data["climate_vibe"], dict), "climate_vibe가 dict가 아님"
+
+    def test_climate_vibe_has_season_fields(self):
+        """climate_vibe에 season·temperature 등 핵심 필드가 있어야 한다."""
+        out = json.loads(_invoke(get_wuxing_balance, {}, self._CONFIG))
+        cv = out["data"]["climate_vibe"]
+        # 엔진이 climate_vibe를 채웠으면 반드시 season이 있어야 함
+        if cv:
+            assert "season" in cv, "climate_vibe에 season 없음"
+            assert "temperature" in cv, "climate_vibe에 temperature 없음"
+            assert "day_element_relation" in cv, "climate_vibe에 day_element_relation 없음"
+
+    def test_summary_mentions_johu(self):
+        """get_wuxing_balance summary에 조후 관련 문구가 포함되어야 한다."""
+        out = json.loads(_invoke(get_wuxing_balance, {}, self._CONFIG))
+        summary = out["summary"]
+        assert "조후" in summary, f"summary에 '조후' 없음: {summary}"

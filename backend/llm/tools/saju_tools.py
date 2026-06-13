@@ -255,7 +255,20 @@ async def get_wuxing_balance(config: RunnableConfig = None) -> str:
     if weak_hap:
         parts.append(f"{'·'.join(weak_hap)} 기운이 약한")
     base_summary = f"오행 분포는 {' '.join(parts)} 구조입니다." if parts else "오행 분포 데이터입니다."
-    summary = base_summary + hap_note
+
+    # 조후(調候) 기후 맥락 한 줄 요약 (엔진이 수치 분포를 별도 계산하지 않으므로 개념 안내)
+    climate_vibe = saju.get("meta", {}).get("climate_vibe", {})
+    if climate_vibe:
+        season_kr = {"spring": "봄", "summer": "여름", "autumn": "가을", "winter": "겨울"}.get(
+            climate_vibe.get("season", ""), climate_vibe.get("season", "")
+        )
+        temp = climate_vibe.get("temperature", "")
+        relation = climate_vibe.get("day_element_relation", "")
+        johu_note = f" 조후: {season_kr}({temp}) 월지, 일간과 {relation} 관계."
+    else:
+        johu_note = ""
+
+    summary = base_summary + hap_note + johu_note
     return _envelope(summary, payload_wuxing_balance(saju))
 
 
