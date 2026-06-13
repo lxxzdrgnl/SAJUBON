@@ -76,7 +76,7 @@ export default async function Home() {
       <div className="flex flex-col gap-3">
         <Link href="/manse">
           <BrutalCard className="flex items-center gap-3">
-            <CardIcon d={ICONS.doc} bg="var(--yellow-tint)" color="var(--ink)" />
+            <CardIcon d={ICONS.doc} bg="#FFD900" color="var(--ink)" />
             <div>
               <p className="text-sm font-extrabold">
                 {t('cards.report.title')}
@@ -90,7 +90,7 @@ export default async function Home() {
         </Link>
         <Link href="/chat">
           <BrutalCard className="flex items-center gap-3">
-            <CardIcon d={ICONS.chat} bg="var(--teal-tint)" color="var(--teal-deep)" />
+            <CardIcon d={ICONS.chat} bg="#00C2B8" color="#FFFFFF" />
             <div>
               <p className="text-sm font-extrabold">{t('cards.chat.title')}</p>
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.chat.desc')}</p>
