@@ -470,6 +470,9 @@
       "sheetSubmit": "Attach",
       "errorSubmit": "Attach failed. Please try again."
     },
+    "partnerAttached": "{name}'s chart has been attached.",
+    "partnerAttachedSuggestion": "Curious about your compatibility with {name}?",
+    "partnerAttachedQuickAsk": "Check my compatibility with {name}",
     "compatibilityCta": {
       "title": "Want a full compatibility report for you two?",
       "action": "View Compatibility Report",

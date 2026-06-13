@@ -33,7 +33,12 @@ interface InlinePartnerBlock {
   kind: 'inline_partner'
 }
 
-type MessageBlock = string | ToolResultBlock | InlinePartnerBlock
+interface PartnerAttachedBlock {
+  kind: 'partner_attached'
+  name: string
+}
+
+type MessageBlock = string | ToolResultBlock | InlinePartnerBlock | PartnerAttachedBlock
 
 interface DisplayMessage {
   role: 'human' | 'ai'
@@ -219,6 +224,25 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
     [send],
   )
 
+  // 상대 만세력 첨부 후 인라인 메시지 추가 (공통 헬퍼)
+  const appendPartnerAttachedMessages = useCallback(
+    (name: string) => {
+      // 인라인 카드 (Task 2) + 제안 메시지 (Task 1)
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'ai' as const,
+          blocks: [{ kind: 'partner_attached' as const, name }],
+        },
+        {
+          role: 'ai' as const,
+          blocks: [t('partnerAttachedSuggestion', { name })],
+        },
+      ])
+    },
+    [t],
+  )
+
   // 상대 만세력 첨부
   const handleAttachPartner = useCallback(
     async (p: ProfileResponse) => {
@@ -226,11 +250,12 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
         const res = await attachPartner(api, sessionId, { profile_id: p.id })
         setPartnerName(res.partner_name)
         setAttachOpen(false)
+        appendPartnerAttachedMessages(res.partner_name)
       } catch {
         /* silent */
       }
     },
-    [sessionId],
+    [sessionId, appendPartnerAttachedMessages],
   )
 
   // 상대 만세력 직접 입력 첨부 (생년월일 직접 입력)
@@ -238,8 +263,9 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
     async (body: import('@sajuguri/api-client').PartnerAttachRequest) => {
       const res = await attachPartner(api, sessionId, body)
       setPartnerName(res.partner_name)
+      appendPartnerAttachedMessages(res.partner_name)
     },
-    [sessionId],
+    [sessionId, appendPartnerAttachedMessages],
   )
 
   // textarea 자동 높이
@@ -362,6 +388,17 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                       onSubmitBirth={handleAttachPartnerBirth}
                       profiles={profiles}
                     />
+                  )
+                }
+                if (block.kind === 'partner_attached') {
+                  return (
+                    <div
+                      key={bi}
+                      className="flex items-center gap-2 rounded-2xl border-2 border-ink bg-yellow-tint px-3 py-2.5 text-[13px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]"
+                    >
+                      <span className="text-base">📎</span>
+                      <span>{t('partnerAttached', { name: block.name })}</span>
+                    </div>
                   )
                 }
                 return null

@@ -433,6 +433,9 @@
       "sheetSubmit": "첨부하기",
       "errorSubmit": "첨부에 실패했어요. 다시 시도해 주세요."
     },
+    "partnerAttached": "{name}님의 만세력을 첨부했어요.",
+    "partnerAttachedSuggestion": "{name}님과의 궁합이 궁금하신가요?",
+    "partnerAttachedQuickAsk": "{name}님과 궁합 봐줘",
     "compatibilityCta": {
       "title": "두 사람의 궁합을 리포트로 자세히 볼까요?",
       "action": "궁합 리포트 보러가기",
