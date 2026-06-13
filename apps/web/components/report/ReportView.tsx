@@ -22,17 +22,20 @@ function YearFlowSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-[15px] font-extrabold">{t('page.yearFlowTitle')} {yearFlow.year}</h2>
+      <h2 className="text-[17px] font-extrabold">
+        <span className="text-teal">{t('page.yearFlowTitle')}</span>{' '}
+        <span className="text-ink">{yearFlow.year}</span>
+      </h2>
 
       {/* 상/하반기 카드 */}
       <div className="flex gap-2">
         <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
-          <p className="mb-1 text-[11px] font-extrabold text-text-sub">{t('page.firstHalf')}</p>
-          <p className="text-[13px] leading-relaxed text-ink">{yearFlow.first_half}</p>
+          <p className="mb-1 text-[12px] font-extrabold text-teal">{t('page.firstHalf')}</p>
+          <p className="text-[14px] leading-relaxed text-ink">{yearFlow.first_half}</p>
         </div>
         <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
-          <p className="mb-1 text-[11px] font-extrabold text-text-sub">{t('page.secondHalf')}</p>
-          <p className="text-[13px] leading-relaxed text-ink">{yearFlow.second_half}</p>
+          <p className="mb-1 text-[12px] font-extrabold text-teal">{t('page.secondHalf')}</p>
+          <p className="text-[14px] leading-relaxed text-ink">{yearFlow.second_half}</p>
         </div>
       </div>
 
@@ -41,17 +44,17 @@ function YearFlowSection({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b-2 border-ink">
-              <th className="px-3 py-2 text-left text-[11px] font-extrabold text-text-sub">{t('page.monthCol')}</th>
-              <th className="px-3 py-2 text-left text-[11px] font-extrabold text-text-sub">{t('page.keywordCol')}</th>
-              <th className="px-3 py-2 text-left text-[11px] font-extrabold text-text-sub">{t('page.memoCol')}</th>
+              <th className="px-3 py-2 text-left text-[12px] font-extrabold text-ink">{t('page.monthCol')}</th>
+              <th className="px-3 py-2 text-left text-[12px] font-extrabold text-ink">{t('page.keywordCol')}</th>
+              <th className="px-3 py-2 text-left text-[12px] font-extrabold text-ink">{t('page.memoCol')}</th>
             </tr>
           </thead>
           <tbody>
             {visible.map(m => (
               <tr key={m.month} className="border-b-[1px] border-ink last:border-0">
                 <td className="px-3 py-2 text-[13px] font-extrabold text-orange">{m.month}월</td>
-                <td className="px-3 py-2 text-[13px] font-bold text-ink">{m.keyword}</td>
-                <td className="px-3 py-2 text-[12px] leading-snug text-text-sub">{m.memo}</td>
+                <td className="whitespace-nowrap break-keep px-3 py-2 text-[13px] font-bold text-ink">{m.keyword}</td>
+                <td className="px-3 py-2 text-[13px] leading-snug text-ink">{m.memo}</td>
               </tr>
             ))}
           </tbody>
@@ -60,7 +63,7 @@ function YearFlowSection({
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="w-full border-t-[1px] border-ink py-2 text-[12px] font-bold text-text-sub hover:bg-surface"
+            className="w-full border-t-[1px] border-ink py-2 text-[13px] font-bold text-ink hover:bg-surface"
           >
             {t('page.showMore')} ({months.length - 4})
           </button>
@@ -81,30 +84,32 @@ function DaeUnSection({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-[15px] font-extrabold">{t('page.daeUnTitle')}</h2>
+      <h2 className="text-[17px] font-extrabold">
+        <span className="text-orange">{t('page.daeUnTitle')}</span>
+      </h2>
 
       <div className="flex gap-2">
-        {/* 현재 대운 — 저강도 */}
-        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
-          <p className="mb-1 text-[11px] font-extrabold text-text-sub">{t('page.currentDaeUn')}</p>
+        {/* 현재 대운 — 오렌지 강조 */}
+        <div className="flex-1 rounded-2xl border-2 border-orange bg-surface p-3 shadow-[4px_4px_0_#FF6B00]">
+          <p className="mb-1 text-[12px] font-extrabold text-orange">{t('page.currentDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.current.ganji}</p>
-          <p className="mb-2 text-[11px] text-text-sub">{daeUn.current.period}</p>
-          <p className="text-[13px] leading-relaxed text-ink">{daeUn.current.text}</p>
+          <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.current.period}</p>
+          <p className="text-[14px] leading-relaxed text-ink">{daeUn.current.text}</p>
         </div>
 
-        {/* 다음 대운 — 오렌지 풀 브루탈 */}
-        <div className="flex-1 rounded-2xl border-2 border-orange bg-surface p-3 shadow-[4px_4px_0_#FF6B00]">
-          <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.nextDaeUn')}</p>
+        {/* 다음 대운 — 일반 */}
+        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
+          <p className="mb-1 text-[12px] font-extrabold text-ink">{t('page.nextDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.next.ganji}</p>
-          <p className="mb-2 text-[11px] text-text-sub">{daeUn.next.period}</p>
-          <p className="text-[13px] leading-relaxed text-ink">{daeUn.next.text}</p>
+          <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.next.period}</p>
+          <p className="text-[14px] leading-relaxed text-ink">{daeUn.next.text}</p>
         </div>
       </div>
 
       {/* 주의점 */}
-      <div className="rounded-2xl border-[1.5px] border-orange-tint bg-[#FFF4E3] px-4 py-3">
-        <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.cautionLabel')}</p>
-        <p className="text-[13px] leading-relaxed text-ink">{daeUn.caution}</p>
+      <div className="rounded-2xl border-2 border-ink bg-surface px-4 py-3 shadow-[2px_2px_0_#1A1A1A]">
+        <p className="mb-1 text-[12px] font-extrabold text-orange">{t('page.cautionLabel')}</p>
+        <p className="text-[14px] leading-relaxed text-ink">{daeUn.caution}</p>
       </div>
     </div>
   )

@@ -20,19 +20,25 @@ export default async function DaeUnTimeline({ data }: { data: SajuCalcResponse }
         {list.map((e) => {
           const current = e.start_age === currentAge
           return (
-            <GanjiColumn
+            <div
               key={e.start_age}
-              topLabel={t('age', { age: e.start_age })}
-              stem={e.stem}
-              stemElement={e.stem_element}
-              branch={e.branch}
-              branchElement={e.branch_element}
-              stemTenGod={e.stem_ten_god}
-              branchTenGod={e.branch_ten_god}
-              twelveWun={e.twelve_wun}
-              highlight={current}
-              badge={current ? t('current') : undefined}
-            />
+              className={current
+                ? 'shrink-0 rounded-xl border-2 border-orange bg-[#FFF4E3] px-2 py-1 shadow-[3px_3px_0_#FF6B00]'
+                : 'shrink-0'}
+            >
+              <GanjiColumn
+                topLabel={t('age', { age: e.start_age })}
+                stem={e.stem}
+                stemElement={e.stem_element}
+                branch={e.branch}
+                branchElement={e.branch_element}
+                stemTenGod={e.stem_ten_god}
+                branchTenGod={e.branch_ten_god}
+                twelveWun={e.twelve_wun}
+                highlight={current}
+                badge={current ? t('current') : undefined}
+              />
+            </div>
           )
         })}
       </div>

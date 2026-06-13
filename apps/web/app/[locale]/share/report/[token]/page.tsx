@@ -66,13 +66,15 @@ export default async function SharedReportPage({
 
   return (
     <main className="flex flex-col gap-4">
-      <div className="rounded-2xl border-[1.5px] border-border-soft bg-surface p-3 text-[13px] text-text-sub">
+      <div className="rounded-2xl border-2 border-ink bg-surface p-3 text-[14px] font-bold text-ink shadow-[4px_4px_0_#1A1A1A]">
         {summaryLine}
       </div>
-      <p className="text-[13px] text-text-sub">각 제목을 클릭하면 해설이 펼쳐져요</p>
 
       {/* 공유 모드 — CTA 없음 */}
       <ReportView report={report} reportId={0} shareMode />
+
+      {/* 안내 — 하단 */}
+      <p className="pb-2 text-center text-[13px] text-text-sub">각 제목을 클릭하면 해설이 펼쳐져요</p>
 
       {/* 나도 확인 CTA */}
       <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">

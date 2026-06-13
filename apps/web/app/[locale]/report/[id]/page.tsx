@@ -1,8 +1,8 @@
-import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { serverAuthApi } from '@/lib/serverAuth'
 import { getReport } from '@sajuguri/api-client'
 import ReportView from '@/components/report/ReportView'
+import MascotTinted from '@/components/ui/MascotTinted'
 
 export default async function ReportDetailPage({
   params,
@@ -39,15 +39,18 @@ export default async function ReportDetailPage({
 
   return (
     <main className="flex flex-col gap-4">
-      {/* 원국 한 줄 요약 */}
-      <div className="rounded-2xl border-2 border-ink bg-surface p-3 text-[13px] text-text-sub shadow-[4px_4px_0_#1A1A1A]">
-        {summaryLine}
+      {/* 원국 한 줄 요약 — 마스코트 아바타 포함 */}
+      <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
+          <MascotTinted width={40} height={40} />
+        </span>
+        <span className="text-[14px] font-bold text-ink">{summaryLine}</span>
       </div>
 
-      {/* 안내 */}
-      <p className="text-[13px] text-text-sub">{t('page.guideText')}</p>
-
       <ReportView report={report} reportId={Number(id)} />
+
+      {/* 안내 — 콘텐츠 하단으로 이동 */}
+      <p className="pb-2 text-center text-[13px] text-text-sub">{t('page.guideText')}</p>
     </main>
   )
 }
