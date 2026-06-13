@@ -64,8 +64,9 @@ Backend (3-layer: Router → Service → CRUD)
 | Frontend | `apps/web/components/compatibility/PersonSlotPicker.tsx` | 슬롯 A·B 선택/입력 (BirthInputForm·픽시트 재사용) |
 | Frontend | `apps/web/components/chat/CompatibilityReportCTA.tsx` | 챗 인라인 "궁합 리포트 보러가기" CTA (from-session 호출) |
 | Frontend | `apps/web/components/report/TabbedReport.tsx` | 제네릭 탭 리포트 뷰 (사주·궁합 공용, overview 슬롯) |
-| Frontend | `apps/web/components/my/MyRecordsClient.tsx` (수정) | "궁합" 카테고리 탭 추가 |
-| Backend | `apps/web/.../my` 기록 조회 (목록 API) | 궁합 리포트 목록 포함 |
+| Frontend | `apps/web/lib/records/registry.ts` (신규) | 레코드 타입 레지스트리 (saju·fortune·consultation·compatibility) |
+| Frontend | `apps/web/components/my/MyRecordsClient.tsx` (수정) | 레지스트리 순회 렌더로 리팩터 |
+| Docs | `CLAUDE.md`, `backend/CLAUDE.md` (수정) | 모듈화 규약 추가 |
 | OG | `apps/web/app/[locale]/compatibility/shared/[token]/opengraph-image.tsx` | OG 이미지 |
 
 재사용: `BirthInputForm`, 만세력 픽시트(저장됨/최근), `ReportView`의 탭 아코디언 시각, 공유 토큰·OG 인프라, `Markdown` 컴포넌트, `rag_builder`/`writer`/`get_llm`.
@@ -237,13 +238,35 @@ apps/web/components/report/TabbedReport.tsx   # 제네릭: tabs[] + overview 슬
 
 이로써 신규 리포트 추가 = (1) Backend `ReportModule` 1개 + (2) Frontend `overview` 컴포넌트 1개 + (3) 라우터/스키마/마이그레이션. 공통 흐름·탭 UI·공유·OG는 재사용.
 
-## 10.7 내 기록 / 히스토리 통합
+## 10.7 내 기록 / 히스토리 모듈화 (레코드 타입 레지스트리)
 
-궁합 리포트가 "내 기록" 허브와 `/my/history`에 노출돼야 한다.
-- `MyRecordsClient`: 현재 리포트/운세/한줄상담 3탭 → **궁합** 4번째 탭 추가. 기존 그룹핑(프로필별)·편집 토글·"전체 보기 →" 패턴 그대로 재사용. 단 궁합은 두 사람이라 그룹핑 키는 person_a 기준(또는 비그룹 단순 목록) — 구현 시 결정.
-- 목록 조회: 궁합 리포트 목록 엔드포인트(`GET /api/compatibility` 목록형, 소유자) 또는 기존 "내 기록" 집계 API에 궁합 추가.
-- 카드: 두 이름 + 종합 점수 뱃지(예: `이용재 ♥ 유다연 · 97`) + 생성일. 클릭 → `/compatibility/[id]`.
-- i18n: `my.records` 에 궁합 탭 라벨 ko/en 추가.
+글로벌 바텀냅(홈/만세력/상담/마이) 4탭은 유지한다. 진짜 확장성 문제는 **마이 페이지의 콘텐츠 히스토리** — 콘텐츠 종류(리포트·운세·한줄상담·궁합·미래)가 늘 때마다 `MyRecordsClient`에 탭을 하드코딩하면 안 된다.
+
+**레코드 타입 레지스트리**로 모듈화한다:
+```
+apps/web/lib/records/registry.ts
+  RecordType = {
+    key: string                 // 'saju' | 'fortune' | 'consultation' | 'compatibility' | ...
+    label: () => string         // i18n 탭 라벨
+    fetch: (api) => Promise<RecordItem[]>
+    href: (item) => string      // 상세 경로
+    renderCard: (item) => ReactNode  // 카드 표현
+    groupBy?: (item) => string  // 옵션: 프로필별 그룹 키
+  }
+  RECORD_TYPES: RecordType[]     // 등록 배열
+```
+- `MyRecordsClient` / `/my/history`는 `RECORD_TYPES`를 순회해 탭·목록·카드를 렌더. 편집 토글·"전체 보기 →"·그룹핑은 제네릭 골격에서 처리.
+- 신규 콘텐츠 추가 = `RECORD_TYPES`에 항목 1개 등록(+ 목록 fetch 함수). 허브 코드는 불변.
+- 이번 작업: 기존 3종(saju·fortune·consultation)을 레지스트리로 이관 + **compatibility 항목 추가**.
+- 궁합 카드: 두 이름 + 종합 점수 뱃지(예: `이용재 ♥ 유다연 · 97`) + 생성일 → `/compatibility/[id]`. 그룹핑은 단순 목록(두 명이라 프로필 그룹 부적합).
+- 목록 조회: `GET /api/compatibility`(소유자). i18n: 탭 라벨 ko/en.
+
+## 10.8 문서화 (모듈화 규약 → CLAUDE.md)
+
+모듈화 구현이 끝난 뒤, 규약을 프로젝트 지침에 박아 앞으로의 기능이 같은 패턴을 따르게 한다. (계획 마지막 태스크)
+- 루트 `CLAUDE.md`: "리포트류 신규 기능은 backend `ReportModule` + `runner`, frontend `TabbedReport`(overview 슬롯) + 레코드 레지스트리 항목으로 추가한다" 규약 + 신규 리포트 추가 체크리스트.
+- `backend/CLAUDE.md`: `llm/reports/` 모듈 계약(assemble_signals/build_rag_context/output_schema/assemble_tabs)과 runner 사용법.
+- 서비스/레코드 레지스트리 위치와 추가 절차 명시.
 
 ## 11. 테스트 전략
 
