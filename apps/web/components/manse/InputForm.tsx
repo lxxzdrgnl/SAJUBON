@@ -449,7 +449,7 @@ export default function InputForm() {
       <button
         type="button"
         onClick={submit}
-        disabled={submitAttempted && hasBlockingError}
+        disabled={hasBlockingError}
         className="rounded-xl border-2 border-ink bg-orange py-3 text-[15px] font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] disabled:opacity-40"
       >
         {t('submit')}
