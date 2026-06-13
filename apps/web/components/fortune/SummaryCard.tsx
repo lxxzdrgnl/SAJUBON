@@ -18,6 +18,7 @@ import { createFortuneShare } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import { calcScoreBars } from '@/lib/fortune/canvas'
 import { hexToRgba, scatterDots, type CardPalette } from '@/lib/fortune/story'
+import ShareModal from '@/components/ui/ShareModal'
 
 const BAR_LOW_THRESHOLD = 60
 
@@ -43,7 +44,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
 
   const { ink, inkSoft, accent, base } = palette
 
@@ -216,28 +217,19 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   }
 
   /**
-   * 링크 공유 — 추측 불가 토큰 발급 후 공개 공유 URL을 복사/네이티브 공유.
-   * createFortuneShare(story) → share_token → /share/fortune/{token}
-   * (순차 정수 record_id 노출 금지)
+   * 링크 공유 — 추측 불가 토큰 발급 후 ShareModal 오픈.
+   * iOS Safari 대응: await(네트워크) 이후 navigator.share / clipboard를 직접
+   * 호출하면 사용자 제스처 컨텍스트가 소실된다. 따라서 모달을 열고,
+   * 복사/공유는 모달 버튼의 새 제스처에서 실행한다.
    */
   async function handleShareLink() {
     setSharing(true)
     try {
       const { share_token } = await createFortuneShare(api, { story })
       const url = `${window.location.origin}/share/fortune/${share_token}`
-      if (typeof navigator.share === 'function') {
-        try {
-          await navigator.share({ title: t('shareLabel'), url })
-          return
-        } catch {
-          // 사용자 취소·미지원 → 클립보드 폴백
-        }
-      }
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setShareUrl(url)
     } catch {
-      // 발급·클립보드 불가 — silent fail
+      // 발급 실패 — silent fail
     } finally {
       setSharing(false)
     }
@@ -388,7 +380,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
           style={{
             borderColor: ink,
             color: ink,
-            background: copied ? hexToRgba(ink, 0.1) : 'transparent',
+            background: 'transparent',
           }}
           onClick={(e) => { e.stopPropagation(); handleShareLink() }}
           disabled={sharing}
@@ -396,13 +388,21 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
           </svg>
-          {copied ? t('copied') : t('shareLink')}
+          {sharing ? t('sharing') : t('shareLink')}
         </button>
       </div>
       )}
 
       {/* 숨겨진 캔버스 (이미지 생성용) */}
       <canvas ref={canvasRef} className="hidden" />
+
+      {/* 링크 공유 모달 — iOS Safari 제스처 대응 (복사/공유는 모달 버튼에서 실행) */}
+      <ShareModal
+        open={shareUrl !== null}
+        url={shareUrl ?? ''}
+        title={t('shareLabel')}
+        onClose={() => setShareUrl(null)}
+      />
     </div>
   )
 }

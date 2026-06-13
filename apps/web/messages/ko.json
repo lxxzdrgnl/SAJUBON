@@ -552,6 +552,7 @@
       "saveImage": "이미지 저장",
       "saving": "저장 중...",
       "shareLink": "링크 공유",
+      "sharing": "링크 생성 중...",
       "copied": "복사됨",
       "shareLabel": "사주구리 오늘의 운세",
       "back": "뒤로",
@@ -661,6 +662,15 @@
       "ctaTitle": "나도 궁합이 궁금하다면?",
       "ctaDesc": "두 사람의 생년월일시만 입력하면 AI 궁합 리포트를 받아볼 수 있어요.",
       "ctaBtn": "나도 궁합 보기"
+    }
+  },
+  "ui": {
+    "shareModal": {
+      "title": "링크 공유",
+      "copy": "복사",
+      "copied": "복사됨",
+      "share": "공유",
+      "close": "닫기"
     }
   }
 }

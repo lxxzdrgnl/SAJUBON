@@ -552,6 +552,7 @@
       "saveImage": "Save image",
       "saving": "Saving...",
       "shareLink": "Share link",
+      "sharing": "Creating link...",
       "copied": "Copied",
       "shareLabel": "SajuGuri Daily Fortune",
       "back": "Back",
@@ -661,6 +662,15 @@
       "ctaTitle": "Curious about your own compatibility?",
       "ctaDesc": "Just enter two people's birth details to get an AI compatibility report.",
       "ctaBtn": "Check my compatibility"
+    }
+  },
+  "ui": {
+    "shareModal": {
+      "title": "Share link",
+      "copy": "Copy",
+      "copied": "Copied",
+      "share": "Share",
+      "close": "Close"
     }
   }
 }
