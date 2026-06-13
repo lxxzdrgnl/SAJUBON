@@ -73,13 +73,14 @@ class QuestionResponse(BaseModel):
 
 class ConsultationHistoryItem(BaseModel):
     """상담 기록 목록 아이템."""
-    id:          int
-    question:    str
-    category:    str
-    headline:    str
-    content:     str
-    created_at:  datetime
-    share_token: str | None = None
+    id:           int
+    profile_name: str = ""
+    question:     str
+    category:     str
+    headline:     str
+    content:      str
+    created_at:   datetime
+    share_token:  str | None = None
 
     model_config = {"from_attributes": True}
 

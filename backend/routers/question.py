@@ -72,6 +72,7 @@ async def list_consultations(
     return [
         ConsultationHistoryItem(
             id=r.id,
+            profile_name=(r.birth_input.get("name") if isinstance(r.birth_input, dict) else None) or "",
             question=r.question,
             category=r.category,
             headline=r.headline,
