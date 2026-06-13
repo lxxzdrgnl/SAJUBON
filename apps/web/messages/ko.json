@@ -548,5 +548,49 @@
       "health": "건강",
       "social": "사교"
     }
+  },
+  "compatibility": {
+    "scoreOverview": {
+      "personA": "A",
+      "personB": "B",
+      "highBadge": "찰떡궁합",
+      "lowBadge": "주의",
+      "dayPillar": "일주",
+      "elementHarmony": "오행 조화",
+      "branchRelation": "지지 관계",
+      "tenGods": "십성"
+    },
+    "elementFlow": {
+      "title": "오행 흐름",
+      "stemHapLabel": "천간합화",
+      "stemHapDesc": "{element}(으)로 합쳐지는 흐름",
+      "synergyLabel": "오행 관계",
+      "complementLabel": "보완 방향",
+      "yongsinLabel": "용신 보완",
+      "yongsinAHelpsB": "{nameA}이(가) {nameB}의 용신을 채워줌",
+      "yongsinBHelpsA": "{nameB}이(가) {nameA}의 용신을 채워줌",
+      "yongsinMutual": "서로의 용신을 채워주는 궁합",
+      "clashLabel": "지지충",
+      "tenGodLabel": "십성 관계",
+      "tenGodDesc": "{nameA} 기준 상대 십성: {tenGod}"
+    },
+    "viewCompatibility": "궁합 보기",
+    "unknownName": "이름 없음",
+    "slot": {
+      "labelA": "나 (첫 번째 사람)",
+      "labelB": "상대방 (두 번째 사람)",
+      "selectOrInput": "선택 / 입력",
+      "reselect": "다시 선택"
+    },
+    "pickSheet": {
+      "titleA": "첫 번째 사람 선택",
+      "titleB": "두 번째 사람 선택",
+      "savedTitle": "저장된 만세력",
+      "recentTitle": "최근 본 만세력",
+      "directInput": "직접 입력하기",
+      "repBadge": "대표",
+      "backToList": "목록으로",
+      "confirmInput": "이 사람으로 선택"
+    }
   }
 }

@@ -548,5 +548,49 @@
       "health": "Health",
       "social": "Social"
     }
+  },
+  "compatibility": {
+    "scoreOverview": {
+      "personA": "A",
+      "personB": "B",
+      "highBadge": "Perfect Match",
+      "lowBadge": "Caution",
+      "dayPillar": "Day Pillar",
+      "elementHarmony": "Element Harmony",
+      "branchRelation": "Branch Relation",
+      "tenGods": "Ten Gods"
+    },
+    "elementFlow": {
+      "title": "Element Flow",
+      "stemHapLabel": "Stem Combination",
+      "stemHapDesc": "Merges into {element}",
+      "synergyLabel": "Element Relation",
+      "complementLabel": "Complementary Flow",
+      "yongsinLabel": "Yongsin Complement",
+      "yongsinAHelpsB": "{nameA} supports {nameB}'s Yongsin",
+      "yongsinBHelpsA": "{nameB} supports {nameA}'s Yongsin",
+      "yongsinMutual": "Mutually complementary Yongsin",
+      "clashLabel": "Branch Clashes",
+      "tenGodLabel": "Ten-God Relation",
+      "tenGodDesc": "{nameA}'s ten-god for partner: {tenGod}"
+    },
+    "viewCompatibility": "View Compatibility",
+    "unknownName": "Unknown",
+    "slot": {
+      "labelA": "Person A (You)",
+      "labelB": "Person B (Partner)",
+      "selectOrInput": "Select / Enter",
+      "reselect": "Change"
+    },
+    "pickSheet": {
+      "titleA": "Select Person A",
+      "titleB": "Select Person B",
+      "savedTitle": "Saved charts",
+      "recentTitle": "Recent inputs",
+      "directInput": "Enter manually",
+      "repBadge": "Default",
+      "backToList": "Back to list",
+      "confirmInput": "Select this person"
+    }
   }
 }
