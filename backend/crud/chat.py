@@ -45,6 +45,17 @@ async def get_session_or_404(
     return session
 
 
+async def delete_session(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+    user_id: int,
+) -> None:
+    """세션 삭제 (소유자 확인). 단발 연산이라 여기서 commit."""
+    session = await get_session_or_404(db, session_id, user_id)
+    await db.delete(session)
+    await db.commit()
+
+
 async def list_sessions(
     db: AsyncSession,
     user_id: int,

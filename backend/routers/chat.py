@@ -72,6 +72,15 @@ async def list_sessions(
     return await chat_crud.list_sessions(db, user.id)
 
 
+@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_session(
+    session_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await chat_crud.delete_session(db, session_id, user.id)
+
+
 @router.post("/{session_id}/partner", response_model=PartnerAttachResponse)
 async def attach_partner_profile(
     session_id: uuid.UUID,

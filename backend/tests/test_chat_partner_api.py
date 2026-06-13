@@ -93,3 +93,19 @@ async def test_attach_foreign_session_404(db_user, chat_session):
     async with _client(other_token) as c:
         r = await c.post(f"/api/chat/{chat_session}/partner", json=_PARTNER_BODY)
     assert r.status_code in (401, 404)
+
+
+async def test_delete_session(db_user, chat_session, test_sessionmaker):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        r = await c.delete(f"/api/chat/{chat_session}")
+    assert r.status_code == 204, r.text
+    async with test_sessionmaker() as s:
+        assert await s.get(ChatSession, chat_session) is None
+
+
+async def test_delete_session_not_owner(db_user, chat_session):
+    other = create_access_token(db_user.id + 99999)
+    async with _client(other) as c:
+        r = await c.delete(f"/api/chat/{chat_session}")
+    assert r.status_code in (401, 403, 404)  # 비소유자·무효 토큰 모두 거부
