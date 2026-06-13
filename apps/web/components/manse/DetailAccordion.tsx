@@ -14,10 +14,16 @@ export default async function DetailAccordion({ data }: { data: SajuCalcResponse
       <div className="overflow-x-auto">
         <table className="w-full min-w-[320px] table-fixed border-collapse text-center">
           <thead>
-            <tr>
-              <th className="w-14" />
+            <tr className="border-b-2 border-ink">
+              {/* 행 라벨 열 */}
+              <th className="w-14 py-2" />
               {slots.map((s) => (
-                <th key={s.loc} className={`pb-2 text-[11px] font-extrabold ${s.loc === 'day' ? 'text-orange' : 'text-text-sub'}`}>
+                <th
+                  key={s.loc}
+                  className={`pb-2 pt-2 text-[11px] font-extrabold ${
+                    s.loc === 'day' ? 'text-orange' : 'text-text-sub'
+                  }`}
+                >
                   {s.colLabel}
                   {s.loc === 'day' ? ' ★' : ''}
                 </th>
@@ -25,39 +31,52 @@ export default async function DetailAccordion({ data }: { data: SajuCalcResponse
             </tr>
           </thead>
           <tbody className="align-top">
-            <tr>
-              <td className="py-2 text-[11px] font-bold text-text-sub">{t('twelveWun')}</td>
+            {/* 12운성 행 */}
+            <tr className="border-b border-border-soft">
+              <td className="py-2.5 pr-1 text-[11px] font-extrabold text-text-sub">{t('twelveWun')}</td>
               {slots.map((s) => (
-                <td key={s.loc} className="py-2 text-xs font-extrabold" style={{ color: s.pillar ? ohaengColor(s.pillar.branch_element) : undefined }}>
+                <td key={s.loc} className="py-2.5 text-sm font-extrabold" style={{ color: s.pillar ? ohaengColor(s.pillar.branch_element) : undefined }}>
                   {s.pillar ? s.pillar.twelve_wun : t('none')}
                 </td>
               ))}
             </tr>
-            <tr>
-              <td className="py-2 text-[11px] font-bold text-text-sub">{t('jiJangGan')}</td>
+            {/* 지장간 행 */}
+            <tr className="border-b border-border-soft">
+              <td className="py-2.5 pr-1 text-[11px] font-extrabold text-text-sub">{t('jiJangGan')}</td>
               {slots.map((s) => (
-                <td key={s.loc} className="py-2 text-xs tracking-wide text-text-sub">
+                <td key={s.loc} className="py-2.5 text-xs font-bold tracking-wide text-ink">
                   {s.pillar ? jiJangGanText(data.ji_jang_gan, s.loc) || t('none') : t('none')}
                 </td>
               ))}
             </tr>
+            {/* 신살 행 */}
             <tr>
-              <td className="py-2 text-[11px] font-bold text-text-sub">{t('sinSal')}</td>
+              <td className="py-2.5 pr-1 text-[11px] font-extrabold text-text-sub">{t('sinSal')}</td>
               {slots.map((s) => {
                 const sals = s.pillar ? sinSalsForPillar(data.sin_sals, s.loc) : []
                 return (
-                  <td key={s.loc} className="py-2 text-[11px]">
+                  <td key={s.loc} className="py-2.5 text-[11px]">
                     {sals.length ? (
-                      sals.map((sal) => {
-                        const sign = sal.type === 'lucky' ? '+' : sal.type === 'unlucky' || sal.type === 'warning' ? '-' : '·'
-                        const color = sal.type === 'lucky' ? '#00665F' : sal.type === 'unlucky' || sal.type === 'warning' ? '#B34800' : 'var(--text-sub)'
-                        return (
-                          <div key={sal.name} className="leading-relaxed">
-                            <span className="font-extrabold" style={{ color }}>{sign}</span>
-                            <span className="text-ink">{sal.name}</span>
-                          </div>
-                        )
-                      })
+                      <div className="flex flex-col items-center gap-1">
+                        {sals.map((sal) => {
+                          const isLucky = sal.type === 'lucky'
+                          const isUnlucky = sal.type === 'unlucky' || sal.type === 'warning'
+                          return (
+                            <span
+                              key={sal.name}
+                              className={`inline-block rounded-[8px] border-[1.5px] border-ink px-1.5 py-px text-[10px] font-extrabold shadow-[1.5px_1.5px_0_#1A1A1A] ${
+                                isLucky
+                                  ? 'bg-teal-tint text-[#00665F]'
+                                  : isUnlucky
+                                    ? 'bg-orange-tint text-[#B34800]'
+                                    : 'bg-surface text-text-sub'
+                              }`}
+                            >
+                              {isLucky ? '+' : isUnlucky ? '-' : '·'}{sal.name}
+                            </span>
+                          )
+                        })}
+                      </div>
                     ) : (
                       <span className="text-text-sub">{t('none')}</span>
                     )}

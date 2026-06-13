@@ -25,21 +25,31 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
   const entries = buildEntries(data, tab)
   const showWeight = tab === 'gung_seong'
 
+  function Box({ ch, on, weight }: { ch?: string; on: boolean; weight?: string }) {
+    return (
+      <div
+        className={`flex h-14 w-full flex-col items-center justify-center rounded-lg border-2 ${
+          on ? 'border-orange bg-orange' : 'border-border-soft bg-surface'
+        }`}
+      >
+        <span className={`font-serif text-xl font-black leading-none ${on ? 'text-white' : 'text-ink'}`}>
+          {ch ?? '—'}
+        </span>
+        {/* 가중치 영역 고정 — 없으면 빈 문자열로 유지해 높이 보장 */}
+        <span className={`mt-0.5 h-[14px] text-[9px] font-bold leading-none ${on ? 'text-white/70' : 'text-text-sub'}`}>
+          {weight ?? ''}
+        </span>
+      </div>
+    )
+  }
+
   function MiniGrid({ stems, branches }: { stems: PillarKey[]; branches: PillarKey[] }) {
     return (
-      <div className="mt-2 grid grid-cols-4 gap-1.5">
+      <div className="mt-2 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${active.length}, 1fr)` }}>
         {active.map((pk) => {
           const p = pillarOf(data, pk)
-          /* Box: 고정 높이로 가중치 라벨과 간지 글자가 겹치지 않게 분리 */
-          const Box = ({ ch, on, weight }: { ch?: string; on: boolean; weight?: string }) => (
-            <div className={`flex h-[56px] flex-col items-center justify-center rounded-lg border-2 ${on ? 'border-orange bg-orange text-white' : 'border-border-soft bg-surface'}`}>
-              <span className="font-serif text-xl font-black leading-none">{ch ?? '—'}</span>
-              {/* 가중치 영역을 고정 높이(16px)로 예약 — 없으면 빈 줄로 유지해 정렬 안정 */}
-              <span className={`mt-0.5 text-[9px] font-bold ${on ? 'text-white/70' : 'text-text-sub'}`}>{weight ?? ''}</span>
-            </div>
-          )
           return (
-            <div key={pk} className="flex flex-col items-center gap-1">
+            <div key={pk} className="flex min-w-0 flex-col items-center gap-1">
               <span className="text-[10px] text-text-sub">{PLABEL[pk]}주</span>
               <Box ch={p?.stem} on={stems.includes(pk)} weight={showWeight ? PALACE_WEIGHTS[pk].stem : undefined} />
               <Box ch={p?.branch} on={branches.includes(pk)} weight={showWeight ? PALACE_WEIGHTS[pk].branch : undefined} />

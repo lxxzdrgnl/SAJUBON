@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import type { SajuCalcResponse } from '@sajuguri/api-client'
-import { ohaengColor } from '@/lib/ohaeng'
+import { ohaengColor, ohaengTintColor } from '@/lib/ohaeng'
 import Accordion from '@/components/ui/Accordion'
 
 /** 오행 특성 참고표 (정적) — WuxingFeatureTable.vue 데이터 보존, 과다/부족 오행 강조 */
@@ -22,31 +22,51 @@ export default async function WuxingFeatureTable({ data }: { data: SajuCalcRespo
       <div className="overflow-x-auto">
         <table className="w-full min-w-[420px] border-collapse text-left text-[11px]">
           <thead>
-            <tr className="text-text-sub">
-              <th className="py-1.5 pr-2 font-bold">{t('colEl')}</th>
-              <th className="py-1.5 pr-2 font-bold">{t('colDir')}</th>
-              <th className="py-1.5 pr-2 font-bold">{t('colTraits')}</th>
-              <th className="py-1.5 pr-2 font-bold">{t('colBody')}</th>
-              <th className="py-1.5 font-bold">{t('colJobs')}</th>
+            <tr className="border-b-2 border-ink">
+              <th className="pb-2 pt-1 pr-2 text-[11px] font-extrabold text-ink">{t('colEl')}</th>
+              <th className="pb-2 pt-1 pr-2 text-[11px] font-extrabold text-text-sub">{t('colDir')}</th>
+              <th className="pb-2 pt-1 pr-2 text-[11px] font-extrabold text-text-sub">{t('colTraits')}</th>
+              <th className="pb-2 pt-1 pr-2 text-[11px] font-extrabold text-text-sub">{t('colBody')}</th>
+              <th className="pb-2 pt-1 text-[11px] font-extrabold text-text-sub">{t('colJobs')}</th>
             </tr>
           </thead>
           <tbody>
-            {FEATURES.map((f) => {
+            {FEATURES.map((f, idx) => {
               const isOver = dominant.includes(f.el)
               const isLack = weak.includes(f.el)
+              const color = ohaengColor(f.el)
+              const tint = ohaengTintColor(f.el)
+              const isLast = idx === FEATURES.length - 1
               return (
-                <tr key={f.el} className={`border-t border-border-soft ${isOver ? 'bg-orange-tint/40' : isLack ? 'bg-teal-tint/40' : ''}`}>
-                  <td className="py-2 pr-2">
+                <tr
+                  key={f.el}
+                  className={`${isLast ? '' : 'border-b border-border-soft'}`}
+                  style={isOver || isLack ? { background: tint } : undefined}
+                >
+                  <td className="py-2.5 pr-2">
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <span className="text-sm font-black" style={{ color: ohaengColor(f.el) }}>{f.el}</span>
-                      {isOver && <span className="rounded bg-orange-tint px-1 py-px text-[9px] font-extrabold text-[#B34800]">{t('over')}</span>}
-                      {isLack && <span className="rounded bg-teal-tint px-1 py-px text-[9px] font-extrabold text-[#00665F]">{t('lack')}</span>}
+                      <span
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-md border-[1.5px] border-ink text-sm font-black shadow-[1.5px_1.5px_0_#1A1A1A]"
+                        style={{ color, background: `${color}20` }}
+                      >
+                        {f.el}
+                      </span>
+                      {isOver && (
+                        <span className="rounded-[8px] border-[1.5px] border-ink bg-orange-tint px-1.5 py-px text-[9px] font-extrabold text-[#B34800] shadow-[1.5px_1.5px_0_#1A1A1A]">
+                          {t('over')}
+                        </span>
+                      )}
+                      {isLack && (
+                        <span className="rounded-[8px] border-[1.5px] border-ink bg-teal-tint px-1.5 py-px text-[9px] font-extrabold text-[#00665F] shadow-[1.5px_1.5px_0_#1A1A1A]">
+                          {t('lack')}
+                        </span>
+                      )}
                     </span>
                   </td>
-                  <td className="py-2 pr-2 text-text-sub">{f.dir}</td>
-                  <td className="py-2 pr-2">{f.traits}</td>
-                  <td className="py-2 pr-2 text-text-sub">{f.body}</td>
-                  <td className="py-2 text-text-sub">{f.jobs}</td>
+                  <td className="py-2.5 pr-2 text-text-sub">{f.dir}</td>
+                  <td className="py-2.5 pr-2 font-bold text-ink">{f.traits}</td>
+                  <td className="py-2.5 pr-2 text-text-sub">{f.body}</td>
+                  <td className="py-2.5 text-text-sub">{f.jobs}</td>
                 </tr>
               )
             })}
