@@ -32,6 +32,11 @@ def generate_refresh_token() -> str:
     return secrets.token_urlsafe(32)
 
 
+def generate_share_token() -> str:
+    """추측 불가 짧은 공유 토큰 (URL-safe, ≈12자). 외부 의존성 0."""
+    return secrets.token_urlsafe(9)
+
+
 def hash_token(token: str) -> str:
     """Refresh Token SHA256 해시 (DB 저장용)."""
     return hashlib.sha256(token.encode()).hexdigest()

@@ -56,17 +56,6 @@ class RefreshToken(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
 
-class DailyShare(Base):
-    """오늘의 운세 공유 — 생년월일만 저장, 결과는 접근 시 재계산."""
-
-    __tablename__ = "daily_shares"
-
-    id:          Mapped[int]       = mapped_column(Integer, primary_key=True)
-    share_token: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, default=uuid.uuid4)
-    birth_input: Mapped[dict]      = mapped_column(JSONB, nullable=False)
-    created_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=_utcnow)
-
-
 class SharedResult(Base):
     __tablename__ = "shared_results"
 
@@ -169,13 +158,14 @@ class DailyFortuneRecord(Base):
         UniqueConstraint("user_id", "birth_hash", "date", name="uq_daily_record_user_birth_date"),
     )
 
-    id:           Mapped[int]      = mapped_column(Integer, primary_key=True)
-    user_id:      Mapped[int]      = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
+    id:           Mapped[int]        = mapped_column(Integer, primary_key=True)
+    user_id:      Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=True
     )
-    birth_hash:   Mapped[str]      = mapped_column(String(64), index=True, nullable=False)
-    date:         Mapped[date]     = mapped_column(Date, nullable=False)
-    profile_name: Mapped[str]      = mapped_column(String(50), nullable=False, default="")
-    keyword:      Mapped[str]      = mapped_column(String(50), nullable=False, default="")
-    payload:      Mapped[dict]     = mapped_column(JSONB, nullable=False)
-    created_at:   Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    birth_hash:   Mapped[str]        = mapped_column(String(64), index=True, nullable=False)
+    date:         Mapped[date]       = mapped_column(Date, nullable=False)
+    profile_name: Mapped[str]        = mapped_column(String(50), nullable=False, default="")
+    keyword:      Mapped[str]        = mapped_column(String(50), nullable=False, default="")
+    payload:      Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    share_token:  Mapped[str | None] = mapped_column(String(16), unique=True, index=True, nullable=True, default=None)
+    created_at:   Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
