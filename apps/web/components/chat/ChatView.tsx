@@ -384,8 +384,8 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
       )}
 
       {/* 입력바 */}
-      <div className="shrink-0 border-t-2 border-border-soft pt-3 pb-1">
-        <div className="flex items-end gap-2">
+      <div className="shrink-0 border-t-2 border-ink pt-3 pb-1">
+        <div className="flex items-center gap-2">
           {/* + 첨부 버튼 */}
           <button
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-surface text-lg font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
@@ -398,7 +398,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
           {/* 텍스트 입력 */}
           <textarea
             ref={textRef}
-            className="flex-1 resize-none rounded-2xl border-2 border-border-soft bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-ink"
+            className="flex-1 resize-none rounded-2xl border-2 border-ink bg-surface px-3 py-2 text-sm text-ink outline-none"
             rows={1}
             placeholder={t('input.placeholder')}
             value={input}
