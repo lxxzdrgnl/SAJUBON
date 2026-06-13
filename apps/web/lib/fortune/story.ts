@@ -121,27 +121,47 @@ export interface CardPalette {
 const INK_DARK = '#15233A'   // 진한 네이비 잉크 (밝은 배경용)
 const INK_WHITE = '#FFFFFF'  // 흰 잉크 (어두운/채도 높은 배경용)
 
-/** 비비드 단색 팔레트 — 핫핑크·민트/teal·퍼플·라임·옐로·오렌지·네이비. */
-export const VIVID = {
-  pink:   '#FF2D78',
-  teal:   '#00C2B8',
-  purple: '#7B3FE4',
-  lime:   '#C6F432',
-  yellow: '#FFD900',
-  orange: '#FF6B00',
-  navy:   '#1B2A6B',
-  coral:  '#FF5A4D',
-  sky:    '#3DA5FF',
-} as const
+/** 비비드 색 풀 — 한 운세 11카드를 서로 다른 색에 배정(무충돌) + 시드 셔플 변주. 검토용 /palette 페이지에서 확인. */
+export const POOL = [
+  '#FF2D78', // 0 핫핑크
+  '#00C2B8', // 1 민트틸
+  '#7B3FE4', // 2 퍼플
+  '#C6F432', // 3 라임
+  '#FFD900', // 4 옐로
+  '#FF6B00', // 5 오렌지
+  '#1B2A6B', // 6 네이비
+  '#FF5A4D', // 7 코랄
+  '#3DA5FF', // 8 스카이
+  '#E8489B', // 9 마젠타
+  '#2EA86B', // 10 그래스
+  '#3B49B0', // 11 인디고
+  '#00A3A3', // 12 틸딥
+  '#F25C2A', // 13 탠저린
+  '#9D4EDD', // 14 바이올렛
+  '#2BB673', // 15 에메랄드
+  '#FF8A1E', // 16 앰버
+  '#E63946', // 17 레드
+  '#1FA2C9', // 18 시안블루
+  '#6A4FE0', // 19 인디고바이올렛
+] as const
 
-/** 카테고리 키 → 비비드 배경색. 6개 카테고리가 서로 또렷이 구분되도록 분산 배치. */
-const CATEGORY_VIVID: Record<string, keyof typeof VIVID> = {
-  exam:   'sky',     // 학업 — 푸른 집중
-  money:  'lime',    // 금전 — 라임 잭팟
-  love:   'pink',    // 연애 — 핫핑크
-  career: 'purple',  // 직업 — 퍼플 야망
-  health: 'teal',    // 건강 — 민트 활력
-  social: 'orange',  // 사교 — 오렌지 에너지
+const ACCENT_LIGHT = '#FFD900' // 밝은 잉크일 때 포인트
+const ACCENT_DARK = '#1B2A6B'  // 어두운 잉크일 때 포인트
+
+/** 카테고리 키 → 풀 인덱스 (모두 서로 다름). */
+const CATEGORY_SLOT: Record<string, number> = {
+  exam: 8, money: 3, love: 0, career: 11, health: 1, social: 7,
+}
+
+/** 카드 종류/카테고리 → 풀 인덱스. 11개 슬롯이 모두 distinct → 한 운세 내 색 무충돌. */
+function slotIndex(kind: string, categoryKey?: string): number {
+  if (kind === 'intro') return 2
+  if (kind === 'overall') return 5
+  if (kind === 'category' && categoryKey && categoryKey in CATEGORY_SLOT) return CATEGORY_SLOT[categoryKey]
+  if (kind === 'caution') return 9
+  if (kind === 'color') return 6
+  if (kind === 'summary') return 4
+  return 10 // fallback
 }
 
 /** 배경색 위에서 가독성 높은 잉크색을 고른다 (상대 휘도 기반). */
@@ -179,37 +199,44 @@ function vividBg(base: string): string {
   return `linear-gradient(160deg, ${lighten(base, 0.12)} 0%, ${base} 55%, ${base} 100%)`
 }
 
-/** 카드 종류/카테고리 → Wrapped 비비드 스킨. */
-export function cardPalette(kind: string, categoryKey?: string): CardPalette {
-  let base: string
-
-  if (kind === 'intro') {
-    base = VIVID.purple
-  } else if (kind === 'overall') {
-    base = VIVID.orange
-  } else if (kind === 'category' && categoryKey && CATEGORY_VIVID[categoryKey]) {
-    base = VIVID[CATEGORY_VIVID[categoryKey]]
-  } else if (kind === 'caution') {
-    base = VIVID.coral
-  } else if (kind === 'color') {
-    base = VIVID.navy
-  } else if (kind === 'summary') {
-    base = VIVID.yellow
-  } else {
-    base = VIVID.teal
+/** 문자열 → 결정론 시드(0~). 운세별(날짜+간지+이름) 색 복원·사람/날짜별 변주에 사용. */
+export function hashSeed(s: string): number {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
   }
+  return Math.abs(h)
+}
 
+/** 시드 기반 풀 셔플(Fisher–Yates, mulberry-LCG) — 회전이 아닌 진짜 순열이라 사람·날짜마다 배열이 달라진다. */
+function shuffledPool(seed: number): readonly string[] {
+  const arr = [...POOL]
+  let s = (seed >>> 0) || 1
+  const rand = () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0
+    return s / 4294967296
+  }
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
+/** 단일 베이스색 → 비비드 스킨(배경·잉크·악센트). 검토용 /palette 페이지에서도 사용. */
+export function paletteFromBase(base: string): CardPalette {
   const { ink, inkLight } = inkFor(base)
-  // 포인트 색 — 밝은 잉크면 옐로/배경 자체보다 또렷한 흰, 어두운 잉크면 강한 단색
-  const accent = inkLight ? VIVID.yellow : VIVID.navy
+  const accent = inkLight ? ACCENT_LIGHT : ACCENT_DARK
+  return { bg: vividBg(base), ink, inkSoft: softInk(ink), accent, inkLight }
+}
 
-  return {
-    bg: vividBg(base),
-    ink,
-    inkSoft: softInk(ink),
-    accent,
-    inkLight,
-  }
+/** 카드 종류/카테고리 → Wrapped 비비드 스킨. seed로 사람·날짜마다 색이 셔플(결정론·무충돌). */
+export function cardPalette(kind: string, categoryKey?: string, seed = 0): CardPalette {
+  // 슬롯 인덱스(모두 distinct)를 시드 셔플된 풀에 매핑 → 한 운세 내 무충돌 + 시드별 변주.
+  const pool = shuffledPool(seed)
+  const base = pool[slotIndex(kind, categoryKey) % pool.length]
+  return paletteFromBase(base)
 }
 
 /**

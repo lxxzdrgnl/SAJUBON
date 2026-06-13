@@ -16,11 +16,11 @@ describe('ganjiNickname — 천간 색 + 지지 동물', () => {
     expect(r.bg).toBe('#7FC7BE')
   })
 
-  it('병오 = 붉은 말, 배경 #F5623A', () => {
+  it('병오 = 붉은 말, 배경 #EA6845', () => {
     const r = ganjiNickname('병', '오')
     expect(r.ko).toBe('붉은 말')
     expect(r.en).toBe('Red Horse')
-    expect(r.bg).toBe('#F5623A')
+    expect(r.bg).toBe('#EA6845')
   })
 
   it('무진 = 황금 용, 배경 #FFD900 (현행 옐로)', () => {

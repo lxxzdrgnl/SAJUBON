@@ -21,6 +21,7 @@ import {
   calcSegmentFills,
   slideDirection,
   cardPalette,
+  hashSeed,
   scatterDots,
   hexToRgba,
   type SlideDirection,
@@ -181,10 +182,13 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
   const currentCard = story?.cards[cardIndex]
   const isSummary = currentCard?.kind === 'summary'
 
-  // Wrapped 비비드 스킨 — 카드마다 색이 확 바뀐다
+  // Wrapped 비비드 스킨 — 카드마다 색이 확 바뀐다. 시드(날짜+간지+이름)로 사람·날짜마다 셔플.
+  const colorSeed = story
+    ? hashSeed(`${story.date}|${JSON.stringify(story.day_ganji)}|${story.profile_name ?? ''}`)
+    : 0
   const palette = currentCard
-    ? cardPalette(currentCard.kind, (currentCard as { category_key?: string }).category_key)
-    : cardPalette('fallback')
+    ? cardPalette(currentCard.kind, (currentCard as { category_key?: string }).category_key, colorSeed)
+    : cardPalette('fallback', undefined, colorSeed)
 
   // 카테고리 랭킹 번호 (오늘의 TOP 01·02…) — category 카드들 사이 순서
   const categoryRank = (() => {
