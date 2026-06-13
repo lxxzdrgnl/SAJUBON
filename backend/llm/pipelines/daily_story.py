@@ -139,7 +139,7 @@ async def _rewrite(cards: list[dict]) -> bool:
     from langchain_core.messages import HumanMessage, SystemMessage
 
     try:
-        llm = get_llm("openai", temperature=0.8, model="gpt-4.1-mini")
+        llm = get_llm("openai", temperature=0.8, model="gpt-4.1-nano")
         messages = [
             SystemMessage(content=DAILY_STORY_SYSTEM_PROMPT),
             HumanMessage(content=format_daily_story_message(cards)),
