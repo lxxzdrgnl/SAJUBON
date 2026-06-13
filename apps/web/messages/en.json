@@ -317,7 +317,35 @@
     },
     "inlinePartner": {
       "prompt": "I need your partner's birth info. Please attach it.",
-      "action": "Select partner chart"
+      "action": "Select partner chart",
+      "directInput": "Enter manually"
+    },
+    "partnerForm": {
+      "title": "Enter partner info",
+      "name": "Name (optional)",
+      "namePlaceholder": "Enter name",
+      "birthDate": "Date of birth",
+      "solar": "Solar",
+      "lunar": "Lunar",
+      "leap": "Leap",
+      "timeLabel": "Birth time",
+      "timeUnknown": "Time unknown",
+      "gender": "Gender",
+      "male": "M",
+      "female": "F",
+      "submit": "Attach",
+      "cancel": "Cancel",
+      "datePlaceholderYear": "YYYY",
+      "datePlaceholderMonth": "MM",
+      "datePlaceholderDay": "DD",
+      "hourLabel": "H",
+      "errorDateRequired": "Please enter the date of birth.",
+      "errorYearRange": "Year must be between 1900 and 2100.",
+      "errorMonthRange": "Month is out of range.",
+      "errorDayOverflow": "{year}/{month} has only {maxDay} days.",
+      "errorHourMissing": "Enter a birth hour or check 'Time unknown'.",
+      "errorMinuteMissing": "Please enter the minutes.",
+      "errorSubmit": "Attach failed. Please try again."
     },
     "error": {
       "load": "Could not load chat history",

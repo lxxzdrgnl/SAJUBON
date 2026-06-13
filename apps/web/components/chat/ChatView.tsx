@@ -206,6 +206,15 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
     [sessionId],
   )
 
+  // 상대 만세력 직접 입력 첨부 (생년월일 직접 입력)
+  const handleAttachPartnerBirth = useCallback(
+    async (body: import('@sajuguri/api-client').PartnerAttachRequest) => {
+      const res = await attachPartner(api, sessionId, body)
+      setPartnerName(res.partner_name)
+    },
+    [sessionId],
+  )
+
   // textarea 자동 높이
   const autoResize = useCallback(() => {
     if (textRef.current) {
@@ -299,6 +308,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                     <InlinePartnerCard
                       key={bi}
                       onSelect={handleAttachPartner}
+                      onSubmitBirth={handleAttachPartnerBirth}
                       profiles={profiles}
                     />
                   )
