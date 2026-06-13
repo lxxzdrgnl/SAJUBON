@@ -154,38 +154,50 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
 
 
 async def _rewrite(cards: list[dict]) -> bool:
-    """카드 headline·body를 반말 톤으로 일괄 리라이트. 성공 시 cards를 제자리 수정.
+    """카드 headline·body를 반말 톤으로 리라이트 — 작은 청크로 쪼개 **병렬** 호출.
 
-    Returns: rewritten 성공 여부 (실패 시 cards 원본 유지).
+    한 번에 11장을 리라이트하면 느려 타임아웃이 나므로, 3장씩 동시에 호출해
+    벽시계 시간을 크게 줄인다. 성공 시 cards를 제자리 수정.
+
+    Returns: 한 청크라도 리라이트에 성공했는지 (실패 청크는 원본 유지).
     """
     if not settings.openai_api_key:
         logger.info("OPENAI_API_KEY 없음 — 스토리 리라이트 폴백 (템플릿 사용)")
         return False
 
+    import asyncio
+
     from langchain_core.messages import HumanMessage, SystemMessage
 
-    try:
-        llm = get_llm("openai", temperature=0.8, model="gpt-4.1-nano")
-        messages = [
-            SystemMessage(content=DAILY_STORY_SYSTEM_PROMPT),
-            HumanMessage(content=format_daily_story_message(cards)),
-        ]
-        resp = await llm.ainvoke(messages)
-        raw = resp.content if hasattr(resp, "content") else str(resp)
-        rewritten_items = _parse_rewrite(raw, expected=len(cards))
-    except Exception as exc:  # noqa: BLE001 — graceful degrade
-        logger.warning("스토리 리라이트 실패 — 템플릿 폴백: %s", exc)
-        return False
+    llm = get_llm("openai", temperature=0.8, model="gpt-4.1-nano")
 
-    # 제자리 적용 — headline·body만. title·score·간지는 불변.
-    for item in rewritten_items:
-        idx = item["id"]
-        if 0 <= idx < len(cards):
-            if item.get("headline"):
-                cards[idx]["headline"] = item["headline"]
-            if item.get("body"):
-                cards[idx]["body"] = item["body"]
-    return True
+    async def rewrite_chunk(chunk: list[dict]) -> bool:
+        """청크(카드 dict 참조 리스트)를 제자리 리라이트. format_daily_story_message가
+        부여하는 id는 청크 내 0-based이므로 chunk[idx]에 그대로 적용된다."""
+        try:
+            messages = [
+                SystemMessage(content=DAILY_STORY_SYSTEM_PROMPT),
+                HumanMessage(content=format_daily_story_message(chunk)),
+            ]
+            resp = await llm.ainvoke(messages)
+            raw = resp.content if hasattr(resp, "content") else str(resp)
+            items = _parse_rewrite(raw, expected=len(chunk))
+        except Exception as exc:  # noqa: BLE001 — graceful degrade
+            logger.warning("스토리 리라이트 청크 실패 — 해당 청크 원본 유지: %s", exc)
+            return False
+        for item in items:
+            idx = item.get("id")
+            if isinstance(idx, int) and 0 <= idx < len(chunk):
+                if item.get("headline"):
+                    chunk[idx]["headline"] = item["headline"]
+                if item.get("body"):
+                    chunk[idx]["body"] = item["body"]
+        return True
+
+    size = 3
+    chunks = [cards[i : i + size] for i in range(0, len(cards), size)]
+    results = await asyncio.gather(*(rewrite_chunk(c) for c in chunks))
+    return any(results)
 
 
 def _parse_rewrite(raw: str, expected: int) -> list[dict]:
