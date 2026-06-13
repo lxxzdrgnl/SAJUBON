@@ -12,15 +12,20 @@ import hashlib
 import json
 from datetime import date as _date
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import settings
 from core.exceptions import ForbiddenException, ReportNotFoundException
+from core.security import generate_share_token
 from crud import daily_record as record_crud
 from db.models import DailyFortuneRecord
 from llm.pipelines.daily_story import build_daily_story
 from schemas.daily import DailyFortuneRequest
 from schemas.daily_story import (
     DailyRecordSummary,
+    DailyShareRequest,
+    DailyShareResponse,
     DailyStoryRequest,
     DailyStoryResponse,
 )
@@ -128,4 +133,76 @@ async def get_record(
         raise ReportNotFoundException(str(record_id))
     if record.user_id != user_id:
         raise ForbiddenException()
+    return DailyStoryResponse(**record.payload)
+
+
+def _share_url(token: str) -> str:
+    return f"{settings.frontend_url}/share/fortune/{token}"
+
+
+async def create_share(
+    db: AsyncSession,
+    user_id: int | None,
+    req: DailyShareRequest,
+) -> DailyShareResponse:
+    """운세 스토리를 스냅샷+토큰으로 저장 → 공개 공유 링크 반환.
+
+    - record_id 지정(소유자) → 그 레코드를 공유, 이미 토큰 있으면 재사용.
+    - story 지정 → 스냅샷 신규 저장 (로그인=user_id, 게스트=null).
+    """
+    # 기존 레코드를 공유 (소유자 검증 + 토큰 재사용)
+    if req.record_id is not None:
+        record = await record_crud.get_by_id(db, req.record_id)
+        if not record:
+            raise ReportNotFoundException(str(req.record_id))
+        if record.user_id != user_id:
+            raise ForbiddenException()
+        if record.share_token is None:
+            record.share_token = generate_share_token()
+            try:
+                await db.commit()
+            except IntegrityError:
+                await db.rollback()
+                record = await record_crud.get_by_id(db, req.record_id)
+                record.share_token = generate_share_token()
+                await db.commit()
+            await db.refresh(record)
+        return DailyShareResponse(
+            share_token=record.share_token,
+            share_url=_share_url(record.share_token),
+        )
+
+    # 스토리 스냅샷을 신규 저장 (토큰 충돌 시 1회 재생성)
+    story = req.story
+    payload = story.model_dump()
+    birth_hash = _birth_hash(req.birth_input.model_dump()) if req.birth_input else ""
+    parsed_date = _date.fromisoformat(story.date)
+    record = None
+    for _ in range(2):
+        try:
+            record = await record_crud.insert_share_snapshot(
+                db,
+                user_id=user_id,
+                birth_hash=birth_hash,
+                date=parsed_date,
+                profile_name=story.profile_name,
+                keyword=story.keyword,
+                payload=payload,
+                share_token=generate_share_token(),
+            )
+            break
+        except IntegrityError:
+            await db.rollback()
+    await db.commit()
+    return DailyShareResponse(
+        share_token=record.share_token,
+        share_url=_share_url(record.share_token),
+    )
+
+
+async def get_shared(db: AsyncSession, token: str) -> DailyStoryResponse:
+    """공개 조회 — 저장된 스토리(payload)를 그대로 반환. 재계산 없음."""
+    record = await record_crud.get_by_share_token(db, token)
+    if not record:
+        raise ReportNotFoundException(token)
     return DailyStoryResponse(**record.payload)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from schemas.saju import SajuCalcRequest
 
@@ -64,3 +64,34 @@ class DailyRecordSummary(BaseModel):
     date: str
     profile_name: str
     keyword: str
+
+
+class DailyShareRequest(BaseModel):
+    """운세 공유 생성 요청 — story 스냅샷 또는 record_id 중 하나.
+
+    - record_id: 이미 저장된 내 기록을 공유 (소유자, 토큰 재사용).
+    - story: 스토리 스냅샷을 그대로 저장 (게스트 포함). birth_input은 선택.
+    """
+
+    story: DailyStoryResponse | None = Field(
+        default=None, description="공유할 스토리 스냅샷"
+    )
+    birth_input: SajuCalcRequest | None = Field(
+        default=None, description="만세력 입력 (birth_hash 계산용, 선택)"
+    )
+    record_id: int | None = Field(
+        default=None, description="기존 저장 기록 id (소유자 공유)"
+    )
+
+    @model_validator(mode="after")
+    def _require_one(self) -> "DailyShareRequest":
+        if self.story is None and self.record_id is None:
+            raise ValueError("story 또는 record_id 중 하나는 필수입니다.")
+        return self
+
+
+class DailyShareResponse(BaseModel):
+    """운세 공유 생성 응답."""
+
+    share_token: str = Field(description="추측 불가 짧은 공유 토큰")
+    share_url: str = Field(description="공개 공유 URL")

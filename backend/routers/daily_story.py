@@ -11,6 +11,8 @@ from dependencies.auth import get_current_user, get_optional_user
 from dependencies.db import get_db
 from schemas.daily_story import (
     DailyRecordSummary,
+    DailyShareRequest,
+    DailyShareResponse,
     DailyStoryRequest,
     DailyStoryResponse,
 )
@@ -26,6 +28,23 @@ async def create_story(
     db: AsyncSession = Depends(get_db),
 ) -> DailyStoryResponse:
     return await story_service.create_story(db, user.id if user else None, body)
+
+
+@router.post("/share", response_model=DailyShareResponse, status_code=status.HTTP_201_CREATED, summary="운세 공유 링크 생성 (게스트 허용)")
+async def create_share(
+    body: DailyShareRequest,
+    user: User | None = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db),
+) -> DailyShareResponse:
+    return await story_service.create_share(db, user.id if user else None, body)
+
+
+@router.get("/shared/{token}", response_model=DailyStoryResponse, summary="운세 공유 공개 조회 (인증 불필요, 재계산 없음)")
+async def get_shared(
+    token: str,
+    db: AsyncSession = Depends(get_db),
+) -> DailyStoryResponse:
+    return await story_service.get_shared(db, token)
 
 
 @router.get("/records", response_model=list[DailyRecordSummary], summary="내 운세 기록")

@@ -75,6 +75,43 @@ async def get_by_id(db: AsyncSession, record_id: int) -> DailyFortuneRecord | No
     return result.scalar_one_or_none()
 
 
+async def get_by_share_token(
+    db: AsyncSession, token: str
+) -> DailyFortuneRecord | None:
+    """공유 토큰으로 저장본 조회 (공개 — 소유권 검사 없음)."""
+    result = await db.execute(
+        select(DailyFortuneRecord).where(DailyFortuneRecord.share_token == token)
+    )
+    return result.scalar_one_or_none()
+
+
+async def insert_share_snapshot(
+    db: AsyncSession,
+    *,
+    user_id: int | None,
+    birth_hash: str,
+    date: _date,
+    profile_name: str,
+    keyword: str,
+    payload: dict,
+    share_token: str,
+) -> DailyFortuneRecord:
+    """스냅샷+토큰으로 공유 레코드를 추가한다. commit은 Service가 수행."""
+    obj = DailyFortuneRecord(
+        user_id=user_id,
+        birth_hash=birth_hash,
+        date=date,
+        profile_name=profile_name,
+        keyword=keyword,
+        payload=payload,
+        share_token=share_token,
+    )
+    db.add(obj)
+    await db.flush()
+    await db.refresh(obj)
+    return obj
+
+
 async def delete_record(db: AsyncSession, record_id: int, user_id: int) -> None:
     """본인 소유 운세 기록을 삭제한다 (단발 쓰기 — 내부 commit).
 

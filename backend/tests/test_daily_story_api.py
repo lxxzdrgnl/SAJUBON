@@ -195,6 +195,98 @@ async def test_delete_record_requires_auth(db_user, _cleanup):
     assert r.status_code == 401
 
 
+_SHARE_STORY = {
+    "date": "2026-06-13",
+    "day_ganji": {"stem": "병", "branch": "오"},
+    "profile_name": "홍길동",
+    "cards": [
+        {"kind": "intro", "title": "오늘의 일진", "headline": "병오일", "body": "근거"},
+        {"kind": "summary", "title": "요약", "score": 68, "headline": "활력", "body": "무난"},
+    ],
+    "scores": {"exam": 70, "money": 70, "love": 70, "career": 70, "health": 70, "social": 70},
+    "keyword": "활력",
+    "record_id": None,
+    "rewritten": False,
+}
+
+
+async def test_guest_share_create_and_public_read(override_db):
+    """게스트가 스토리 스냅샷을 공유 → 인증 없이 공개 조회 (재계산 안 함)."""
+    async with _client() as c:
+        created = await c.post("/api/daily/share", json={"story": _SHARE_STORY})
+        assert created.status_code == 201, created.text
+        body = created.json()
+        assert body["share_token"] and len(body["share_token"]) >= 8
+        assert "/share/fortune/" in body["share_url"]
+        token = body["share_token"]
+
+        # 인증 없이 공개 조회 → 저장본 그대로 (파이프라인 호출 0)
+        before = _calls["n"]
+        got = await c.get(f"/api/daily/shared/{token}")
+    assert got.status_code == 200, got.text
+    g = got.json()
+    assert g["keyword"] == "활력"
+    assert g["day_ganji"] == {"stem": "병", "branch": "오"}
+    # 공개 조회는 재계산하지 않는다 (스텁 파이프라인 미호출)
+    assert _calls["n"] == before
+
+
+async def test_shared_token_unknown_404(override_db):
+    async with _client() as c:
+        r = await c.get("/api/daily/shared/nonexistent-token")
+    assert r.status_code == 404
+
+
+async def test_share_tokens_are_unique(override_db):
+    async with _client() as c:
+        t1 = (await c.post("/api/daily/share", json={"story": _SHARE_STORY})).json()["share_token"]
+        t2 = (await c.post("/api/daily/share", json={"story": _SHARE_STORY})).json()["share_token"]
+    assert t1 != t2
+
+
+async def test_share_requires_story_or_record(override_db):
+    async with _client() as c:
+        r = await c.post("/api/daily/share", json={})
+    assert r.status_code in (400, 422)
+
+
+async def test_share_existing_record_reuses_token(db_user, _cleanup):
+    """내 기록(record_id) 공유 → 토큰 부여, 두 번째 호출은 동일 토큰 재사용."""
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/daily/story", json=_BODY)).json()
+        rid = created["record_id"]
+        s1 = (await c.post("/api/daily/share", json={"record_id": rid})).json()
+        s2 = (await c.post("/api/daily/share", json={"record_id": rid})).json()
+    assert s1["share_token"] == s2["share_token"]
+    # 공개 조회 가능
+    async with _client() as c:
+        got = await c.get(f"/api/daily/shared/{s1['share_token']}")
+    assert got.status_code == 200
+    assert got.json()["record_id"] == rid
+
+
+async def test_share_other_record_forbidden(test_sessionmaker, db_user, _cleanup):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/daily/story", json=_BODY)).json()
+        rid = created["record_id"]
+    import uuid as _uuid
+    async with test_sessionmaker() as s:
+        other = User(email=f"other-{_uuid.uuid4().hex[:8]}@t.com", provider="google")
+        s.add(other)
+        await s.commit()
+        await s.refresh(other)
+        other_id = other.id
+    other_token = create_access_token(other_id)
+    async with _client(other_token) as c:
+        r = await c.post("/api/daily/share", json={"record_id": rid})
+    assert r.status_code == 403
+    async with test_sessionmaker() as s:
+        await s.execute(delete(User).where(User.id == other_id))
+        await s.commit()
+
+
 async def test_delete_record_forbidden_for_others(test_sessionmaker, db_user, _cleanup):
     token = create_access_token(db_user.id)
     async with _client(token) as c:
