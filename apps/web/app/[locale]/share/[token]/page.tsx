@@ -5,6 +5,8 @@ import { ApiClient } from '@sajuguri/api-client'
 import { getSharedResult } from '@sajuguri/api-client'
 import type { SharedResultResponse } from '@sajuguri/api-client'
 import ResultView from '@/components/manse/ResultView'
+import SaveToMyButton from '@/components/manse/SaveToMyButton'
+import { currentUser } from '@/lib/serverAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,6 +49,9 @@ export async function generateMetadata({
   }
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+const GOOGLE_LOGIN_URL = `${API_URL}/api/auth/google?client=web`
+
 export default async function SharedMansePage({
   params,
 }: {
@@ -55,7 +60,8 @@ export default async function SharedMansePage({
   const { token } = await params
   const t = await getTranslations('manse.result.shared')
 
-  const shared = await fetchShared(token)
+  const [shared, user] = await Promise.all([fetchShared(token), currentUser()])
+
   if (!shared) {
     return (
       <main className="pt-16 text-center">
@@ -68,6 +74,15 @@ export default async function SharedMansePage({
   return (
     <main className="flex flex-col gap-3">
       <ResultView data={shared.calc_snapshot} />
+
+      {/* 내 만세력에 추가하기 */}
+      {shared.birth_input && (
+        <SaveToMyButton
+          birthInput={shared.birth_input}
+          isLoggedIn={!!user}
+          googleLoginUrl={GOOGLE_LOGIN_URL}
+        />
+      )}
 
       {/* 공유 모드 CTA — 나도 내 사주 보기 */}
       <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
