@@ -254,57 +254,50 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   // 버튼만 개별적으로 전파 차단(아래 CTA).
   return (
     <div
-      className="flex flex-1 min-h-0 flex-col overflow-y-auto px-6 pt-4 select-none"
-      style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+      className="flex flex-1 min-h-0 flex-col overflow-y-auto px-6 pt-3 select-none"
+      style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
     >
       {/* 브랜드 헤더 — 너구리 마크 + 사주구리 + 날짜 */}
-      <div className="mb-4 flex items-center justify-between" style={rise(0)}>
-        <div className="flex items-center gap-2.5">
+      <div className="mb-2 flex items-center justify-between" style={rise(0)}>
+        <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/mascot.svg" alt="" width={34} height={34} />
-          <span className="text-[15px] font-black tracking-widest uppercase" style={{ color: ink }}>
+          <img src="/mascot.svg" alt="" width={26} height={26} />
+          <span className="text-[13px] font-black tracking-widest uppercase" style={{ color: ink }}>
             사주구리
           </span>
         </div>
-        <p className="text-[12px] font-bold uppercase tracking-wider" style={{ color: inkSoft }}>
+        <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: inkSoft }}>
           {story.date}
         </p>
       </div>
 
-      {/* 총점 초대형 히어로 */}
+      {/* 총점 히어로 */}
       {avgScore !== undefined && (
-        <div className="mb-2" style={rise(80)}>
-          <p className="text-[12px] font-extrabold uppercase tracking-[0.18em]" style={{ color: inkSoft }}>
+        <div className="mb-1" style={rise(80)}>
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: inkSoft }}>
             {summaryTitle}
           </p>
           <div className="flex items-end gap-2">
             <span
               className="font-black leading-[0.8] tabular-nums"
-              style={{ color: accent, fontSize: 'clamp(96px, 30vw, 132px)', letterSpacing: '-0.04em' }}
+              style={{ color: accent, fontSize: 'clamp(56px, 17vw, 80px)', letterSpacing: '-0.04em' }}
             >
               {avgScore}
             </span>
-            <div className="mb-3 flex flex-col">
-              <span className="text-[18px] font-black" style={{ color: inkSoft }}>/100</span>
-              {story.profile_name && (
-                <span className="text-[15px] font-extrabold" style={{ color: ink }}>
-                  {story.profile_name}
-                </span>
-              )}
-            </div>
+            <span className="mb-2 text-[16px] font-black" style={{ color: inkSoft }}>/100</span>
           </div>
         </div>
       )}
 
-      {/* 오늘의 키워드 — 인용 초대형 */}
+      {/* 오늘의 키워드 */}
       {story.keyword && (
-        <div className="mb-5" style={rise(180)}>
-          <p className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: inkSoft }}>
+        <div className="mb-2.5" style={rise(180)}>
+          <p className="mb-0.5 text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: inkSoft }}>
             {t('keyword')}
           </p>
           <p
             className="font-black leading-[1.02]"
-            style={{ color: ink, fontSize: 'clamp(34px, 10vw, 52px)', wordBreak: 'keep-all', letterSpacing: '-0.02em' }}
+            style={{ color: ink, fontSize: 'clamp(24px, 7vw, 36px)', wordBreak: 'keep-all', letterSpacing: '-0.02em' }}
           >
             “{story.keyword}”
           </p>
@@ -312,7 +305,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       )}
 
       {/* 점수 바 6개 — 스태거 리빌 */}
-      <div className="mb-4 flex flex-col gap-2.5">
+      <div className="mb-2.5 flex flex-col gap-1.5">
         {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
@@ -323,7 +316,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
                 {CATEGORY_LABELS[key]}
               </span>
               <div
-                className="relative h-3.5 flex-1 overflow-hidden rounded-full"
+                className="relative h-3 flex-1 overflow-hidden rounded-full"
                 style={{ background: hexToRgba(ink, 0.14) }}
               >
                 <div
@@ -349,14 +342,14 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
 
       {/* 요약 헤드라인 */}
       {summaryCard && (
-        <div className="mb-4" style={rise(orderedKeys.length * 80 + 420)}>
+        <div className="mb-2.5" style={rise(orderedKeys.length * 80 + 420)}>
           <p
-            className="font-black leading-[1.1]"
-            style={{ color: ink, fontSize: 'clamp(20px, 5.5vw, 24px)', wordBreak: 'keep-all' }}
+            className="font-black leading-[1.12]"
+            style={{ color: ink, fontSize: 'clamp(16px, 4.4vw, 19px)', wordBreak: 'keep-all' }}
           >
             {summaryCard.headline}
           </p>
-          <p className="mt-2 text-[15px] leading-relaxed" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
+          <p className="mt-1 text-[12.5px] leading-snug" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
             {summaryCard.body}
           </p>
         </div>
@@ -367,7 +360,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
         <div className="mt-auto pt-3" style={rise(orderedKeys.length * 80 + 540)}>
           <a
             href="/fortune"
-            className="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-black transition-all duration-100 active:translate-y-[2px]"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[2px]"
             style={{ background: ink, color: base }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -378,7 +371,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       <div className="mt-auto flex gap-3 pt-3" style={rise(orderedKeys.length * 80 + 540)}>
         {/* 이미지 저장 — 잉크 솔리드 필 */}
         <button
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-black disabled:opacity-50 transition-all duration-100 active:translate-y-[2px]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3 text-[14px] font-black disabled:opacity-50 transition-all duration-100 active:translate-y-[2px]"
           style={{ background: ink, color: base }}
           onClick={(e) => { e.stopPropagation(); handleSaveImage() }}
           disabled={saving}
@@ -391,7 +384,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
 
         {/* 링크 공유 — 아웃라인 */}
         <button
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-[2.5px] py-4 text-[15px] font-black disabled:opacity-50 transition-all duration-150"
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-[2.5px] py-3 text-[14px] font-black disabled:opacity-50 transition-all duration-150"
           style={{
             borderColor: ink,
             color: ink,
