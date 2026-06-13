@@ -1,32 +1,21 @@
 'use client'
 
 /**
- * 스토리 단일 카드 렌더 — kind별 레이아웃 분기.
- * design.md §5.6:
- *   - intro: 마스코트(MascotTinted 일간색) + 일진 (큰 세리프 + 오행색 강조)
- *   - overall/category: 점수 54px(카운트업) + 원형 게이지 링 + 헤드라인 34px/900 + 본문 18px
- *                       점수 ≥ 90 → 컨페티 파티클 버스트 + 글로우 펄스 + 하이라이트 뱃지
- *                       점수 ≤ 35 → 절제된 주의 분위기 — 붉은/머스타드 링 + 주의 뱃지, 컨페티 없음
+ * 스토리 단일 카드 렌더 — Spotify Wrapped 룩. kind별 레이아웃 분기.
+ *   - intro: 마스코트(MascotTinted 일간색) + 일진 초대형 타이포
+ *   - overall: 점수 초대형(카운트업) + 헤드라인 + 본문
+ *               점수 ≥ 90 → 컨페티 버스트 + 글로우 펄스 + 하이라이트 뱃지
+ *               점수 ≤ 35 → 절제된 주의 분위기 — 주의 뱃지, 컨페티 없음
+ *   - category: "오늘의 TOP" 랭킹 번호(01·02…) + 점수 + 헤드라인 + 본문
  *   - caution/color: 헤드라인 + 본문 (color는 색 스와치)
  *   - summary: SummaryCard에서 처리
- * 텍스트 stagger 등장(헤드라인 먼저, body 늦게). 이모지 없음 (G2).
+ * 색은 전부 palette(상위에서 주입)로 결정 — 비비드 배경에 맞춘 고대비 잉크.
+ * 텍스트 stagger 등장. 이모지 없음 (G2). 데이터 값 불변.
  */
 import { useEffect, useRef, useState } from 'react'
 import type { StoryCard as StoryCardType } from '@sajuguri/api-client'
-import { ohaeng } from '@sajuguri/design'
-import { categoryColor, countUpValue, extractColorSwatches, hexToRgba } from '@/lib/fortune/story'
+import { countUpValue, extractColorSwatches, hexToRgba, type CardPalette } from '@/lib/fortune/story'
 import MascotTinted from '@/components/ui/MascotTinted'
-
-const SCORE_COLOR = '#FF8A2E'  // design.md §2.4
-
-/** 일진 천간 → 오행색 (intro 강조). 천간 한글 첫 글자 매핑. */
-const STEM_OHAENG: Record<string, keyof typeof ohaeng> = {
-  갑: '목', 을: '목',
-  병: '화', 정: '화',
-  무: '토', 기: '토',
-  경: '금', 신: '금',
-  임: '수', 계: '수',
-}
 
 function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false
@@ -37,7 +26,7 @@ function prefersReducedMotion(): boolean {
  * 0 → target 카운트업. 1씩 오르면 번잡해 보여 step(기본 5) 단위로 양자화한다.
  * 마지막 프레임은 정확한 target으로 스냅. reduced-motion 시 즉시 최종값.
  */
-function useCountUp(target: number | undefined, durationMs = 700, step = 5): number {
+function useCountUp(target: number | undefined, durationMs = 800, step = 5): number {
   const [value, setValue] = useState(target ?? 0)
   const rafRef = useRef<number | null>(null)
 
@@ -69,91 +58,13 @@ function useCountUp(target: number | undefined, durationMs = 700, step = 5): num
   return value
 }
 
-// ── 원형 게이지 링 ──────────────────────────────────────────────────
-const GAUGE_R = 56       // 반지름 (px) — 숫자 64px 둘레를 감쌈 (임팩트 강화)
-const GAUGE_STROKE = 7   // 선 두께
-const GAUGE_SIZE = (GAUGE_R + GAUGE_STROKE) * 2
-const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_R
-
-// 경고 색 팔레트 (35 이하)
-const CAUTION_GAUGE_COLOR = '#FF6B00'   // design.md §2.1 주황-경고
-const CAUTION_SCORE_COLOR = '#FF8A2E'   // design.md §2.4
-
-interface ScoreGaugeProps {
-  score: number        // 0..100
-  displayValue: number // 카운트업 중인 표시값
-  color: string        // 오행색 또는 SCORE_COLOR
-  isHigh: boolean      // 90+ 글로우 펄스
-  isLow: boolean       // 35 이하 주의
-}
-
-function ScoreGauge({ score, displayValue, color, isHigh, isLow }: ScoreGaugeProps) {
-  const cx = GAUGE_SIZE / 2
-  const gaugeStrokeColor = isLow ? CAUTION_GAUGE_COLOR : color
-  return (
-    <div
-      className="relative inline-flex items-center justify-center"
-      style={{
-        width: GAUGE_SIZE,
-        height: GAUGE_SIZE,
-        // 90+ 글로우 — 링·숫자 주변 발광
-        filter: isHigh ? `drop-shadow(0 0 18px ${color}) drop-shadow(0 0 8px ${color})` : undefined,
-        animation: isHigh ? 'score-pulse 2s ease-in-out infinite' : undefined,
-      }}
-    >
-      {/* SVG 게이지 링 */}
-      <svg
-        width={GAUGE_SIZE}
-        height={GAUGE_SIZE}
-        className="absolute inset-0"
-        style={{ transform: 'rotate(-90deg)' }}
-        aria-hidden
-      >
-        {/* 트랙 */}
-        <circle
-          cx={cx}
-          cy={cx}
-          r={GAUGE_R}
-          fill="none"
-          stroke="rgba(255,255,255,0.15)"
-          strokeWidth={GAUGE_STROKE}
-        />
-        {/* 채움 — 카운트업과 함께 */}
-        <circle
-          cx={cx}
-          cy={cx}
-          r={GAUGE_R}
-          fill="none"
-          stroke={gaugeStrokeColor}
-          strokeWidth={GAUGE_STROKE}
-          strokeLinecap="round"
-          strokeDasharray={GAUGE_CIRCUMFERENCE}
-          strokeDashoffset={GAUGE_CIRCUMFERENCE * (1 - displayValue / 100)}
-          style={{ transition: 'stroke-dashoffset 80ms linear' }}
-        />
-      </svg>
-      {/* 점수 숫자 — useCountUp 그대로, 90+ 더 크게 */}
-      <span
-        className="relative font-black leading-none tabular-nums"
-        style={{
-          color: isLow ? CAUTION_SCORE_COLOR : SCORE_COLOR,
-          fontSize: isHigh ? '72px' : '64px',
-        }}
-      >
-        {displayValue}
-      </span>
-    </div>
-  )
-}
-
 // ── 컨페티 파티클 (외부 라이브러리 없음) ───────────────────────────
-// CSS 키프레임: FortuneStoryPage <style> 블록에 confetti 키프레임이 주입된다.
-// 여기서는 DOM 기반 파티클을 rAF 루프 없이 CSS animation으로 구현.
+// CSS 키프레임은 FortuneStoryPage <style> 블록에 주입된다.
 
 const CONFETTI_COLORS = [
-  '#FFD900', '#FF8A2E', '#FF6B00',
-  '#00A86B', '#0090A8', '#D9A400',
-  '#FFFFFF', '#FFB200', '#00C2B8',
+  '#FFD900', '#FF2D78', '#00C2B8',
+  '#7B3FE4', '#C6F432', '#FF6B00',
+  '#FFFFFF', '#3DA5FF', '#FF5A4D',
 ]
 
 function useConfetti(trigger: boolean): React.RefObject<HTMLDivElement | null> {
@@ -168,22 +79,21 @@ function useConfetti(trigger: boolean): React.RefObject<HTMLDivElement | null> {
     const container = containerRef.current
     if (!container) return
 
-    // 풍성하게: 80개, 더 길게(2.5s)
     const COUNT = 80
     const fragments: HTMLSpanElement[] = []
 
     for (let i = 0; i < COUNT; i++) {
       const el = document.createElement('span')
       const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length]
-      const size = 5 + Math.random() * 10       // 5–15px
-      const angle = Math.random() * 360         // 발사 각도
-      const dist = 80 + Math.random() * 200     // 비행 거리 (더 넓게)
-      const dur = 900 + Math.random() * 1000    // 지속 시간 ms (더 길게)
-      const delay = Math.random() * 300         // 딜레이 ms
+      const size = 5 + Math.random() * 10
+      const angle = Math.random() * 360
+      const dist = 80 + Math.random() * 200
+      const dur = 900 + Math.random() * 1000
+      const delay = Math.random() * 300
 
       const rad = (angle * Math.PI) / 180
       const tx = Math.cos(rad) * dist
-      const ty = Math.sin(rad) * dist - 120     // 위로 치우침
+      const ty = Math.sin(rad) * dist - 120
 
       el.style.cssText = `
         position:absolute;
@@ -218,112 +128,105 @@ interface Props {
   card: StoryCardType
   dayGanji: { stem: string; branch: string }
   profileName: string
+  palette: CardPalette
+  /** category 카드의 "오늘의 TOP" 랭킹 (1부터). 그 외 null. */
+  rank: number | null
 }
 
-export default function StoryCard({ card, dayGanji, profileName }: Props) {
+export default function StoryCard({ card, dayGanji, profileName, palette, rank }: Props) {
   const scoreValue = useCountUp(card.score)
 
-  // intro 일진 천간 오행색
-  const stemEl = STEM_OHAENG[dayGanji.stem] ?? '토'
-  const stemColor = ohaeng[stemEl]
-  // category 배경 오행 그라디언트
-  const catColor = categoryColor(card.category_key)
-  // 점수 링 색: category 카드면 catColor, 아니면 SCORE_COLOR
-  const gaugeColor = catColor ?? SCORE_COLOR
   // color 카드 스와치
   const swatches = card.kind === 'color' ? extractColorSwatches(`${card.headline} ${card.body}`) : []
 
   // 컨페티: overall/category에서 점수 ≥ 90
   const isHighScore = (card.kind === 'overall' || card.kind === 'category') && (card.score ?? 0) >= 90
-  // 주의: overall/category에서 점수 ≤ 35 (컨페티 없음, 절제된 경고 분위기)
+  // 주의: overall/category에서 점수 ≤ 35
   const isLowScore = (card.kind === 'overall' || card.kind === 'category') && (card.score ?? 100) <= 35
   const confettiRef = useConfetti(isHighScore)
 
-  // 카드 종류별 강조 오행색 — intro는 stemColor, category는 catColor, 나머지는 null
-  const accentColor = card.kind === 'intro'
-    ? stemColor
-    : (card.kind === 'category' ? catColor : null)
+  const { ink, inkSoft, accent } = palette
 
   return (
     <div className="relative flex flex-1 flex-col px-6 py-4 select-none overflow-hidden">
-      {/* 은은한 광원 오버레이 — 풀스크린 배경은 FortuneStoryPage에서 담당, 여기서는 보조 */}
-      {accentColor && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background: `radial-gradient(70% 50% at 80% 15%, ${hexToRgba(accentColor, 0.25)} 0%, transparent 55%)`,
-          }}
-        />
-      )}
-
       <div className="relative z-0 flex flex-1 flex-col">
         {/* 질문 라벨 */}
-        <p className="mb-3 text-[13px] font-semibold tracking-wide text-white/60 uppercase">
+        <p
+          className="mb-3 text-[13px] font-extrabold tracking-[0.18em] uppercase"
+          style={{ color: inkSoft }}
+        >
           {card.title}
         </p>
 
-        {/* intro: 마스코트(일간색 틴팅) + 일진 (큰 세리프 + 오행색) */}
+        {/* intro: 마스코트(일간색 틴팅) + 일진 초대형 타이포 */}
         {card.kind === 'intro' && (
           <div className="story-stagger flex flex-1 flex-col items-center justify-center gap-6">
-            <MascotTinted stem={dayGanji.stem} width={110} height={110} />
+            <div className="story-pop">
+              <MascotTinted stem={dayGanji.stem} width={120} height={120} />
+            </div>
             <div className="text-center">
               <p
-                className="text-[68px] font-black leading-none"
-                style={{ fontFamily: 'var(--font-serif, serif)', color: stemColor }}
+                className="font-black leading-[0.9]"
+                style={{ fontSize: 'clamp(72px, 22vw, 104px)', color: ink, letterSpacing: '-0.02em' }}
               >
                 {dayGanji.stem}{dayGanji.branch}
               </p>
-              <p className="mt-2 text-[16px] font-bold text-white/70">{profileName}의 오늘</p>
+              <p className="mt-3 text-[17px] font-extrabold" style={{ color: inkSoft }}>
+                {profileName}{profileName ? '의 ' : ''}오늘
+              </p>
             </div>
-            <div className="w-full rounded-2xl border border-white/20 bg-white/10 px-6 py-5 text-center">
+            <div className="w-full text-center">
               <p
-                className="font-black text-white leading-snug"
-                style={{ fontSize: 'clamp(20px, 5.5vw, 24px)', wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+                className="font-black leading-[1.08]"
+                style={{ fontSize: 'clamp(26px, 7.5vw, 34px)', color: ink, wordBreak: 'keep-all', overflowWrap: 'break-word' }}
               >
                 {card.headline}
               </p>
-              <p className="mt-3 text-[17px] text-white/75 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
+              <p className="mt-4 text-[17px] leading-relaxed" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
                 {card.body}
               </p>
             </div>
           </div>
         )}
 
-        {/* overall / category: 점수 원형 게이지 + 헤드라인 + 본문 + 컨페티 */}
-        {(card.kind === 'overall' || card.kind === 'category') && (
-          <div className="story-stagger flex flex-1 flex-col justify-center gap-6">
+        {/* overall: 점수 초대형 카운트업 + 헤드라인 + 본문 + 컨페티 */}
+        {card.kind === 'overall' && (
+          <div className="story-stagger flex flex-1 flex-col justify-center gap-5">
             {card.score !== undefined && (
               <div className="relative w-fit" ref={confettiRef as React.RefObject<HTMLDivElement>}>
-                <ScoreGauge
-                  score={card.score}
-                  displayValue={scoreValue}
-                  color={gaugeColor}
-                  isHigh={isHighScore}
-                  isLow={isLowScore}
-                />
-                {/* 90+ 하이라이트 뱃지 */}
+                <div className="flex items-end gap-2">
+                  <span
+                    className="font-black leading-[0.82] tabular-nums"
+                    style={{
+                      color: ink,
+                      fontSize: isHighScore ? 'clamp(120px, 38vw, 168px)' : 'clamp(108px, 34vw, 150px)',
+                      animation: isHighScore ? 'score-pulse 2s ease-in-out infinite' : undefined,
+                      letterSpacing: '-0.04em',
+                    }}
+                  >
+                    {scoreValue}
+                  </span>
+                  <span className="mb-4 text-[24px] font-black" style={{ color: inkSoft }}>/100</span>
+                </div>
                 {isHighScore && (
                   <div
-                    className="absolute -top-2 -right-3 rounded-full px-2 py-0.5 text-[11px] font-black tracking-wider"
+                    className="absolute -top-1 right-0 translate-x-1/3 rounded-full px-2.5 py-1 text-[12px] font-black tracking-wider"
                     style={{
-                      background: '#FFD900',
-                      color: '#1A1A1A',
-                      boxShadow: '0 2px 8px rgba(255,217,0,0.6)',
-                      animation: 'badge-pop 400ms cubic-bezier(0.34,1.56,0.64,1) 800ms both',
+                      background: accent,
+                      color: palette.inkLight ? '#15233A' : '#FFFFFF',
+                      boxShadow: `0 3px 10px ${hexToRgba(accent, 0.55)}`,
+                      animation: 'badge-pop 400ms cubic-bezier(0.34,1.56,0.64,1) 850ms both',
                     }}
                   >
                     오늘의 하이라이트
                   </div>
                 )}
-                {/* 35 이하 주의 뱃지 — 절제된 경고 톤 */}
                 {isLowScore && (
                   <div
-                    className="absolute -top-2 -right-3 rounded-full px-2 py-0.5 text-[11px] font-black tracking-wider"
+                    className="absolute -top-1 right-0 translate-x-1/3 rounded-full px-2.5 py-1 text-[12px] font-black tracking-wider"
                     style={{
-                      background: '#FF6B00',
-                      color: '#FFFBF2',
-                      boxShadow: '0 2px 8px rgba(255,107,0,0.45)',
+                      background: hexToRgba(ink, 0.9),
+                      color: palette.inkLight ? '#15233A' : '#FFFFFF',
                       animation: 'badge-pop 400ms cubic-bezier(0.34,1.56,0.64,1) 900ms both',
                     }}
                   >
@@ -332,29 +235,82 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
                 )}
               </div>
             )}
-            {/* 35 이하 — 절제된 주의 오버레이 (어두운 붉은 베일, 정적 강조) */}
             {isLowScore && (
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
                 style={{
-                  background: 'radial-gradient(60% 45% at 50% 40%, rgba(180,40,0,0.22) 0%, transparent 70%)',
+                  background: `radial-gradient(60% 45% at 30% 35%, ${hexToRgba(ink, 0.1)} 0%, transparent 70%)`,
                   animation: 'caution-pulse 3s ease-in-out infinite',
                 }}
               />
             )}
-            {/* 헤드라인 — Wrapped식 한 방 타이포, 긴 텍스트도 줄바꿈 안전 */}
             <p
-              className="font-black text-white leading-tight"
-              style={{
-                fontSize: 'clamp(26px, 7vw, 34px)',
-                wordBreak: 'keep-all',
-                overflowWrap: 'break-word',
-              }}
+              className="font-black leading-[1.04]"
+              style={{ fontSize: 'clamp(30px, 8.5vw, 44px)', color: ink, wordBreak: 'keep-all', overflowWrap: 'break-word', letterSpacing: '-0.01em' }}
             >
               {card.headline}
             </p>
-            <p className="text-[18px] text-white/85 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
+            <p className="text-[18px] leading-relaxed" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
+              {card.body}
+            </p>
+          </div>
+        )}
+
+        {/* category: "오늘의 TOP" 랭킹 번호 + 점수 + 헤드라인 + 본문 */}
+        {card.kind === 'category' && (
+          <div className="story-stagger flex flex-1 flex-col justify-center gap-4">
+            {/* 초대형 랭킹 번호 */}
+            {rank !== null && (
+              <div className="flex items-end gap-4" ref={confettiRef as React.RefObject<HTMLDivElement>}>
+                <span
+                  className="font-black leading-[0.78] tabular-nums"
+                  style={{ fontSize: 'clamp(96px, 30vw, 140px)', color: accent, letterSpacing: '-0.05em' }}
+                >
+                  {String(rank).padStart(2, '0')}
+                </span>
+                {card.score !== undefined && (
+                  <div className="mb-3 flex flex-col">
+                    <span className="text-[12px] font-extrabold tracking-[0.18em] uppercase" style={{ color: inkSoft }}>
+                      SCORE
+                    </span>
+                    <span
+                      className="font-black leading-none tabular-nums"
+                      style={{ fontSize: '52px', color: ink }}
+                    >
+                      {scoreValue}
+                    </span>
+                  </div>
+                )}
+                {isHighScore && (
+                  <span
+                    className="mb-5 rounded-full px-2.5 py-1 text-[11px] font-black tracking-wider"
+                    style={{
+                      background: accent,
+                      color: palette.inkLight ? '#15233A' : '#FFFFFF',
+                      animation: 'badge-pop 400ms cubic-bezier(0.34,1.56,0.64,1) 850ms both',
+                    }}
+                  >
+                    오늘의 하이라이트
+                  </span>
+                )}
+                {isLowScore && (
+                  <span
+                    className="mb-5 rounded-full px-2.5 py-1 text-[11px] font-black tracking-wider"
+                    style={{ background: hexToRgba(ink, 0.9), color: palette.inkLight ? '#15233A' : '#FFFFFF' }}
+                  >
+                    주의
+                  </span>
+                )}
+              </div>
+            )}
+            <p
+              className="font-black leading-[1.04]"
+              style={{ fontSize: 'clamp(28px, 7.5vw, 40px)', color: ink, wordBreak: 'keep-all', overflowWrap: 'break-word', letterSpacing: '-0.01em' }}
+            >
+              {card.headline}
+            </p>
+            <p className="text-[18px] leading-relaxed" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
               {card.body}
             </p>
           </div>
@@ -363,29 +319,27 @@ export default function StoryCard({ card, dayGanji, profileName }: Props) {
         {/* caution / color: 헤드라인 + 본문 (color는 색 스와치) */}
         {(card.kind === 'caution' || card.kind === 'color') && (
           <div className="story-stagger flex flex-1 flex-col justify-center gap-6">
-            <div className="rounded-2xl border border-white/20 bg-white/10 p-6">
-              {/* color 카드: 추천 색 스와치 */}
-              {swatches.length > 0 && (
-                <div className="mb-5 flex items-center gap-3">
-                  {swatches.map((hex) => (
-                    <span
-                      key={hex}
-                      className="h-12 w-12 rounded-full border-2 border-white/60 shadow-[2px_2px_0_rgba(0,0,0,0.2)]"
-                      style={{ background: hex }}
-                    />
-                  ))}
-                </div>
-              )}
-              <p
-                className="font-black text-white leading-snug"
-                style={{ fontSize: 'clamp(22px, 6vw, 28px)', wordBreak: 'keep-all', overflowWrap: 'break-word' }}
-              >
-                {card.headline}
-              </p>
-              <p className="mt-3 text-[17px] text-white/80 leading-relaxed" style={{ wordBreak: 'keep-all' }}>
-                {card.body}
-              </p>
-            </div>
+            {/* color 카드: 추천 색 스와치 */}
+            {swatches.length > 0 && (
+              <div className="flex items-center gap-3">
+                {swatches.map((hex) => (
+                  <span
+                    key={hex}
+                    className="h-16 w-16 rounded-full border-4"
+                    style={{ background: hex, borderColor: hexToRgba(ink, 0.85) }}
+                  />
+                ))}
+              </div>
+            )}
+            <p
+              className="font-black leading-[1.04]"
+              style={{ fontSize: 'clamp(28px, 8vw, 40px)', color: ink, wordBreak: 'keep-all', overflowWrap: 'break-word', letterSpacing: '-0.01em' }}
+            >
+              {card.headline}
+            </p>
+            <p className="text-[18px] leading-relaxed" style={{ color: inkSoft, wordBreak: 'keep-all' }}>
+              {card.body}
+            </p>
           </div>
         )}
       </div>

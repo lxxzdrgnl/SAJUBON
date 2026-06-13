@@ -493,12 +493,14 @@
       "error": "운세를 불러올 수 없어요. 잠시 후 다시 시도해 주세요.",
       "closeLabel": "닫기",
       "prev": "이전",
-      "next": "다음"
+      "next": "다음",
+      "home": "홈으로"
     },
     "summary": {
       "headerTitle": "너의 하루 요약",
       "keyword": "오늘의 키워드",
       "saveImage": "이미지 저장",
+      "saving": "저장 중...",
       "shareLink": "링크 공유",
       "copied": "복사됨",
       "shareLabel": "사주구리 오늘의 운세",

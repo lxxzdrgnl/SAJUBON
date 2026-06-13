@@ -493,12 +493,14 @@
       "error": "Could not load fortune. Please try again later.",
       "closeLabel": "Close",
       "prev": "Prev",
-      "next": "Next"
+      "next": "Next",
+      "home": "Home"
     },
     "summary": {
       "headerTitle": "Your day in a nutshell",
       "keyword": "Today's keyword",
       "saveImage": "Save image",
+      "saving": "Saving...",
       "shareLink": "Share link",
       "copied": "Copied",
       "shareLabel": "SajuGuri Daily Fortune",

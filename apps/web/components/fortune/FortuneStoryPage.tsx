@@ -1,12 +1,12 @@
 'use client'
 
 /**
- * 운세 스토리 풀스크린 화면 (design.md §5.6).
- * - fixed inset-0, 딥 틸 그라디언트 (카드별 오행색 배경 전환)
- * - 상단 프로그레스 바 (채움: 옐로)
+ * 운세 스토리 풀스크린 화면 — Spotify Wrapped 룩.
+ * - fixed inset-0, 슬라이드마다 강렬한 단색 비비드 배경 (cardPalette)
+ * - 상단 세그먼트 프로그레스 바 (인스타 스토리식)
  * - 좌 1/3 탭 = 뒤로, 우 2/3 탭 = 다음
- * - ✕ 닫기 (홈으로)
- * - 힌트 문구 없음, 이모지 없음 (G2)
+ * - 플레이풀 그래픽 악센트(흩뿌린 점·물결 SVG)
+ * - ✕ 닫기 (홈으로), 이모지 없음 (G2)
  * - max-w 640px 안에서 fixed inset-0
  */
 import { useEffect, useState, useCallback, useRef } from 'react'
@@ -14,44 +14,27 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import { createDailyStory, getDailyRecord } from '@sajuguri/api-client'
-import { ohaeng } from '@sajuguri/design'
 import { api } from '@/lib/api'
 import { webStorage } from '@/lib/storage'
 import { buildBirthKey, loadCachedStory, saveCachedStory } from '@/lib/fortune/cache'
-import { calcSegmentFills, slideDirection, categoryColor, hexToRgba, cardBgGradient, type SlideDirection } from '@/lib/fortune/story'
+import {
+  calcSegmentFills,
+  slideDirection,
+  cardPalette,
+  scatterDots,
+  hexToRgba,
+  type SlideDirection,
+} from '@/lib/fortune/story'
 import StoryCard from '@/components/fortune/StoryCard'
 import SummaryCard from '@/components/fortune/SummaryCard'
-
-/** 일진 천간 → 오행 키 */
-const STEM_OHAENG: Record<string, keyof typeof ohaeng> = {
-  갑: '목', 을: '목',
-  병: '화', 정: '화',
-  무: '토', 기: '토',
-  경: '금', 신: '금',
-  임: '수', 계: '수',
-}
-
-const SCORE_COLOR = '#FF8A2E'
-
-/** 카드 인덱스 → 배경 오행색 결정. intro/overall=stemColor, category=catColor, 나머지=null */
-function cardAccentColor(
-  card: DailyStoryResponse['cards'][number] | undefined,
-  stemColor: string,
-): string | null {
-  if (!card) return null
-  if (card.kind === 'intro') return stemColor
-  if (card.kind === 'overall') return SCORE_COLOR
-  if (card.kind === 'category') return categoryColor(card.category_key)
-  if (card.kind === 'caution') return '#FF6B00'
-  return null
-}
-
-// cardBgGradient is imported from story.ts and used for the full-screen vivid background
 
 function todayLocal(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
+
+/** 배경 위 흩뿌린 점 — 결정적 좌표, prefers-reduced-motion 무관 (정적 데코). */
+const DOTS = scatterDots(14)
 
 export default function FortuneStoryPage() {
   const t = useTranslations('fortune.story')
@@ -188,52 +171,83 @@ export default function FortuneStoryPage() {
   const currentCard = story?.cards[cardIndex]
   const isSummary = currentCard?.kind === 'summary'
 
-  // 배경 오행색 — 카드마다 뚜렷하게 변화
-  const stemColor = story ? ohaeng[STEM_OHAENG[story.day_ganji.stem] ?? '토'] : ohaeng['토']
-  const accentColor = cardAccentColor(currentCard, stemColor)
-  // Wrapped식 풀스크린 비비드 배경
-  const bgGradient = currentCard
-    ? cardBgGradient(currentCard.kind, (currentCard as { category_key?: string }).category_key, stemColor)
-    : 'linear-gradient(180deg, #00857D 0%, #04332F 100%)'
+  // Wrapped 비비드 스킨 — 카드마다 색이 확 바뀐다
+  const palette = currentCard
+    ? cardPalette(currentCard.kind, (currentCard as { category_key?: string }).category_key)
+    : cardPalette('fallback')
+
+  // 카테고리 랭킹 번호 (오늘의 TOP 01·02…) — category 카드들 사이 순서
+  const categoryRank = (() => {
+    if (!story || currentCard?.kind !== 'category') return null
+    const cats = story.cards.filter((c) => c.kind === 'category')
+    const idx = cats.findIndex((c) => c === currentCard)
+    return idx >= 0 ? idx + 1 : null
+  })()
 
   return (
     /* 풀스크린 오버레이 — fixed inset-0, max-w 640px 중앙 정렬 */
     <div
       className="fixed inset-0 z-50 flex flex-col"
       style={{
-        background: bgGradient,
-        transition: 'background 500ms ease-in-out',
+        background: palette.bg,
+        transition: 'background 480ms cubic-bezier(0.22,1,0.36,1)',
       }}
     >
-      {/* 카드별 오행색 보조 오버레이 — 은은한 광원 효과 */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: accentColor
-            ? `radial-gradient(80% 60% at 70% 20%, ${hexToRgba(accentColor, 0.22)} 0%, transparent 60%)`
-            : 'none',
-          transition: 'background 500ms ease-in-out',
-        }}
-      />
+      {/* 플레이풀 그래픽 악센트 — 흩뿌린 점 + 하단 물결. 비비드 배경 위 포인트. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        {DOTS.map((d, i) => (
+          <span
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: `${d.x}%`,
+              top: `${d.y}%`,
+              width: d.r * 2,
+              height: d.r * 2,
+              background: palette.inkLight ? 'rgba(255,255,255,0.13)' : 'rgba(21,35,58,0.12)',
+              transition: 'background 480ms ease',
+            }}
+          />
+        ))}
+        {/* 하단 물결 squiggle */}
+        <svg
+          className="absolute bottom-0 left-0 w-full"
+          height="120"
+          viewBox="0 0 640 120"
+          preserveAspectRatio="none"
+          fill="none"
+        >
+          <path
+            d="M0 70 Q 80 30 160 70 T 320 70 T 480 70 T 640 70 V120 H0 Z"
+            fill={palette.inkLight ? 'rgba(255,255,255,0.06)' : 'rgba(21,35,58,0.06)'}
+            style={{ transition: 'fill 480ms ease' }}
+          />
+        </svg>
+      </div>
+
       {/* 스토리 전환·등장 애니메이션 (Tailwind + CSS keyframe, 외부 라이브러리 없음).
           prefers-reduced-motion 존중 — 애니메이션 끔. */}
       <style>{`
         @keyframes story-slide-next {
-          from { opacity: 0; transform: translateX(7%); }
-          to   { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateX(8%) scale(0.985); }
+          to   { opacity: 1; transform: translateX(0) scale(1); }
         }
         @keyframes story-slide-prev {
-          from { opacity: 0; transform: translateX(-7%); }
-          to   { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateX(-8%) scale(0.985); }
+          to   { opacity: 1; transform: translateX(0) scale(1); }
         }
         @keyframes story-fade-in {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
         @keyframes story-rise {
-          from { opacity: 0; transform: translateY(10px); }
+          from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes story-pop {
+          0%   { opacity: 0; transform: scale(0.6) rotate(-4deg); }
+          70%  { transform: scale(1.06) rotate(1deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
         @keyframes confetti-burst {
           0%   { transform: translate(-50%,-50%) scale(1) rotate(0deg); opacity: 1; }
@@ -242,31 +256,33 @@ export default function FortuneStoryPage() {
         }
         @keyframes score-pulse {
           0%,100% { filter: drop-shadow(0 0 18px currentColor) drop-shadow(0 0 8px currentColor); }
-          50%     { filter: drop-shadow(0 0 32px currentColor) drop-shadow(0 0 14px currentColor); }
+          50%     { filter: drop-shadow(0 0 30px currentColor) drop-shadow(0 0 12px currentColor); }
         }
         @keyframes badge-pop {
           from { transform: scale(0) rotate(-12deg); opacity: 0; }
           to   { transform: scale(1) rotate(0deg); opacity: 1; }
         }
         @keyframes caution-pulse {
-          0%,100% { opacity: 0.55; }
-          50%     { opacity: 0.85; }
+          0%,100% { opacity: 0.5; }
+          50%     { opacity: 0.8; }
         }
-        .story-card-anim.story-dir-next { animation: story-slide-next 380ms cubic-bezier(0.22,1,0.36,1) both; }
-        .story-card-anim.story-dir-prev { animation: story-slide-prev 380ms cubic-bezier(0.22,1,0.36,1) both; }
-        .story-card-anim.story-dir-none { animation: story-fade-in 320ms ease-out both; }
-        /* stagger: 카드 전환(380ms)이 끝난 직후부터 콘텐츠가 순차 등장 */
-        .story-stagger > * { animation: story-rise 480ms cubic-bezier(0.22,1,0.36,1) both; }
-        .story-stagger > *:nth-child(1) { animation-delay: 120ms; }
-        .story-stagger > *:nth-child(2) { animation-delay: 230ms; }
-        .story-stagger > *:nth-child(3) { animation-delay: 330ms; }
-        .story-stagger > *:nth-child(4) { animation-delay: 420ms; }
+        .story-card-anim.story-dir-next { animation: story-slide-next 420ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-card-anim.story-dir-prev { animation: story-slide-prev 420ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-card-anim.story-dir-none { animation: story-fade-in 340ms ease-out both; }
+        /* stagger: 카드 전환 직후부터 콘텐츠가 경쾌하게 순차 등장 */
+        .story-stagger > * { animation: story-rise 520ms cubic-bezier(0.22,1,0.36,1) both; }
+        .story-stagger > *:nth-child(1) { animation-delay: 140ms; }
+        .story-stagger > *:nth-child(2) { animation-delay: 250ms; }
+        .story-stagger > *:nth-child(3) { animation-delay: 360ms; }
+        .story-stagger > *:nth-child(4) { animation-delay: 460ms; }
+        .story-pop { animation: story-pop 560ms cubic-bezier(0.34,1.56,0.64,1) 120ms both; }
         @media (prefers-reduced-motion: reduce) {
           .story-card-anim,
           .story-card-anim.story-dir-next,
           .story-card-anim.story-dir-prev,
           .story-card-anim.story-dir-none,
-          .story-stagger > * { animation: none !important; }
+          .story-stagger > *,
+          .story-pop { animation: none !important; }
           [style*="score-pulse"],
           [style*="badge-pop"],
           [style*="caution-pulse"] { animation: none !important; }
@@ -277,19 +293,23 @@ export default function FortuneStoryPage() {
 
         {/* 상단 세그먼트 프로그레스 바 (인스타 스토리식) + 닫기 */}
         <div className="flex shrink-0 items-center gap-3 px-4 pt-4 pb-2">
-          {/* 카드 개수만큼 세그먼트 — 지난·현재=옐로 꽉 참, 이후=반투명 흰색 */}
+          {/* 카드 개수만큼 세그먼트 — 잉크색으로 채움(배경 대비) */}
           <div className="flex flex-1 items-center gap-1">
             {segments.length === 0 ? (
-              <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/20" />
+              <div
+                className="h-1 flex-1 overflow-hidden rounded-full"
+                style={{ background: hexToRgba(palette.ink, 0.22) }}
+              />
             ) : (
               segments.map((fill, i) => (
                 <div
                   key={i}
-                  className="h-1 flex-1 overflow-hidden rounded-full bg-white/25"
+                  className="h-1 flex-1 overflow-hidden rounded-full"
+                  style={{ background: hexToRgba(palette.ink, 0.25) }}
                 >
                   <div
                     className="h-full rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${fill * 100}%`, background: '#FFD900' }}
+                    style={{ width: `${fill * 100}%`, background: palette.ink }}
                   />
                 </div>
               ))
@@ -297,7 +317,8 @@ export default function FortuneStoryPage() {
           </div>
           {/* ✕ 닫기 */}
           <button
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+            style={{ background: hexToRgba(palette.ink, 0.16), color: palette.ink }}
             onClick={handleClose}
             aria-label={t('closeLabel')}
           >
@@ -314,7 +335,7 @@ export default function FortuneStoryPage() {
           onClick={handleTap}
         >
           {loading && (
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-white">
+            <div className="flex flex-1 flex-col items-center justify-center gap-4" style={{ color: palette.ink }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/mascot.svg" alt="" width={72} height={72} className="animate-bounce" />
               <p className="text-sm font-semibold opacity-80">{t('loading')}</p>
@@ -323,19 +344,20 @@ export default function FortuneStoryPage() {
 
           {!loading && error && (
             <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-              <p className="text-sm text-white/70">{error}</p>
+              <p className="text-sm" style={{ color: palette.inkSoft }}>{error}</p>
               <button
-                className="mt-4 rounded-xl border-2 border-white/40 px-6 py-2 text-sm font-extrabold text-white"
+                className="mt-4 rounded-xl border-2 px-6 py-2 text-sm font-extrabold"
+                style={{ borderColor: hexToRgba(palette.ink, 0.4), color: palette.ink }}
                 onClick={handleClose}
               >
-                홈으로
+                {t('home')}
               </button>
             </div>
           )}
 
           {!loading && !error && story && currentCard && (
             /* 전환 애니메이션 — key 변경 시 슬라이드+페이드 인 재생.
-               prefers-reduced-motion 시 애니메이션 제거 (아래 <style>). */
+               prefers-reduced-motion 시 애니메이션 제거 (위 <style>). */
             <div
               key={cardIndex}
               className={`flex flex-1 flex-col overflow-hidden story-card-anim story-dir-${direction}`}
@@ -345,12 +367,15 @@ export default function FortuneStoryPage() {
                   card={currentCard}
                   dayGanji={story.day_ganji}
                   profileName={story.profile_name}
+                  palette={palette}
+                  rank={categoryRank}
                 />
               )}
               {isSummary && (
                 <SummaryCard
                   story={story}
                   onClose={handleClose}
+                  palette={palette}
                 />
               )}
             </div>
@@ -366,7 +391,7 @@ export default function FortuneStoryPage() {
                 className="h-1.5 rounded-full transition-all duration-200"
                 style={{
                   width: i === cardIndex ? '20px' : '6px',
-                  background: i === cardIndex ? '#FFD900' : 'rgba(255,255,255,0.3)',
+                  background: i === cardIndex ? palette.ink : hexToRgba(palette.ink, 0.32),
                 }}
               />
             ))}

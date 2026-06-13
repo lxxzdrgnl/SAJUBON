@@ -3,8 +3,8 @@
  * - 세그먼트 프로그레스 바 채움 비율
  * - 카드 전환 방향
  * - 점수 카운트업 스텝
- * - 카테고리 → 오행색 매핑 (배경 그라디언트 오버레이용)
- * - 카드 종류별 풀스크린 비비드 배경 그라디언트 (Wrapped식)
+ * - 카테고리 → 오행색 매핑 (강조 톤용)
+ * - 카드 종류/카테고리별 Wrapped식 비비드 단색 팔레트 (배경·잉크·악센트)
  */
 import { ohaeng } from '@sajuguri/design'
 
@@ -36,7 +36,7 @@ export function countUpValue(target: number, progress: number): number {
   return Math.round(target * eased)
 }
 
-/** 카테고리 키 → 오행 5색 (배경 오버레이·강조 톤). 테마적 연상 매핑. */
+/** 카테고리 키 → 오행 5색 (강조 톤). 테마적 연상 매핑. */
 const CATEGORY_OHAENG: Record<string, keyof typeof ohaeng> = {
   exam:   '수', // 학업 — 지혜의 수
   money:  '금', // 금전 — 재물의 금
@@ -87,7 +87,7 @@ export function extractColorSwatches(text: string): string[] {
   return found
 }
 
-/** hex(#RRGGBB) → rgba 문자열 (그라디언트 오버레이 투명도 적용용). */
+/** hex(#RRGGBB) → rgba 문자열 (오버레이 투명도 적용용). */
 export function hexToRgba(hex: string, alpha: number): string {
   const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
   if (!m) return `rgba(0,0,0,${alpha})`
@@ -98,52 +98,137 @@ export function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`
 }
 
-/**
- * Wrapped식 카드 풀스크린 배경 그라디언트.
- * 딥틸 베이스 위 미묘한 radial 대신 화면 전체를 뚜렷하게 채우는 색.
- * 카드 넘길 때 확연히 바뀌도록 오행 5색 + 경고 오렌지 + 요약 골드 계열.
- */
-export function cardBgGradient(kind: string, categoryKey?: string, stemColor?: string): string {
-  // intro — 천간 오행색 기반 (밝은 쪽으로 시작 → 깊은 틸로)
-  if (kind === 'intro') {
-    const base = stemColor ?? ohaeng['토']
-    return `linear-gradient(145deg, ${darken(base, 0.35)} 0%, #04332F 100%)`
-  }
-  // overall — 오렌지 점수 색 강렬하게
-  if (kind === 'overall') {
-    return 'linear-gradient(145deg, #6B3200 0%, #3A1800 50%, #04332F 100%)'
-  }
-  // category — 오행색 기반 풀컬러
-  if (kind === 'category' && categoryKey) {
-    const col = categoryColor(categoryKey)
-    if (col) return `linear-gradient(145deg, ${darken(col, 0.3)} 0%, ${darken(col, 0.55)} 50%, #04332F 100%)`
-  }
-  // caution — 깊은 붉은 경고
-  if (kind === 'caution') {
-    return 'linear-gradient(145deg, #5A1800 0%, #2E0E00 50%, #04332F 100%)'
-  }
-  // color — 보라/골드 계열 드리밍
-  if (kind === 'color') {
-    return 'linear-gradient(145deg, #2A1A4E 0%, #1A0E35 50%, #04332F 100%)'
-  }
-  // summary — 골드 상단 브랜드 느낌
-  if (kind === 'summary') {
-    return 'linear-gradient(145deg, #3A2800 0%, #1E1600 50%, #04332F 100%)'
-  }
-  // fallback
-  return 'linear-gradient(180deg, #00857D 0%, #04332F 100%)'
+// ─────────────────────────────────────────────────────────────────────────────
+// Wrapped 비비드 팔레트
+// 슬라이드마다 "강렬한 단색 비비드 배경 + 고대비 잉크". 다크/뭉갠 그라데이션 금지.
+// inline style={{}} 로만 적용 (check-colors 통과). 카드(kind/카테고리)별로 색이 확 바뀐다.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** 한 슬라이드의 비비드 스킨. bg=배경 단색, ink=고대비 본문색, accent=포인트(번호/언더라인) */
+export interface CardPalette {
+  /** 슬라이드 풀스크린 배경 (비비드 단색 또는 같은 색조의 미세 2색 grad) */
+  bg: string
+  /** 헤드라인·점수·본문 메인 텍스트색 (배경 대비 최우선) */
+  ink: string
+  /** 본문 보조 텍스트색 (ink의 약화 버전) */
+  inkSoft: string
+  /** 포인트 색 — 랭킹 번호·언더라인·키워드 (배경 위 또렷) */
+  accent: string
+  /** 잉크가 밝은지(흰 계열) — 그래픽 악센트 명암 결정 */
+  inkLight: boolean
 }
 
-/**
- * hex 색상을 어둡게 (amount 0..1 — 0은 원색, 1은 검정).
- * Wrapped 비비드 배경: 너무 밝으면 흰 텍스트 가독성 ↓ → 중간 어두운 채도로.
- */
-function darken(hex: string, amount: number): string {
+const INK_DARK = '#15233A'   // 진한 네이비 잉크 (밝은 배경용)
+const INK_WHITE = '#FFFFFF'  // 흰 잉크 (어두운/채도 높은 배경용)
+
+/** 비비드 단색 팔레트 — 핫핑크·민트/teal·퍼플·라임·옐로·오렌지·네이비. */
+export const VIVID = {
+  pink:   '#FF2D78',
+  teal:   '#00C2B8',
+  purple: '#7B3FE4',
+  lime:   '#C6F432',
+  yellow: '#FFD900',
+  orange: '#FF6B00',
+  navy:   '#1B2A6B',
+  coral:  '#FF5A4D',
+  sky:    '#3DA5FF',
+} as const
+
+/** 카테고리 키 → 비비드 배경색. 6개 카테고리가 서로 또렷이 구분되도록 분산 배치. */
+const CATEGORY_VIVID: Record<string, keyof typeof VIVID> = {
+  exam:   'sky',     // 학업 — 푸른 집중
+  money:  'lime',    // 금전 — 라임 잭팟
+  love:   'pink',    // 연애 — 핫핑크
+  career: 'purple',  // 직업 — 퍼플 야망
+  health: 'teal',    // 건강 — 민트 활력
+  social: 'orange',  // 사교 — 오렌지 에너지
+}
+
+/** 배경색 위에서 가독성 높은 잉크색을 고른다 (상대 휘도 기반). */
+function inkFor(bgHex: string): { ink: string; inkLight: boolean } {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(bgHex.trim())
+  if (!m) return { ink: INK_WHITE, inkLight: true }
+  const int = parseInt(m[1], 16)
+  const r = (int >> 16) & 255
+  const g = (int >> 8) & 255
+  const b = int & 255
+  // sRGB 상대 휘도 근사
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  // 밝은 배경(라임·옐로 등)은 네이비 잉크, 그 외엔 흰 잉크
+  return lum > 0.62 ? { ink: INK_DARK, inkLight: false } : { ink: INK_WHITE, inkLight: true }
+}
+
+/** ink hex + alpha → rgba (보조 텍스트색). */
+function softInk(ink: string): string {
+  return ink === INK_WHITE ? 'rgba(255,255,255,0.82)' : 'rgba(21,35,58,0.74)'
+}
+
+/** 같은 색조로 살짝만 밝게 — 단색 배경에 깊이를 주는 미세 grad 상단색. */
+function lighten(hex: string, amount: number): string {
   const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
   if (!m) return hex
   const int = parseInt(m[1], 16)
-  const r = Math.round(((int >> 16) & 255) * (1 - amount))
-  const g = Math.round(((int >> 8) & 255) * (1 - amount))
-  const b = Math.round((int & 255) * (1 - amount))
+  const r = Math.round(((int >> 16) & 255) + (255 - ((int >> 16) & 255)) * amount)
+  const g = Math.round(((int >> 8) & 255) + (255 - ((int >> 8) & 255)) * amount)
+  const b = Math.round((int & 255) + (255 - (int & 255)) * amount)
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+}
+
+/** 단색 비비드 배경 — 같은 색조로 위가 살짝 밝은 미세 grad (뭉갠 다크 grad 아님). */
+function vividBg(base: string): string {
+  return `linear-gradient(160deg, ${lighten(base, 0.12)} 0%, ${base} 55%, ${base} 100%)`
+}
+
+/** 카드 종류/카테고리 → Wrapped 비비드 스킨. */
+export function cardPalette(kind: string, categoryKey?: string): CardPalette {
+  let base: string
+
+  if (kind === 'intro') {
+    base = VIVID.purple
+  } else if (kind === 'overall') {
+    base = VIVID.orange
+  } else if (kind === 'category' && categoryKey && CATEGORY_VIVID[categoryKey]) {
+    base = VIVID[CATEGORY_VIVID[categoryKey]]
+  } else if (kind === 'caution') {
+    base = VIVID.coral
+  } else if (kind === 'color') {
+    base = VIVID.navy
+  } else if (kind === 'summary') {
+    base = VIVID.yellow
+  } else {
+    base = VIVID.teal
+  }
+
+  const { ink, inkLight } = inkFor(base)
+  // 포인트 색 — 밝은 잉크면 옐로/배경 자체보다 또렷한 흰, 어두운 잉크면 강한 단색
+  const accent = inkLight ? VIVID.yellow : VIVID.navy
+
+  return {
+    bg: vividBg(base),
+    ink,
+    inkSoft: softInk(ink),
+    accent,
+    inkLight,
+  }
+}
+
+/**
+ * 0..1 진행도에서 그래픽 악센트(흩뿌린 점) 좌표 — 결정적(deterministic) 생성.
+ * 인덱스 기반 의사난수로 매 렌더 동일 위치. SSR/CSR 불일치 없음.
+ */
+export function scatterDots(count: number): { x: number; y: number; r: number }[] {
+  const out: { x: number; y: number; r: number }[] = []
+  let seed = 1337
+  const rnd = () => {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff
+    return seed / 0x7fffffff
+  }
+  for (let i = 0; i < count; i++) {
+    out.push({
+      x: Math.round(rnd() * 100),
+      y: Math.round(rnd() * 100),
+      r: 2 + Math.round(rnd() * 4),
+    })
+  }
+  return out
 }
