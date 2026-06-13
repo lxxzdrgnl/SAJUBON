@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from crud import reports as reports_crud
 from db.models import User
 from dependencies.auth import get_current_user
 from dependencies.db import get_db
@@ -42,6 +43,15 @@ async def get_report(
     db: AsyncSession = Depends(get_db),
 ) -> ReportDetail:
     return await reports_service.get_report(db, report_id, user.id)
+
+
+@router.delete("/{report_id}", status_code=status.HTTP_204_NO_CONTENT, summary="리포트 삭제 (소유자)")
+async def delete_report(
+    report_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    await reports_crud.delete_report(db, report_id, user.id)
 
 
 @router.post("/{report_id}/share", response_model=ReportShareResponse, summary="공유 토큰 발급 (소유자)")

@@ -5,7 +5,8 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select, func
+from fastapi import HTTPException, status
+from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import SajuReport, ReportShare
@@ -69,6 +70,28 @@ async def get_report(db: AsyncSession, report_id: int) -> SajuReport | None:
     """리포트 단건 (소유권 검사는 Service)."""
     result = await db.execute(select(SajuReport).where(SajuReport.id == report_id))
     return result.scalar_one_or_none()
+
+
+async def delete_report(db: AsyncSession, report_id: int, user_id: int) -> None:
+    """본인 소유 리포트를 삭제한다 (단발 쓰기 — 내부 commit).
+
+    없으면 404, 타인 소유면 403.
+    """
+    result = await db.execute(select(SajuReport).where(SajuReport.id == report_id))
+    row = result.scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="리포트를 찾을 수 없습니다.",
+        )
+    if row.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="해당 리포트에 접근할 권한이 없습니다.",
+        )
+    await db.execute(delete(ReportShare).where(ReportShare.report_id == report_id))
+    await db.delete(row)
+    await db.commit()
 
 
 async def get_share_by_token(db: AsyncSession, token: str) -> ReportShare | None:

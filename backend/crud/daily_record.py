@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date as _date
 
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -72,3 +73,26 @@ async def get_by_id(db: AsyncSession, record_id: int) -> DailyFortuneRecord | No
         select(DailyFortuneRecord).where(DailyFortuneRecord.id == record_id)
     )
     return result.scalar_one_or_none()
+
+
+async def delete_record(db: AsyncSession, record_id: int, user_id: int) -> None:
+    """본인 소유 운세 기록을 삭제한다 (단발 쓰기 — 내부 commit).
+
+    없으면 404, 타인 소유면 403.
+    """
+    result = await db.execute(
+        select(DailyFortuneRecord).where(DailyFortuneRecord.id == record_id)
+    )
+    row = result.scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="운세 기록을 찾을 수 없습니다.",
+        )
+    if row.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="해당 운세 기록에 접근할 권한이 없습니다.",
+        )
+    await db.delete(row)
+    await db.commit()

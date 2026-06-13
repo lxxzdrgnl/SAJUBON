@@ -212,6 +212,75 @@ async def test_shared_token_404(override_db):
     assert r.status_code == 404
 
 
+async def test_delete_report_owner(db_user, _cleanup_reports):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/reports", json=_BODY)).json()
+        rid = created["id"]
+        deleted = await c.delete(f"/api/reports/{rid}")
+        assert deleted.status_code == 204
+        gone = await c.get(f"/api/reports/{rid}")
+    assert gone.status_code == 404
+
+
+async def test_delete_report_with_share_cascades(db_user, _cleanup_reports):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/reports", json=_BODY)).json()
+        rid = created["id"]
+        share = (await c.post(f"/api/reports/{rid}/share", json={"mask_birth": False})).json()
+        deleted = await c.delete(f"/api/reports/{rid}")
+        assert deleted.status_code == 204
+    # 공유 토큰도 함께 제거됨
+    async with _client() as c:
+        public = await c.get(f"/api/share/reports/{share['share_token']}")
+    assert public.status_code == 404
+
+
+async def test_delete_report_404(db_user, override_db):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        r = await c.delete("/api/reports/99999999")
+    assert r.status_code == 404
+
+
+async def test_delete_report_requires_auth(db_user, _cleanup_reports):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/reports", json=_BODY)).json()
+        rid = created["id"]
+    async with _client() as c:
+        r = await c.delete(f"/api/reports/{rid}")
+    assert r.status_code == 401
+
+
+async def test_delete_report_forbidden_for_others(test_sessionmaker, db_user, _cleanup_reports):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/reports", json=_BODY)).json()
+        rid = created["id"]
+
+    from db.models import User
+    import uuid as _uuid
+    async with test_sessionmaker() as s:
+        other = User(email=f"other-{_uuid.uuid4().hex[:8]}@t.com", provider="google")
+        s.add(other)
+        await s.commit()
+        await s.refresh(other)
+        other_id = other.id
+    other_token = create_access_token(other_id)
+    async with _client(other_token) as c:
+        forbidden = await c.delete(f"/api/reports/{rid}")
+    assert forbidden.status_code == 403
+    # 원본은 여전히 존재
+    async with _client(token) as c:
+        still = await c.get(f"/api/reports/{rid}")
+    assert still.status_code == 200
+    async with test_sessionmaker() as s:
+        await s.execute(delete(User).where(User.id == other_id))
+        await s.commit()
+
+
 async def test_daily_limit_429(db_user, _cleanup_reports, monkeypatch):
     from core.config import settings
     monkeypatch.setattr(settings, "report_daily_limit", 1)

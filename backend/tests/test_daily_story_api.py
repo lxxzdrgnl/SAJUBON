@@ -165,3 +165,57 @@ async def test_single_record_404(db_user, override_db):
     async with _client(token) as c:
         r = await c.get("/api/daily/records/99999999")
     assert r.status_code == 404
+
+
+async def test_delete_record_owner(db_user, _cleanup):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/daily/story", json=_BODY)).json()
+        rid = created["record_id"]
+        deleted = await c.delete(f"/api/daily/records/{rid}")
+        assert deleted.status_code == 204
+        gone = await c.get(f"/api/daily/records/{rid}")
+    assert gone.status_code == 404
+
+
+async def test_delete_record_404(db_user, override_db):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        r = await c.delete("/api/daily/records/99999999")
+    assert r.status_code == 404
+
+
+async def test_delete_record_requires_auth(db_user, _cleanup):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/daily/story", json=_BODY)).json()
+        rid = created["record_id"]
+    async with _client() as c:
+        r = await c.delete(f"/api/daily/records/{rid}")
+    assert r.status_code == 401
+
+
+async def test_delete_record_forbidden_for_others(test_sessionmaker, db_user, _cleanup):
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        created = (await c.post("/api/daily/story", json=_BODY)).json()
+        rid = created["record_id"]
+
+    import uuid as _uuid
+    async with test_sessionmaker() as s:
+        other = User(email=f"other-{_uuid.uuid4().hex[:8]}@t.com", provider="google")
+        s.add(other)
+        await s.commit()
+        await s.refresh(other)
+        other_id = other.id
+    other_token = create_access_token(other_id)
+    async with _client(other_token) as c:
+        forbidden = await c.delete(f"/api/daily/records/{rid}")
+    assert forbidden.status_code == 403
+    # 원본은 여전히 존재
+    async with _client(token) as c:
+        still = await c.get(f"/api/daily/records/{rid}")
+    assert still.status_code == 200
+    async with test_sessionmaker() as s:
+        await s.execute(delete(User).where(User.id == other_id))
+        await s.commit()

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from crud import daily_record as record_crud
 from db.models import User
 from dependencies.auth import get_current_user, get_optional_user
 from dependencies.db import get_db
@@ -42,3 +43,12 @@ async def get_record(
     db: AsyncSession = Depends(get_db),
 ) -> DailyStoryResponse:
     return await story_service.get_record(db, record_id, user.id)
+
+
+@router.delete("/records/{record_id}", status_code=status.HTTP_204_NO_CONTENT, summary="운세 기록 삭제 (소유자)")
+async def delete_record(
+    record_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    await record_crud.delete_record(db, record_id, user.id)
