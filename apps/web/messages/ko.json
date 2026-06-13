@@ -329,7 +329,7 @@
       "title": "누구의 사주로 볼까요?",
       "savedTitle": "저장된 만세력",
       "recentTitle": "최근 입력",
-      "directInput": "직접 입력하기",
+      "directInput": "만세력 추가하기",
       "repBadge": "대표"
     },
     "shared": {
@@ -349,7 +349,7 @@
     "pickSheet": {
       "title": "어떤 만세력으로 상담할까요?",
       "savedTitle": "저장된 만세력",
-      "directInput": "직접 입력하기"
+      "directInput": "만세력 추가하기"
     },
     "chip": {
       "my": "내 만세력",
@@ -368,7 +368,7 @@
     "inlinePartner": {
       "prompt": "상대방의 만세력이 필요해요. 첨부해 주세요.",
       "action": "상대 만세력 선택",
-      "directInput": "직접 입력하기"
+      "directInput": "만세력 추가하기"
     },
     "partnerForm": {
       "title": "상대방 정보 입력",
@@ -458,7 +458,7 @@
       "title": "누구의 사주로 물어볼까요?",
       "savedTitle": "저장된 만세력",
       "recentTitle": "최근 입력",
-      "directInput": "직접 입력하기",
+      "directInput": "만세력 추가하기",
       "repBadge": "대표"
     },
     "chartsTitle": "사주 분석",
@@ -472,7 +472,7 @@
     "sheet": {
       "savedTitle": "저장된 만세력",
       "recentTitle": "최근 입력",
-      "directInput": "직접 입력하기",
+      "directInput": "만세력 추가하기",
       "seenToday": "다시 보기",
       "loginHint": "로그인하면 저장된 만세력을 불러올 수 있어요",
       "pickSheet": "누구의 운세를 볼까요?"

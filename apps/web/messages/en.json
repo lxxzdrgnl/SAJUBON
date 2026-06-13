@@ -329,7 +329,7 @@
       "title": "Whose Saju to use?",
       "savedTitle": "Saved charts",
       "recentTitle": "Recent inputs",
-      "directInput": "Enter manually",
+      "directInput": "Add new chart",
       "repBadge": "Default"
     },
     "shared": {
@@ -355,7 +355,7 @@
       "title": "Whose Saju to ask about?",
       "savedTitle": "Saved charts",
       "recentTitle": "Recent inputs",
-      "directInput": "Enter manually",
+      "directInput": "Add new chart",
       "repBadge": "Default"
     },
     "chartsTitle": "Saju Analysis",
@@ -373,7 +373,7 @@
     "pickSheet": {
       "title": "Which chart to use?",
       "savedTitle": "Saved charts",
-      "directInput": "Enter manually"
+      "directInput": "Add new chart"
     },
     "chip": {
       "my": "My chart",
@@ -392,7 +392,7 @@
     "inlinePartner": {
       "prompt": "I need your partner's birth info. Please attach it.",
       "action": "Select partner chart",
-      "directInput": "Enter manually"
+      "directInput": "Add new chart"
     },
     "partnerForm": {
       "title": "Enter partner info",
@@ -472,7 +472,7 @@
     "sheet": {
       "savedTitle": "Saved charts",
       "recentTitle": "Recent inputs",
-      "directInput": "Enter manually",
+      "directInput": "Add new chart",
       "seenToday": "See again",
       "loginHint": "Sign in to load saved charts",
       "pickSheet": "Whose fortune shall we read?"
