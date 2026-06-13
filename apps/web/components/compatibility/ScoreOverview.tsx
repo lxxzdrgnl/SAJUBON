@@ -73,14 +73,14 @@ interface SubScoreBarProps {
 function SubScoreBar({ label, value }: SubScoreBarProps) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-20 shrink-0 text-[12px] font-extrabold text-text-sub">{label}</span>
+      <span className="w-20 shrink-0 text-[13px] font-extrabold text-ink">{label}</span>
       <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-border-soft">
         <div
           className="absolute inset-y-0 left-0 rounded-full bg-teal transition-all duration-700"
           style={{ width: `${value}%` }}
         />
       </div>
-      <span className="w-8 text-right text-[13px] font-extrabold tabular-nums text-ink">
+      <span className="w-8 text-right text-[14px] font-extrabold tabular-nums text-ink">
         {value}
       </span>
     </div>
@@ -107,8 +107,10 @@ export default function ScoreOverview({ score, nameA, nameB }: ScoreOverviewProp
     <div className="rounded-2xl border-2 border-ink bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
       {/* 이름 레이블 */}
       {(nameA || nameB) && (
-        <p className="mb-3 text-[12px] font-extrabold tracking-[0.14em] text-text-sub">
-          {nameA ?? t('scoreOverview.personA')} &amp; {nameB ?? t('scoreOverview.personB')}
+        <p className="mb-3 text-[13px] font-extrabold tracking-[0.14em] text-ink">
+          {nameA ?? t('scoreOverview.personA')}{' '}
+          <span className="text-orange">&amp;</span>{' '}
+          {nameB ?? t('scoreOverview.personB')}
         </p>
       )}
 
@@ -128,7 +130,7 @@ export default function ScoreOverview({ score, nameA, nameB }: ScoreOverviewProp
         >
           {displayScore}
         </span>
-        <span className="mb-4 text-[22px] font-black text-text-sub">/100</span>
+        <span className="mb-4 text-[22px] font-black text-ink">/100</span>
 
         {/* 뱃지 */}
         {isHighScore && (

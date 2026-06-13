@@ -37,7 +37,7 @@ export interface ElementFlowDiagramProps {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-2 text-[11px] font-extrabold tracking-[0.14em] text-text-sub">
+    <p className="mb-2 text-[12px] font-extrabold tracking-[0.14em] text-teal-deep">
       {children}
     </p>
   )
@@ -108,7 +108,7 @@ export default function ElementFlowDiagram({
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl border-2 border-ink bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
-      <p className="text-[15px] font-extrabold text-ink">
+      <p className="text-[17px] font-extrabold text-teal">
         {t('elementFlow.title')}
       </p>
 
@@ -206,7 +206,7 @@ export default function ElementFlowDiagram({
       {/* 십성 라벨 */}
       <div className="flex flex-col gap-1">
         <SectionLabel>{t('elementFlow.tenGodLabel')}</SectionLabel>
-        <p className="text-[13px] font-extrabold text-ink">
+        <p className="text-[14px] font-extrabold text-ink">
           {t('elementFlow.tenGodDesc', { nameA, tenGod: day_ten_god })}
         </p>
       </div>

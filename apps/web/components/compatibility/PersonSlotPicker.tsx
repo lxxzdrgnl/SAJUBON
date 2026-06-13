@@ -129,7 +129,7 @@ export default function PersonSlotPicker({ profiles, onComplete }: Props) {
           </p>
           <SlotCard pick={slotA} onOpen={() => setOpenSheet('a')} t={t} />
         </div>
-        <span className="shrink-0 self-center pt-6 text-2xl text-orange">♥</span>
+        <span className="shrink-0 self-center pt-6 text-5xl text-orange">♥</span>
         <div className="flex flex-1 flex-col gap-2">
           <p className="text-center text-[12px] font-extrabold uppercase tracking-widest text-ink">
             {t('slot.labelB')}
