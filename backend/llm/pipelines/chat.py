@@ -68,10 +68,11 @@ def route_guard(state: ChatState) -> str:
 async def agent_node(state: ChatState) -> dict:
     """LLM 추론 — saju_summary를 시스템 프롬프트에 주입.
 
-    OpenAI(gpt-4.1-nano)를 쓴다 — Gemini는 tool 호출 규율이 약해 흐름 질문에
-    차트 tool을 안 불러서, 차트가 핵심인 채팅은 OpenAI로 고정.
+    OpenAI(gpt-4.1-mini)를 쓴다 — Gemini는 tool 호출 규율이 약해 흐름 질문에
+    차트 tool을 안 불러서, 차트가 핵심인 채팅은 OpenAI로 고정. tool 판단·답변
+    품질을 위해 nano보다 mini로.
     """
-    llm = get_llm(provider="openai", model="gpt-4.1-nano").bind_tools(CHAT_TOOLS)
+    llm = get_llm(provider="openai", model="gpt-4.1-mini").bind_tools(CHAT_TOOLS)
     system = build_chat_system_prompt(state["saju_summary"])
     messages = [SystemMessage(content=system)] + list(state["messages"])
     response = await llm.ainvoke(messages)
