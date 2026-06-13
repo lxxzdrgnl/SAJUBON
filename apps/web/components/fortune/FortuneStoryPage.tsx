@@ -2,7 +2,7 @@
 
 /**
  * 운세 스토리 풀스크린 화면 (design.md §5.6).
- * - fixed inset-0, 딥 틸 그라디언트
+ * - fixed inset-0, 딥 틸 그라디언트 (카드별 오행색 배경 전환)
  * - 상단 프로그레스 바 (채움: 옐로)
  * - 좌 1/3 탭 = 뒤로, 우 2/3 탭 = 다음
  * - ✕ 닫기 (홈으로)
@@ -14,12 +14,37 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import { createDailyStory, getDailyRecord } from '@sajuguri/api-client'
+import { ohaeng } from '@sajuguri/design'
 import { api } from '@/lib/api'
 import { webStorage } from '@/lib/storage'
 import { buildBirthKey, loadCachedStory, saveCachedStory } from '@/lib/fortune/cache'
-import { calcSegmentFills, slideDirection, type SlideDirection } from '@/lib/fortune/story'
+import { calcSegmentFills, slideDirection, categoryColor, hexToRgba, type SlideDirection } from '@/lib/fortune/story'
 import StoryCard from '@/components/fortune/StoryCard'
 import SummaryCard from '@/components/fortune/SummaryCard'
+
+/** 일진 천간 → 오행 키 */
+const STEM_OHAENG: Record<string, keyof typeof ohaeng> = {
+  갑: '목', 을: '목',
+  병: '화', 정: '화',
+  무: '토', 기: '토',
+  경: '금', 신: '금',
+  임: '수', 계: '수',
+}
+
+const SCORE_COLOR = '#FF8A2E'
+
+/** 카드 인덱스 → 배경 오행색 결정. intro/overall=stemColor, category=catColor, 나머지=null */
+function cardAccentColor(
+  card: DailyStoryResponse['cards'][number] | undefined,
+  stemColor: string,
+): string | null {
+  if (!card) return null
+  if (card.kind === 'intro') return stemColor
+  if (card.kind === 'overall') return SCORE_COLOR
+  if (card.kind === 'category') return categoryColor(card.category_key)
+  if (card.kind === 'caution') return '#FF6B00'
+  return null
+}
 
 function todayLocal(): string {
   const d = new Date()
@@ -161,12 +186,27 @@ export default function FortuneStoryPage() {
   const currentCard = story?.cards[cardIndex]
   const isSummary = currentCard?.kind === 'summary'
 
+  // 배경 오행색 — 카드마다 뚜렷하게 변화
+  const stemColor = story ? ohaeng[STEM_OHAENG[story.day_ganji.stem] ?? '토'] : ohaeng['토']
+  const accentColor = cardAccentColor(currentCard, stemColor)
+
   return (
     /* 풀스크린 오버레이 — fixed inset-0, max-w 640px 중앙 정렬 */
     <div
       className="fixed inset-0 z-50 flex flex-col"
       style={{ background: 'linear-gradient(180deg, #00857D 0%, #04332F 100%)' }}
     >
+      {/* 카드별 오행색 배경 오버레이 — 부드러운 transition */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: accentColor
+            ? `radial-gradient(120% 80% at 50% -10%, ${hexToRgba(accentColor, 0.55)} 0%, transparent 60%)`
+            : 'none',
+          transition: 'background 500ms ease-in-out',
+        }}
+      />
       {/* 스토리 전환·등장 애니메이션 (Tailwind + CSS keyframe, 외부 라이브러리 없음).
           prefers-reduced-motion 존중 — 애니메이션 끔. */}
       <style>{`
@@ -185,6 +225,11 @@ export default function FortuneStoryPage() {
         @keyframes story-rise {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes confetti-burst {
+          0%   { transform: translate(-50%,-50%) scale(1) rotate(0deg); opacity: 1; }
+          80%  { opacity: 0.8; }
+          100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.4) rotate(540deg); opacity: 0; }
         }
         .story-card-anim.story-dir-next { animation: story-slide-next 360ms cubic-bezier(0.22,1,0.36,1) both; }
         .story-card-anim.story-dir-prev { animation: story-slide-prev 360ms cubic-bezier(0.22,1,0.36,1) both; }
