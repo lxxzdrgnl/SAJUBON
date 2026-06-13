@@ -311,7 +311,7 @@
       "recentSaveError": "저장 실패",
       "recentSaveLoginHint": "로그인하면 저장할 수 있어요",
       "recentDelete": "삭제",
-      "recentDeleteConfirm": "이 기록을 삭제할까요?",
+      "recentDeleteConfirm": "최근 목록에서 지울까요?",
       "recentDeleteConfirmYes": "삭제",
       "recentDeleteConfirmCancel": "취소"
     },

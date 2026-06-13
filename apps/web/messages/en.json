@@ -311,7 +311,7 @@
       "recentSaveError": "Save failed",
       "recentSaveLoginHint": "Sign in to save",
       "recentDelete": "Delete",
-      "recentDeleteConfirm": "Remove this entry?",
+      "recentDeleteConfirm": "Remove from recent list?",
       "recentDeleteConfirmYes": "Remove",
       "recentDeleteConfirmCancel": "Cancel"
     },

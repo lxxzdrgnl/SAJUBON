@@ -170,27 +170,30 @@ export default function RecentList({
 
             {/* 액션 버튼 — 카드 우측 */}
             {state.confirmDelete ? (
+              // 삭제 확인 — 카드 전체를 덮는 오버레이 (이름·생일과 겹치지 않게)
               <div
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5"
+                className="absolute inset-0 flex items-center justify-between gap-2 rounded-2xl border-2 border-ink bg-surface px-4"
                 onClick={(e) => e.preventDefault()}
               >
-                <span className="text-[11px] font-bold text-ink whitespace-nowrap">
+                <span className="min-w-0 truncate text-[13px] font-extrabold text-ink">
                   {t('recentDeleteConfirm')}
                 </span>
-                <button
-                  type="button"
-                  onClick={(e) => handleDelete(e, i)}
-                  className="rounded-lg border-2 border-ink bg-orange px-2 py-0.5 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]"
-                >
-                  {t('recentDeleteConfirmYes')}
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); patchItemState(key, { confirmDelete: false }) }}
-                  className="rounded-lg border-2 border-ink bg-surface px-2 py-0.5 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]"
-                >
-                  {t('recentDeleteConfirmCancel')}
-                </button>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={(e) => handleDelete(e, i)}
+                    className="rounded-lg border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A]"
+                  >
+                    {t('recentDeleteConfirmYes')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); patchItemState(key, { confirmDelete: false }) }}
+                    className="rounded-lg border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]"
+                  >
+                    {t('recentDeleteConfirmCancel')}
+                  </button>
+                </div>
               </div>
             ) : (
               <div

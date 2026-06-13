@@ -131,30 +131,32 @@ export default function SavedListClient({
 
           {/* 액션 버튼 — 카드 우측 */}
           {confirmDeleteId === p.id ? (
-            // 인라인 삭제 확인 UI
+            // 삭제 확인 — 카드 전체를 덮는 오버레이 (이름·생일과 겹치지 않게)
             <div
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5"
+              className="absolute inset-0 flex items-center justify-between gap-2 rounded-2xl border-2 border-ink bg-surface px-4"
               onClick={(e) => e.preventDefault()}
             >
-              <span className="text-[11px] font-bold text-ink whitespace-nowrap">
+              <span className="min-w-0 truncate text-[13px] font-extrabold text-ink">
                 {t('deleteConfirm')}
               </span>
-              <button
-                type="button"
-                disabled={loadingId === p.id || isPending}
-                onClick={(e) => handleDeleteConfirm(e, p.id)}
-                className="rounded-lg border-2 border-ink bg-orange px-2 py-0.5 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
-              >
-                {t('deleteConfirmYes')}
-              </button>
-              <button
-                type="button"
-                disabled={loadingId === p.id}
-                onClick={(e) => { e.preventDefault(); setConfirmDeleteId(null) }}
-                className="rounded-lg border-2 border-ink bg-surface px-2 py-0.5 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
-              >
-                {t('deleteConfirmCancel')}
-              </button>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={loadingId === p.id || isPending}
+                  onClick={(e) => handleDeleteConfirm(e, p.id)}
+                  className="rounded-lg border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
+                >
+                  {t('deleteConfirmYes')}
+                </button>
+                <button
+                  type="button"
+                  disabled={loadingId === p.id}
+                  onClick={(e) => { e.preventDefault(); setConfirmDeleteId(null) }}
+                  className="rounded-lg border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
+                >
+                  {t('deleteConfirmCancel')}
+                </button>
+              </div>
             </div>
           ) : (
             <div
