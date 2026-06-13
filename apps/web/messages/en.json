@@ -315,7 +315,8 @@
       "keyword": "Today's keyword",
       "saveImage": "Save image",
       "shareLink": "Share link",
-      "shareLabel": "SajuGuri Daily Fortune"
+      "shareLabel": "SajuGuri Daily Fortune",
+      "back": "Back"
     },
     "my": {
       "title": "Fortune history",

@@ -315,7 +315,8 @@
       "keyword": "오늘의 키워드",
       "saveImage": "이미지 저장",
       "shareLink": "링크 공유",
-      "shareLabel": "사주구리 오늘의 운세"
+      "shareLabel": "사주구리 오늘의 운세",
+      "back": "뒤로"
     },
     "my": {
       "title": "운세 기록",
