@@ -40,8 +40,8 @@ const ALLOWED = new Set(
     '#00665F', '#B34800',
     // §5.4 현실 조언 박스
     '#FFF4E3',
-    // §8 일간 오행색(너구리/히어로) — ganjiNickname·MascotTinted
-    '#8FD6A8', '#FF9466', '#D7D9DD', '#B9C4CC',
+    // §8 일간 오행색(너구리/히어로) — ganjiNickname·MascotTinted (사용자 확정)
+    '#7FC7BE', '#F5623A', '#E8EAED', '#8B8178',
     // §4.3 비활성 탭/바 회색
     '#A09880',
     // 기존 자산 — design.md 미명시이나 토(土) 머스터드 계열 의미색. 신규 추가는 토큰 사용할 것.

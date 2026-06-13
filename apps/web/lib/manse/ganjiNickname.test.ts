@@ -29,7 +29,7 @@ describe('ganjiNickname — 천간 색 + 지지 동물', () => {
     expect(r.bg).toBe('#FFD900')
   })
 
-  it('경신 = 은빛 원숭이, 배경 #D7D9DD', () => {
+  it('경신 = 은빛 원숭이, 배경 #E8EAED', () => {
     const r = ganjiNickname('경', '신')
     expect(r.ko).toBe('은빛 원숭이')
     expect(r.en).toBe('Silver Monkey')
@@ -64,13 +64,13 @@ describe('stemToMascotBody — 너구리 몸통색 + 회색 보정', () => {
     expect(stemToMascotBody('무')).toEqual({ color: '#FFD900', grey: false })
   })
   it('갑(푸른) = 그린', () => {
-    expect(stemToMascotBody('갑')).toEqual({ color: '#8FD6A8', grey: false })
+    expect(stemToMascotBody('갑')).toEqual({ color: '#7FC7BE', grey: false })
   })
-  it('임(회색) = 슬레이트로 보정 + grey=true', () => {
-    expect(stemToMascotBody('임')).toEqual({ color: '#5F7A95', grey: true })
+  it('임(회색) = 웜그레이 + grey=true', () => {
+    expect(stemToMascotBody('임')).toEqual({ color: '#8B8178', grey: true })
   })
   it('계(회색)도 동일 보정', () => {
-    expect(stemToMascotBody('계')).toEqual({ color: '#5F7A95', grey: true })
+    expect(stemToMascotBody('계')).toEqual({ color: '#8B8178', grey: true })
   })
   it('일간 미상(null/빈/미지) = 기본 옐로, 비회색', () => {
     expect(stemToMascotBody(null)).toEqual({ color: '#FFD900', grey: false })

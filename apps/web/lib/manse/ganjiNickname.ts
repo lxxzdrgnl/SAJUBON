@@ -44,26 +44,23 @@ const BRANCH_ANIMAL: Record<string, BranchAnimal> = {
 }
 
 /**
- * 너구리 마스코트/일주 히어로 일간 오행색 (design.md §8 — 단일 출처).
- * STEM_COLOR.bg(텍스트-온-컬러 캔디 톤)와 별개로, 마스코트 몸통 틴트에 쓰는 톤이다.
- *   갑·을 푸른 / 병·정 붉은 / 무·기 황금 / 경·신 은빛 / 임·계 회색
+ * 마스코트 몸통·일주 히어로·아바타 배경 일간 오행색 (design.md §8 — 단일 출처).
+ * STEM_COLOR.bg에서 파생 — 히어로/마스코트/아바타가 항상 같은 색을 쓰게 한다.
+ *   갑·을 푸른 #7FC7BE / 병·정 붉은 #F5623A / 무·기 황금 #FFD900 /
+ *   경·신 은빛 #E8EAED(흰색계열) / 임·계 회색 #8B8178(웜그레이)
  */
-export const STEM_BG: Record<string, string> = {
-  갑: '#8FD6A8', 을: '#8FD6A8', 병: '#FF9466', 정: '#FF9466',
-  무: '#FFD900', 기: '#FFD900', 경: '#D7D9DD', 신: '#D7D9DD',
-  임: '#B9C4CC', 계: '#B9C4CC',
-}
+export const STEM_BG: Record<string, string> = Object.fromEntries(
+  Object.entries(STEM_COLOR).map(([k, v]) => [k, v.bg]),
+)
 
 /** 마스코트 기본 몸통색(일간 미상 시) — 현행 옐로. */
 export const MASCOT_DEFAULT_BG = '#FFD900'
 
-/** 회색 몸통(임·계)이면 직접 쓰면 칙칙하므로 더 또렷한 슬레이트 그레이로 보정 + 디테일 강조. */
-const GREY_BODY_REMAP: Record<string, string> = {
-  '#B9C4CC': '#5F7A95',  // 임·계: 푸른계열 슬레이트 그레이
-}
+/** 웜그레이(임·계) 몸통은 디테일이 묻히므로 이목구비 검정 강조 + 글로우 처리. */
+const GREY_STEMS = new Set(['#8B8178'])
 
 export interface MascotBody {
-  /** 실제로 SVG 몸통에 칠할 색 (회색은 보정된 슬레이트) */
+  /** SVG 몸통에 칠할 색 */
   color: string
   /** 회색 보정 대상 여부 (이목구비 검정 강조 + 글로우) */
   grey: boolean
@@ -74,9 +71,8 @@ export interface MascotBody {
  * day_stem이 없거나 미지면 기본 옐로(비-회색).
  */
 export function stemToMascotBody(stem?: string | null): MascotBody {
-  const raw = (stem && STEM_BG[stem]) || MASCOT_DEFAULT_BG
-  const grey = raw in GREY_BODY_REMAP
-  return { color: GREY_BODY_REMAP[raw] ?? raw, grey }
+  const color = (stem && STEM_BG[stem]) || MASCOT_DEFAULT_BG
+  return { color, grey: GREY_STEMS.has(color) }
 }
 
 export interface GanjiNickname {
