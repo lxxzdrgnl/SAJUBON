@@ -18,7 +18,7 @@ interface Props {
 }
 
 // 마이 허브는 미리보기 — 칩으로 거른 병합 피드에서 최신 N개만, 전체는 /my/history
-const PREVIEW_COUNT = 6
+const PREVIEW_COUNT = 4
 
 // ── 필터 칩 ────────────────────────────────────────────────────────────────────
 
@@ -216,16 +216,9 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-text-sub">{t('title')}</h2>
-        <div className="flex items-center gap-2">
-          {totalCount > 0 && (
-            <EditToggleButton editMode={editMode} onToggle={() => setEditMode((v) => !v)} t={t} />
-          )}
-          {totalCount > 0 && (
-            <Link href="/my/history" className="text-[12px] font-extrabold text-orange transition-opacity hover:opacity-80">
-              {t('viewAllHistory')} →
-            </Link>
-          )}
-        </div>
+        {totalCount > 0 && (
+          <EditToggleButton editMode={editMode} onToggle={() => setEditMode((v) => !v)} t={t} />
+        )}
       </div>
 
       {totalCount === 0 ? (
@@ -261,6 +254,16 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
                 )
               })}
             </ul>
+          )}
+
+          {/* 전체 기록 보기 — 박스형 전체폭 버튼 */}
+          {filtered.length > preview.length && (
+            <Link
+              href="/my/history"
+              className="mt-3 block rounded-xl border-2 border-ink bg-surface py-3 text-center text-[13px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            >
+              {t('viewAllHistory')} →
+            </Link>
           )}
         </>
       )}
