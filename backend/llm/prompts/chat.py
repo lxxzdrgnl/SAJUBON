@@ -3,6 +3,23 @@
 from __future__ import annotations
 
 
+def build_chat_title_prompt(first_message: str, first_response: str) -> str:
+    """첫 턴 대화 기반 세션 제목 생성 프롬프트 (≤20자, 결론형 명사구)."""
+    return f"""아래 사주 상담 첫 대화를 보고 이 상담 세션의 제목을 만드세요.
+
+[사용자 질문]
+{first_message}
+
+[상담가 답변]
+{first_response[:300]}
+
+규칙:
+- 20자 이내의 짧은 명사구로만 답하세요
+- 따옴표·마침표·설명 없이 제목만 출력하세요
+- 예: "3월 이직 타이밍 상담", "연애운 흐름 진단"
+"""
+
+
 def build_chat_system_prompt(saju_summary: dict) -> str:
     """매 턴 saju_summary를 시스템 프롬프트에 주입."""
     pillars = saju_summary.get("pillars", {})

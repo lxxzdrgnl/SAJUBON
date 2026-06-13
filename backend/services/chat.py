@@ -144,3 +144,30 @@ async def detach_partner(
     session = await chat_crud.get_session_or_404(db, session_id, user_id)
     chat_crud.clear_partner_info(session)
     await db.commit()
+
+
+async def maybe_generate_title(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+    first_message: str,
+    first_response: str,
+) -> str | None:
+    """세션에 제목이 없으면 첫 턴 대화로 제목을 1회 생성·저장하고 반환한다.
+
+    이미 제목이 있으면 None을 반환한다 (재생성 방지). LLM 실패는 조용히 무시한다.
+    """
+    from llm.pipelines.chat_title import generate_chat_title
+
+    if await chat_crud.get_title(db, session_id):
+        return None
+
+    if not first_response.strip():
+        return None
+
+    try:
+        title = await generate_chat_title(first_message, first_response)
+    except Exception:
+        return None
+
+    saved = await chat_crud.set_title(db, session_id, title)
+    return title if saved else None

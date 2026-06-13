@@ -72,12 +72,20 @@ async def update_last_message_at(
         await db.commit()
 
 
+async def get_title(db: AsyncSession, session_id: uuid.UUID) -> str | None:
+    """세션의 현재 제목 조회 (없으면 None)."""
+    result = await db.execute(
+        select(ChatSession.title).where(ChatSession.id == session_id)
+    )
+    return result.scalar_one_or_none()
+
+
 async def set_title(
     db: AsyncSession,
     session_id: uuid.UUID,
     title: str,
-) -> None:
-    """세션 제목을 단발 갱신한다 (이미 제목이 있으면 덮어쓰지 않음)."""
+) -> bool:
+    """세션 제목을 단발 갱신한다. 이미 제목이 있으면 덮어쓰지 않고 False를 반환."""
     result = await db.execute(
         select(ChatSession).where(ChatSession.id == session_id)
     )
@@ -85,6 +93,8 @@ async def set_title(
     if session and not session.title:
         session.title = title
         await db.commit()
+        return True
+    return False
 
 
 def set_partner_info(session: ChatSession, partner_info: dict) -> None:

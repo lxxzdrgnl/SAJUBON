@@ -1,7 +1,6 @@
 """채팅 에이전트 라우터."""
 
 from __future__ import annotations
-import json
 import uuid
 
 from fastapi import APIRouter, Depends, Request, status
@@ -15,6 +14,7 @@ from db.models import User
 from dependencies.auth import get_current_user
 from dependencies.db import get_db
 from llm.pipelines.chat import build_chat_graph
+from llm.chat_sse import map_stream_event, sse
 from schemas.chat import (
     ChatSessionCreate, ChatSessionResponse,
     ChatMessageRequest, ChatHistoryResponse, ChatHistoryMessage,
@@ -22,7 +22,7 @@ from schemas.chat import (
 )
 from services.chat import (
     create_chat_session, generate_chat_report,
-    attach_partner, detach_partner,
+    attach_partner, detach_partner, maybe_generate_title,
 )
 
 router = APIRouter(prefix="/api/chat", tags=["채팅 에이전트"])
@@ -103,25 +103,40 @@ async def send_message(
 ):
     session = await chat_crud.get_session_or_404(db, session_id, user.id)
     graph = build_chat_graph(checkpointer)
-    config = {
-        "configurable": {
-            "thread_id": str(session_id),
-            "birth_info": session.birth_info,
-        }
+    configurable = {
+        "thread_id": str(session_id),
+        "birth_info": session.birth_info,
     }
+    if session.partner_info:
+        configurable["partner_info"] = session.partner_info
+    config = {"configurable": configurable}
 
     async def event_stream():
+        assistant_text = []
         async for event in graph.astream_events(
             {"messages": [HumanMessage(content=req.message)]},
             config=config,
             version="v2",
         ):
-            if event["event"] == "on_chat_model_stream":
-                chunk = event["data"].get("chunk")
-                if chunk and chunk.content:
-                    yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
+            mapped = map_stream_event(event)
+            if mapped is None:
+                continue
+            if mapped["type"] == "token":
+                assistant_text.append(mapped["content"])
+            yield sse(mapped)
+
         await chat_crud.update_last_message_at(db, session_id)
-        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+
+        title = await maybe_generate_title(
+            db=db,
+            session_id=session_id,
+            first_message=req.message,
+            first_response="".join(assistant_text),
+        )
+        if title:
+            yield sse({"type": "title", "title": title})
+
+        yield sse({"type": "done"})
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
