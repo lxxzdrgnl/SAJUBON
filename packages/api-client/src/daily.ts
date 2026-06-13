@@ -36,6 +36,17 @@ export interface DailyRecordSummary {
   keyword: string
 }
 
+export interface DailyShareRequest {
+  story?: DailyStoryResponse        // 공유할 스토리 스냅샷
+  birth_input?: SajuCalcRequest     // birth_hash 계산용 (선택)
+  record_id?: number                // 기존 저장 기록 공유 (소유자, 토큰 재사용)
+}
+
+export interface DailyShareResponse {
+  share_token: string               // 추측 불가 짧은 토큰
+  share_url: string                 // 공개 공유 URL
+}
+
 // ── API 함수 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -63,4 +74,27 @@ export function getDailyRecord(api: ApiClient, id: number): Promise<DailyStoryRe
 /** DELETE /api/daily/records/{id} — 운세 기록 삭제 (소유자). 204 No Content */
 export function deleteDailyRecord(api: ApiClient, id: number): Promise<void> {
   return api.delete(`/api/daily/records/${id}`)
+}
+
+/**
+ * POST /api/daily/share — 운세 공유 링크 생성 (게스트 허용).
+ * story 스냅샷 또는 record_id 중 하나를 보내면 추측 불가 토큰으로 저장.
+ * 이미 토큰 있는 레코드는 재사용.
+ */
+export function createFortuneShare(
+  api: ApiClient,
+  body: DailyShareRequest,
+): Promise<DailyShareResponse> {
+  return api.post<DailyShareResponse>('/api/daily/share', body)
+}
+
+/**
+ * GET /api/daily/shared/{token} — 공유된 운세 공개 조회 (인증 불필요).
+ * 저장된 스냅샷을 그대로 반환 (재계산 없음).
+ */
+export function getSharedFortune(
+  api: ApiClient,
+  token: string,
+): Promise<DailyStoryResponse> {
+  return api.get<DailyStoryResponse>(`/api/daily/shared/${token}`)
 }
