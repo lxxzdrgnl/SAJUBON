@@ -42,7 +42,7 @@ export default async function MyPage() {
     return (
       <main>
         <h1 className="mb-4 text-lg font-black">{t('title')}</h1>
-        <BrutalCard className="flex flex-col items-center gap-4 py-8 text-center">
+        <BrutalCard className="mb-6 flex flex-col items-center gap-4 py-8 text-center">
           <MascotTinted width={72} height={72} />
           <p className="text-[15px] font-extrabold">{t('loginRequired')}</p>
           <a
@@ -52,6 +52,9 @@ export default async function MyPage() {
             {t('loginWithGoogle')}
           </a>
         </BrutalCard>
+
+        {/* 로그인 전에도 언어를 바꿀 수 있도록 토글 노출 */}
+        <LanguageToggleInline />
       </main>
     )
   }

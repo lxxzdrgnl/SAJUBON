@@ -7,6 +7,7 @@ import { pickGreeting } from '@/lib/greetings'
 import { listProfiles, type ProfileResponse } from '@sajuguri/api-client'
 import FortuneBannerClient from '@/components/fortune/FortuneBannerClient'
 import ReportEntryButton from '@/components/report/ReportEntryButton'
+import LanguageToggleCompact from '@/components/LanguageToggleCompact'
 
 const ICONS = {
   doc: 'M5 3 h11 a2 2 0 0 1 2 2 v14 a2 2 0 0 1-2 2 H5 a0 0 0 0 1 0 0 V3 Z M9 8 H15 M9 12 H15 M9 16 H13',
@@ -76,9 +77,16 @@ export default async function Home() {
 
   return (
     <main>
-      <header className="mb-4 flex items-center gap-2 text-xl font-black">
-        <MascotTinted stem={repStem} width={26} height={26} />
-        사주<span className="rounded-md bg-yellow px-1">구리</span>
+      <header className="mb-4 flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2 text-xl font-black">
+          <MascotTinted stem={repStem} width={26} height={26} />
+          {locale === 'en' ? (
+            <>Saju<span className="rounded-md bg-yellow px-1">Guri</span></>
+          ) : (
+            <>사주<span className="rounded-md bg-yellow px-1">구리</span></>
+          )}
+        </span>
+        <LanguageToggleCompact />
       </header>
       {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
       <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
