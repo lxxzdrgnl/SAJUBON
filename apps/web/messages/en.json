@@ -26,6 +26,7 @@
       "tabFortune": "Fortune",
       "viewMore": "View more",
       "collapse": "Collapse",
+      "viewAllHistory": "View all records",
       "emptyReports": "No reports yet",
       "emptyFortune": "No fortune records yet",
       "goReport": "Generate a report",
@@ -35,6 +36,12 @@
         "cancel": "Cancel",
         "yes": "Delete"
       }
+    },
+    "history": {
+      "title": "My Records",
+      "back": "Back to My",
+      "loginRequired": "Sign in to continue",
+      "loginWithGoogle": "Sign in with Google"
     },
     "language": {
       "title": "Language",
@@ -425,6 +432,8 @@
       "load": "Could not load chat history",
       "send": "Send failed. Please try again."
     },
+    "editToggle": "Edit",
+    "editDone": "Done",
     "deleteConfirm": "Delete this chat?",
     "deleteConfirmYes": "Delete",
     "deleteConfirmCancel": "Cancel",

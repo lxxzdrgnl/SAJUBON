@@ -26,6 +26,7 @@
       "tabFortune": "운세",
       "viewMore": "더보기",
       "collapse": "접기",
+      "viewAllHistory": "전체 기록 보기",
       "emptyReports": "아직 생성한 리포트가 없어요",
       "emptyFortune": "아직 운세 기록이 없어요",
       "goReport": "리포트 생성하러 가기",
@@ -35,6 +36,12 @@
         "cancel": "취소",
         "yes": "삭제"
       }
+    },
+    "history": {
+      "title": "내 기록",
+      "back": "마이로",
+      "loginRequired": "로그인이 필요해요",
+      "loginWithGoogle": "구글로 로그인"
     },
     "language": {
       "title": "언어",
@@ -401,6 +408,8 @@
       "load": "상담 내역을 불러올 수 없어요",
       "send": "전송에 실패했어요. 다시 시도해 주세요."
     },
+    "editToggle": "편집",
+    "editDone": "완료",
     "deleteConfirm": "이 상담을 삭제할까요?",
     "deleteConfirmYes": "삭제",
     "deleteConfirmCancel": "취소",

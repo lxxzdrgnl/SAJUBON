@@ -98,6 +98,7 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sessions, setSessions] = useState(initialSessions)
   const [deletingSession, setDeletingSession] = useState<ChatSession | null>(null)
+  const [editMode, setEditMode] = useState(false)
 
   async function handleDelete(id: string) {
     setSessions((prev) => prev.filter((s) => s.id !== id))
@@ -115,12 +116,22 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
     <>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-lg font-black">{t('title')}</h1>
-        <button
-          className="rounded-xl border-2 border-teal bg-surface px-4 py-1.5 text-sm font-extrabold text-teal shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
-          onClick={() => setSheetOpen(true)}
-        >
-          {t('newSession')}
-        </button>
+        <div className="flex items-center gap-2">
+          {sessions.length > 0 && (
+            <button
+              className="rounded-xl border-2 border-ink bg-surface px-3 py-1.5 text-sm font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+              onClick={() => setEditMode((v) => !v)}
+            >
+              {editMode ? t('editDone') : t('editToggle')}
+            </button>
+          )}
+          <button
+            className="rounded-xl border-2 border-teal bg-surface px-4 py-1.5 text-sm font-extrabold text-teal shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            onClick={() => setSheetOpen(true)}
+          >
+            {t('newSession')}
+          </button>
+        </div>
       </div>
 
       {sessions.length === 0 ? (
@@ -168,28 +179,30 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
                     </span>
                   </BrutalCard>
                 </Link>
-                <button
-                  className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
-                  onClick={() => setDeletingSession(s)}
-                  aria-label={t('deleteConfirm')}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                {editMode && (
+                  <button
+                    className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
+                    onClick={() => setDeletingSession(s)}
+                    aria-label={t('deleteConfirm')}
                   >
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                    <path d="M10 11v6" />
-                    <path d="M14 11v6" />
-                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                  </svg>
-                </button>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </li>
           ))}
