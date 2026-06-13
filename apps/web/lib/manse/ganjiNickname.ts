@@ -10,14 +10,14 @@ interface StemColor {
 }
 
 const STEM_COLOR: Record<string, StemColor> = {
-  갑: { ko: '푸른', en: 'Blue', bg: '#8FD6A8' },
-  을: { ko: '푸른', en: 'Blue', bg: '#8FD6A8' },
+  갑: { ko: '푸른', en: 'Blue', bg: '#D6EAEA' },   // 목 — 흰색계열(은은한 청록)
+  을: { ko: '푸른', en: 'Blue', bg: '#D6EAEA' },
   병: { ko: '붉은', en: 'Red', bg: '#FF9466' },
   정: { ko: '붉은', en: 'Red', bg: '#FF9466' },
   무: { ko: '황금', en: 'Golden', bg: '#FFD900' },
   기: { ko: '황금', en: 'Golden', bg: '#FFD900' },
-  경: { ko: '은빛', en: 'Silver', bg: '#D7D9DD' },
-  신: { ko: '은빛', en: 'Silver', bg: '#D7D9DD' },
+  경: { ko: '은빛', en: 'Silver', bg: '#E8EAED' },  // 금 — 백색(은빛 화이트)
+  신: { ko: '은빛', en: 'Silver', bg: '#E8EAED' },
   임: { ko: '회색', en: 'Gray', bg: '#B9C4CC' },
   계: { ko: '회색', en: 'Gray', bg: '#B9C4CC' },
 }

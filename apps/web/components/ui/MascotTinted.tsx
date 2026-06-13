@@ -11,7 +11,7 @@ interface Props {
 // Grey/silver day-stem body colors — these become "dead" if used directly.
 // Map to a deeper, more saturated variant that reads clearly.
 const GREY_BODY_REMAP: Record<string, string> = {
-  '#D7D9DD': '#7E93AD',  // 경·신: 푸른빛 도는 스틸 그레이
+  // 임·계(회색)만 어두운 그레이로 보정 + 이목구비 강조. 경·신(은빛)은 흰색계열이라 직접 사용.
   '#B9C4CC': '#5F7A95',  // 임·계: 푸른계열 슬레이트 그레이
 }
 
