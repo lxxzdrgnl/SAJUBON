@@ -14,6 +14,7 @@ import { loadRecentInputs } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
 import { buildBirthKey } from '@/lib/fortune/cache'
 import { toResultQuery, profileToQueryInput } from '@/lib/manse/query'
+import MascotTinted from '@/components/ui/MascotTinted'
 
 /** 오늘 이미 본 birthKey 셋 — localStorage에서 로드. */
 function loadSeenTodayKeys(): Set<string> {
@@ -111,8 +112,7 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                         onClick={() => goFortune(toResultQuery(profileToQueryInput(p)) + `&pname=${encodeURIComponent(p.name)}`)}
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src="/mascot.svg" alt="" width={38} height={38} />
+                          <MascotTinted stem={p.day_stem} width={38} height={38} />
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">
@@ -159,8 +159,7 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                         onClick={() => goFortune(q + `&pname=${encodeURIComponent(r.name)}`)}
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src="/mascot.svg" alt="" width={38} height={38} />
+                          <MascotTinted stem={r.day_stem} width={38} height={38} />
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">

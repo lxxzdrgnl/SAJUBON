@@ -16,6 +16,7 @@ import YeonWolUn from '@/components/manse/YeonWolUn'
 import IlJinCalendar from '@/components/manse/IlJinCalendar'
 import HapChungPanel from '@/components/manse/HapChungPanel'
 import WuxingFeatureTable from '@/components/manse/WuxingFeatureTable'
+import RecentEnricher from '@/components/manse/RecentEnricher'
 
 export default async function ManseResult({
   searchParams,
@@ -72,6 +73,14 @@ export default async function ManseResult({
 
   return (
     <main className="flex flex-col gap-3">
+      {/* 게스트 최근 입력에 일간 보강 — 너구리 아바타 일간색 틴팅용 (클라 마운트 시 localStorage 갱신) */}
+      <RecentEnricher
+        birth_date={p.birth_date ?? ''}
+        birth_time={p.birth_time ?? null}
+        gender={p.gender ?? ''}
+        calendar={p.calendar ?? 'solar'}
+        day_stem={data.day_pillar.stem}
+      />
       <IljuHero dayPillar={data.day_pillar} label={t('myIlju')} />
       <TagChips data={data} />
       <h3 className="mt-1 text-[15px] font-extrabold">{t('palja')}</h3>
