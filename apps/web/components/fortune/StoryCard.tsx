@@ -30,8 +30,11 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-/** 0 → target 카운트업. reduced-motion 시 즉시 최종값. */
-function useCountUp(target: number | undefined, durationMs = 900): number {
+/**
+ * 0 → target 카운트업. 1씩 오르면 번잡해 보여 step(기본 5) 단위로 양자화한다.
+ * 마지막 프레임은 정확한 target으로 스냅. reduced-motion 시 즉시 최종값.
+ */
+function useCountUp(target: number | undefined, durationMs = 700, step = 5): number {
   const [value, setValue] = useState(target ?? 0)
   const rafRef = useRef<number | null>(null)
 
@@ -45,17 +48,20 @@ function useCountUp(target: number | undefined, durationMs = 900): number {
     const tick = (ts: number) => {
       if (start === null) start = ts
       const progress = (ts - start) / durationMs
-      setValue(countUpValue(target, progress))
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(tick)
+      if (progress >= 1) {
+        setValue(target)
+        return
       }
+      const eased = countUpValue(target, progress)
+      setValue(Math.min(target, Math.round(eased / step) * step))
+      rafRef.current = requestAnimationFrame(tick)
     }
     setValue(0)
     rafRef.current = requestAnimationFrame(tick)
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     }
-  }, [target, durationMs])
+  }, [target, durationMs, step])
 
   return value
 }
