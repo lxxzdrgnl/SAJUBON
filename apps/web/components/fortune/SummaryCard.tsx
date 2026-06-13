@@ -186,31 +186,36 @@ export default function SummaryCard({ story, onClose }: Props) {
       </div>
 
       {/* 점수 바 6개 — 마운트 시 0→점수 차오름 (stagger 100ms). 캔버스는 정적 최종값. */}
-      <div className="mb-6 flex flex-col gap-2">
+      <div className="mb-6 flex flex-col gap-3">
         {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
+          const isPeak = score >= 85
+          const barColor = isLow ? SCORE_COLOR : SCORE_NORMAL
           return (
             <div key={key} className="flex items-center gap-3">
-              <span className="w-10 shrink-0 text-[11px] font-bold text-white/70">
+              <span className="w-12 shrink-0 text-[12px] font-extrabold text-white/85">
                 {CATEGORY_LABELS[key]}
               </span>
-              <div className="relative h-4 flex-1 overflow-hidden rounded-full border border-white/20 bg-white/15">
+              <div className="relative h-[18px] flex-1 overflow-hidden rounded-full bg-white/15" style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.25)' }}>
                 <div
                   className="h-full rounded-full"
                   style={{
                     width: revealed ? `${score}%` : '0%',
-                    background: isLow ? SCORE_COLOR : SCORE_NORMAL,
+                    background: isPeak
+                      ? `linear-gradient(90deg, ${barColor} 0%, #FFFFFF 100%)`
+                      : barColor,
                     transition: 'width 700ms cubic-bezier(0.22,1,0.36,1)',
                     transitionDelay: `${i * 100}ms`,
+                    boxShadow: `0 0 ${isPeak ? 10 : 4}px ${barColor}88`,
                   }}
                 />
                 {/* 상단 하이라이트 — 입체감 */}
                 <div className="pointer-events-none absolute inset-0 h-1/2 rounded-full bg-white/20" />
               </div>
               <span
-                className="w-10 shrink-0 text-right text-[17px] font-black"
-                style={{ color: isLow ? SCORE_COLOR : 'rgba(255,255,255,0.85)' }}
+                className="w-9 shrink-0 text-right text-[18px] font-black tabular-nums"
+                style={{ color: isLow ? SCORE_COLOR : '#FFFFFF' }}
               >
                 {score}
               </span>
