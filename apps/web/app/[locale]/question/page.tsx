@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import type { ProfileResponse, QuestionRequest } from '@sajuguri/api-client'
+import type { ProfileResponse, QuestionRequest, ToolChartItem } from '@sajuguri/api-client'
 import { askQuestion } from '@sajuguri/api-client'
 import type { RecentBirthInput } from '@sajuguri/core'
 import { loadRecentInputs } from '@sajuguri/core'
@@ -17,6 +17,7 @@ import { toResultQuery, profileToQueryInput } from '@/lib/manse/query'
 import type { ResultQueryInput } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
 import BrutalCard from '@/components/ui/BrutalCard'
+import ToolCard from '@/components/chat/ToolCard'
 
 // ── 프로필 선택 인라인 시트 ─────────────────────────────────────────────────
 
@@ -148,6 +149,7 @@ function ProfilePickSheet({ open, onClose, profiles, onSelect }: ProfilePickShee
 
 export default function QuestionPage() {
   const t = useTranslations('question')
+  const tToolCard = useTranslations('chat.toolCard')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedInput, setSelectedInput] = useState<ResultQueryInput | RecentBirthInput | null>(null)
@@ -155,7 +157,8 @@ export default function QuestionPage() {
   const [question, setQuestion] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [result, setResult] = useState<{ id: number; headline: string; content: string; category: string } | null>(null)
+  const [result, setResult] = useState<{ id: number; headline: string; content: string; category: string; charts?: ToolChartItem[]; more?: ToolChartItem[] } | null>(null)
+  const [openMore, setOpenMore] = useState<Set<number>>(new Set())
 
   // 프로필 목록 — 클라이언트에서 로드 (SSR 없음, 게스트 허용 페이지)
   const [profiles, setProfiles] = useState<ProfileResponse[]>([])
@@ -212,8 +215,21 @@ export default function QuestionPage() {
     }
   }
 
+  function toggleMore(idx: number) {
+    setOpenMore((prev) => {
+      const next = new Set(prev)
+      if (next.has(idx)) next.delete(idx)
+      else next.add(idx)
+      return next
+    })
+  }
+
   // 결과 화면
   if (result) {
+    const charts = result.charts ?? []
+    const more = result.more ?? []
+    const hasChartArea = charts.length > 0 || more.length > 0
+
     return (
       <main className="flex flex-col gap-5">
         <h1 className="text-lg font-black">{t('title')}</h1>
@@ -229,9 +245,46 @@ export default function QuestionPage() {
           </span>
         </div>
 
+        {hasChartArea && (
+          <div className="flex flex-col gap-3">
+            {charts.map((item, i) => (
+              <ToolCard key={i} tool={item.tool} payload={item.payload} />
+            ))}
+
+            {more.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap gap-2">
+                  {more.map((item, i) => {
+                    const isOpen = openMore.has(i)
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => toggleMore(i)}
+                        className={`rounded-full border-2 px-3 py-1 text-[12px] font-extrabold transition-colors ${
+                          isOpen
+                            ? 'border-teal bg-teal-tint text-teal-deep'
+                            : 'border-border-soft bg-surface text-text-sub hover:border-ink hover:text-ink'
+                        }`}
+                      >
+                        {tToolCard.has(`labels.${item.tool}`) ? tToolCard(`labels.${item.tool}`) : item.tool}
+                      </button>
+                    )
+                  })}
+                </div>
+                {more.map((item, i) =>
+                  openMore.has(i) ? (
+                    <ToolCard key={i} tool={item.tool} payload={item.payload} />
+                  ) : null
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         <button
           className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
-          onClick={() => { setResult(null); setQuestion('') }}
+          onClick={() => { setResult(null); setQuestion(''); setOpenMore(new Set()) }}
         >
           {t('askAgain')}
         </button>

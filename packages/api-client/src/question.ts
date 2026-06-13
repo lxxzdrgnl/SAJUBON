@@ -1,7 +1,7 @@
 import type { ApiClient } from './client'
-import type { SajuCalcRequest, QuestionRequest, ConsultationResponse } from './types'
+import type { SajuCalcRequest, QuestionRequest, ConsultationResponse, ToolChartItem } from './types'
 
-export type { QuestionRequest, ConsultationResponse }
+export type { QuestionRequest, ConsultationResponse, ToolChartItem }
 
 /**
  * POST /api/question — 한줄 상담 (게스트 허용).

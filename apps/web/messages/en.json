@@ -357,7 +357,9 @@
       "recentTitle": "Recent inputs",
       "directInput": "Enter manually",
       "repBadge": "Default"
-    }
+    },
+    "chartsTitle": "Saju Analysis",
+    "moreLabel": "More"
   },
   "chat": {
     "title": "AI Saju Chat",

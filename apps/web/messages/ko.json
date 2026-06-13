@@ -460,7 +460,9 @@
       "recentTitle": "최근 입력",
       "directInput": "직접 입력하기",
       "repBadge": "대표"
-    }
+    },
+    "chartsTitle": "사주 분석",
+    "moreLabel": "더 보기"
   },
   "fortune": {
     "banner": {

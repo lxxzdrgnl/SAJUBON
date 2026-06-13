@@ -234,11 +234,21 @@ export interface QuestionRequest extends SajuCalcRequest {
   category?: QuestionCategory  // 생략 시 백엔드 LLM이 자동 분류
 }
 
+/** 차트/칩 항목 — tool 이름 + 백엔드 payload */
+export interface ToolChartItem {
+  tool: string
+  payload: Record<string, unknown>
+}
+
 export interface ConsultationResponse {
   id: number
   headline: string
   content: string
   category: string
+  /** 자동 표시 차트 0~2개 */
+  charts?: ToolChartItem[]
+  /** 칩(더보기) 항목 2~4개 */
+  more?: ToolChartItem[]
 }
 
 export interface ConsultationHistoryItem {
