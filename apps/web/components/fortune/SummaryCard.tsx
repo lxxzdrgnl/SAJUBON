@@ -196,16 +196,16 @@ export default function SummaryCard({ story, onClose, onPrev }: Props) {
       </div>
 
       {/* 점수 바 6개 — 마운트 시 0→점수 차오름 (stagger 100ms). 캔버스는 정적 최종값. */}
-      <div className="mb-5 flex flex-col gap-3">
+      <div className="mb-6 flex flex-col gap-2">
         {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
           return (
             <div key={key} className="flex items-center gap-3">
-              <span className="w-10 shrink-0 text-[12px] font-semibold text-white/60">
+              <span className="w-10 shrink-0 text-[11px] font-bold text-white/70">
                 {CATEGORY_LABELS[key]}
               </span>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/15">
+              <div className="relative h-4 flex-1 overflow-hidden rounded-full border border-white/20 bg-white/15">
                 <div
                   className="h-full rounded-full"
                   style={{
@@ -215,9 +215,11 @@ export default function SummaryCard({ story, onClose, onPrev }: Props) {
                     transitionDelay: `${i * 100}ms`,
                   }}
                 />
+                {/* 상단 하이라이트 — 입체감 */}
+                <div className="pointer-events-none absolute inset-0 h-1/2 rounded-full bg-white/20" />
               </div>
               <span
-                className="w-8 shrink-0 text-right text-[12px] font-extrabold"
+                className="w-10 shrink-0 text-right text-[17px] font-black"
                 style={{ color: isLow ? SCORE_COLOR : 'rgba(255,255,255,0.85)' }}
               >
                 {score}
