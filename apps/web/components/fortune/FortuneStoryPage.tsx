@@ -18,7 +18,7 @@ import { ohaeng } from '@sajuguri/design'
 import { api } from '@/lib/api'
 import { webStorage } from '@/lib/storage'
 import { buildBirthKey, loadCachedStory, saveCachedStory } from '@/lib/fortune/cache'
-import { calcSegmentFills, slideDirection, categoryColor, hexToRgba, type SlideDirection } from '@/lib/fortune/story'
+import { calcSegmentFills, slideDirection, categoryColor, hexToRgba, cardBgGradient, type SlideDirection } from '@/lib/fortune/story'
 import StoryCard from '@/components/fortune/StoryCard'
 import SummaryCard from '@/components/fortune/SummaryCard'
 
@@ -45,6 +45,8 @@ function cardAccentColor(
   if (card.kind === 'caution') return '#FF6B00'
   return null
 }
+
+// cardBgGradient is imported from story.ts and used for the full-screen vivid background
 
 function todayLocal(): string {
   const d = new Date()
@@ -189,20 +191,27 @@ export default function FortuneStoryPage() {
   // 배경 오행색 — 카드마다 뚜렷하게 변화
   const stemColor = story ? ohaeng[STEM_OHAENG[story.day_ganji.stem] ?? '토'] : ohaeng['토']
   const accentColor = cardAccentColor(currentCard, stemColor)
+  // Wrapped식 풀스크린 비비드 배경
+  const bgGradient = currentCard
+    ? cardBgGradient(currentCard.kind, (currentCard as { category_key?: string }).category_key, stemColor)
+    : 'linear-gradient(180deg, #00857D 0%, #04332F 100%)'
 
   return (
     /* 풀스크린 오버레이 — fixed inset-0, max-w 640px 중앙 정렬 */
     <div
       className="fixed inset-0 z-50 flex flex-col"
-      style={{ background: 'linear-gradient(180deg, #00857D 0%, #04332F 100%)' }}
+      style={{
+        background: bgGradient,
+        transition: 'background 500ms ease-in-out',
+      }}
     >
-      {/* 카드별 오행색 배경 오버레이 — 부드러운 transition */}
+      {/* 카드별 오행색 보조 오버레이 — 은은한 광원 효과 */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background: accentColor
-            ? `radial-gradient(120% 80% at 50% -10%, ${hexToRgba(accentColor, 0.55)} 0%, transparent 60%)`
+            ? `radial-gradient(80% 60% at 70% 20%, ${hexToRgba(accentColor, 0.22)} 0%, transparent 60%)`
             : 'none',
           transition: 'background 500ms ease-in-out',
         }}
@@ -231,6 +240,14 @@ export default function FortuneStoryPage() {
           80%  { opacity: 0.8; }
           100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.4) rotate(540deg); opacity: 0; }
         }
+        @keyframes score-pulse {
+          0%,100% { filter: drop-shadow(0 0 18px currentColor) drop-shadow(0 0 8px currentColor); }
+          50%     { filter: drop-shadow(0 0 32px currentColor) drop-shadow(0 0 14px currentColor); }
+        }
+        @keyframes badge-pop {
+          from { transform: scale(0) rotate(-12deg); opacity: 0; }
+          to   { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
         .story-card-anim.story-dir-next { animation: story-slide-next 360ms cubic-bezier(0.22,1,0.36,1) both; }
         .story-card-anim.story-dir-prev { animation: story-slide-prev 360ms cubic-bezier(0.22,1,0.36,1) both; }
         .story-card-anim.story-dir-none { animation: story-fade-in 360ms ease-out both; }
@@ -245,6 +262,8 @@ export default function FortuneStoryPage() {
           .story-card-anim.story-dir-prev,
           .story-card-anim.story-dir-none,
           .story-stagger > * { animation: none !important; }
+          [style*="score-pulse"],
+          [style*="badge-pop"] { animation: none !important; }
         }
       `}</style>
       {/* 중앙 정렬 컨테이너 */}

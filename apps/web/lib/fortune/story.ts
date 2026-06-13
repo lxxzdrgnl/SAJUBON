@@ -4,6 +4,7 @@
  * - 카드 전환 방향
  * - 점수 카운트업 스텝
  * - 카테고리 → 오행색 매핑 (배경 그라디언트 오버레이용)
+ * - 카드 종류별 풀스크린 비비드 배경 그라디언트 (Wrapped식)
  */
 import { ohaeng } from '@sajuguri/design'
 
@@ -95,4 +96,54 @@ export function hexToRgba(hex: string, alpha: number): string {
   const g = (int >> 8) & 255
   const b = int & 255
   return `rgba(${r},${g},${b},${alpha})`
+}
+
+/**
+ * Wrapped식 카드 풀스크린 배경 그라디언트.
+ * 딥틸 베이스 위 미묘한 radial 대신 화면 전체를 뚜렷하게 채우는 색.
+ * 카드 넘길 때 확연히 바뀌도록 오행 5색 + 경고 오렌지 + 요약 골드 계열.
+ */
+export function cardBgGradient(kind: string, categoryKey?: string, stemColor?: string): string {
+  // intro — 천간 오행색 기반 (밝은 쪽으로 시작 → 깊은 틸로)
+  if (kind === 'intro') {
+    const base = stemColor ?? ohaeng['토']
+    return `linear-gradient(145deg, ${darken(base, 0.35)} 0%, #04332F 100%)`
+  }
+  // overall — 오렌지 점수 색 강렬하게
+  if (kind === 'overall') {
+    return 'linear-gradient(145deg, #6B3200 0%, #3A1800 50%, #04332F 100%)'
+  }
+  // category — 오행색 기반 풀컬러
+  if (kind === 'category' && categoryKey) {
+    const col = categoryColor(categoryKey)
+    if (col) return `linear-gradient(145deg, ${darken(col, 0.3)} 0%, ${darken(col, 0.55)} 50%, #04332F 100%)`
+  }
+  // caution — 깊은 붉은 경고
+  if (kind === 'caution') {
+    return 'linear-gradient(145deg, #5A1800 0%, #2E0E00 50%, #04332F 100%)'
+  }
+  // color — 보라/골드 계열 드리밍
+  if (kind === 'color') {
+    return 'linear-gradient(145deg, #2A1A4E 0%, #1A0E35 50%, #04332F 100%)'
+  }
+  // summary — 골드 상단 브랜드 느낌
+  if (kind === 'summary') {
+    return 'linear-gradient(145deg, #3A2800 0%, #1E1600 50%, #04332F 100%)'
+  }
+  // fallback
+  return 'linear-gradient(180deg, #00857D 0%, #04332F 100%)'
+}
+
+/**
+ * hex 색상을 어둡게 (amount 0..1 — 0은 원색, 1은 검정).
+ * Wrapped 비비드 배경: 너무 밝으면 흰 텍스트 가독성 ↓ → 중간 어두운 채도로.
+ */
+function darken(hex: string, amount: number): string {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
+  if (!m) return hex
+  const int = parseInt(m[1], 16)
+  const r = Math.round(((int >> 16) & 255) * (1 - amount))
+  const g = Math.round(((int >> 8) & 255) * (1 - amount))
+  const b = Math.round((int & 255) * (1 - amount))
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
