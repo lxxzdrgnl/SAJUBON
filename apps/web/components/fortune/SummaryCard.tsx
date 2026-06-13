@@ -20,10 +20,6 @@ import { calcScoreBars } from '@/lib/fortune/canvas'
 import { hexToRgba, type CardPalette } from '@/lib/fortune/story'
 
 const BAR_LOW_THRESHOLD = 60
-// 캡처 이미지(캔버스) 전용 비비드 옐로 스킨 — DOM palette와 동일 톤
-const CARD_BG = '#FFD900'
-const CARD_INK = '#15233A'
-const CARD_LOW = '#FF2D78' // 저점 강조 (핫핑크 — 옐로 위 또렷)
 
 const CATEGORY_LABELS: Record<string, string> = {
   exam:   '학업',
@@ -49,7 +45,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   const [sharing, setSharing] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const { ink, inkSoft } = palette
+  const { ink, inkSoft, accent, base } = palette
 
   // 마운트 시 점수 바 0 → 차오름 (DOM 전용). reduced-motion 시 즉시 채움.
   const [revealed, setRevealed] = useState(false)
@@ -89,47 +85,47 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
 
       await document.fonts.ready
 
-      // 비비드 옐로 배경 꽉 채움
-      ctx.fillStyle = CARD_BG
+      // 현재 슬라이드 팔레트 단색으로 배경 채움 (화면과 동일)
+      ctx.fillStyle = base
       ctx.fillRect(0, 0, 1080, 1920)
 
       const PAD = 90
       ctx.textBaseline = 'top'
 
       // 브랜드 워터마크 상단
-      ctx.fillStyle = CARD_INK
+      ctx.fillStyle = ink
       ctx.font = '900 36px "Pretendard", "Noto Sans KR", sans-serif'
       ctx.fillText('사주구리', PAD, PAD)
 
       // 날짜
-      ctx.fillStyle = hexToRgba(CARD_INK, 0.55)
+      ctx.fillStyle = hexToRgba(ink, 0.55)
       ctx.font = '600 34px "Pretendard", "Noto Sans KR", sans-serif'
       ctx.fillText(story.date, PAD, PAD + 56)
 
       // 제목
-      ctx.fillStyle = CARD_INK
+      ctx.fillStyle = ink
       ctx.font = '900 78px "Pretendard", "Noto Sans KR", sans-serif'
       ctx.fillText(t('headerTitle'), PAD, PAD + 120)
 
       // 총점 초대형 히어로
       if (avgScore !== undefined) {
-        ctx.fillStyle = CARD_INK
+        ctx.fillStyle = ink
         ctx.font = '900 280px "Pretendard", "Noto Sans KR", sans-serif'
         ctx.fillText(String(avgScore), PAD - 10, PAD + 210)
-        ctx.fillStyle = hexToRgba(CARD_INK, 0.5)
+        ctx.fillStyle = hexToRgba(ink, 0.5)
         ctx.font = '800 48px "Pretendard", "Noto Sans KR", sans-serif'
         ctx.fillText('/100', PAD - 10 + (avgScore >= 100 ? 420 : 320), PAD + 420)
       }
 
       // 키워드 인용 초대형
       if (story.keyword) {
-        ctx.fillStyle = CARD_LOW
+        ctx.fillStyle = accent
         ctx.font = '900 72px "Pretendard", "Noto Sans KR", sans-serif'
         ctx.fillText(`"${story.keyword}"`, PAD, PAD + 540)
       }
 
       // 구분선
-      ctx.strokeStyle = hexToRgba(CARD_INK, 0.18)
+      ctx.strokeStyle = hexToRgba(ink, 0.18)
       ctx.lineWidth = 3
       ctx.beginPath()
       ctx.moveTo(PAD, PAD + 660)
@@ -146,25 +142,25 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
         const isLow = bar.score < BAR_LOW_THRESHOLD
 
         // 라벨
-        ctx.fillStyle = hexToRgba(CARD_INK, 0.85)
+        ctx.fillStyle = hexToRgba(ink, 0.85)
         ctx.font = '800 36px "Pretendard", "Noto Sans KR", sans-serif'
         ctx.fillText(bar.label, PAD, y + 4)
 
         // 바 배경
-        ctx.fillStyle = hexToRgba(CARD_INK, 0.14)
+        ctx.fillStyle = hexToRgba(ink, 0.14)
         ctx.beginPath()
         ctx.roundRect(bar.barX, y, bar.barMaxWidth, BAR_H, 10)
         ctx.fill()
 
         // 바 채움
         const fillW = Math.round((bar.score / 100) * bar.barMaxWidth)
-        ctx.fillStyle = isLow ? CARD_LOW : CARD_INK
+        ctx.fillStyle = isLow ? accent : ink
         ctx.beginPath()
         ctx.roundRect(bar.barX, y, fillW, BAR_H, 10)
         ctx.fill()
 
         // 점수 숫자
-        ctx.fillStyle = isLow ? CARD_LOW : CARD_INK
+        ctx.fillStyle = isLow ? accent : ink
         ctx.font = '900 38px "Pretendard", "Noto Sans KR", sans-serif'
         ctx.textAlign = 'right'
         ctx.fillText(String(bar.score), bar.valueX, y + 2)
@@ -172,7 +168,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       }
 
       // 하단 워터마크
-      ctx.fillStyle = hexToRgba(CARD_INK, 0.45)
+      ctx.fillStyle = hexToRgba(ink, 0.45)
       ctx.font = '600 32px "Pretendard", "Noto Sans KR", sans-serif'
       ctx.fillText('사주구리 sajuguri', PAD, 1920 - PAD - 40)
 
@@ -290,7 +286,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
         {orderedKeys.map((key, i) => {
           const score = story.scores[key] ?? 0
           const isLow = score < BAR_LOW_THRESHOLD
-          const barColor = isLow ? CARD_LOW : ink
+          const barColor = isLow ? accent : ink
           return (
             <div key={key} className="flex items-center gap-3">
               <span className="w-10 shrink-0 text-[12px] font-black tracking-wide" style={{ color: inkSoft }}>
@@ -312,7 +308,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
               </div>
               <span
                 className="w-8 shrink-0 text-right text-[16px] font-black tabular-nums"
-                style={{ color: isLow ? CARD_LOW : ink }}
+                style={{ color: isLow ? accent : ink }}
               >
                 {score}
               </span>
@@ -342,7 +338,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
           <a
             href="/fortune"
             className="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-black transition-all duration-100 active:translate-y-[2px]"
-            style={{ background: ink, color: CARD_BG }}
+            style={{ background: ink, color: base }}
             onClick={(e) => e.stopPropagation()}
           >
             {t('shareCta')}
@@ -353,7 +349,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
         {/* 이미지 저장 — 잉크 솔리드 필 */}
         <button
           className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-black disabled:opacity-50 transition-all duration-100 active:translate-y-[2px]"
-          style={{ background: ink, color: CARD_BG }}
+          style={{ background: ink, color: base }}
           onClick={(e) => { e.stopPropagation(); handleSaveImage() }}
           disabled={saving}
         >

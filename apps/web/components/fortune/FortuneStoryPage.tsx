@@ -183,8 +183,9 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
   const isSummary = currentCard?.kind === 'summary'
 
   // Wrapped 비비드 스킨 — 카드마다 색이 확 바뀐다. 시드(날짜+간지+이름)로 사람·날짜마다 셔플.
+  // day_ganji는 날짜 공통이라 변별력이 없다 → 사람마다 다른 scores를 시드에 포함.
   const colorSeed = story
-    ? hashSeed(`${story.date}|${JSON.stringify(story.day_ganji)}|${story.profile_name ?? ''}`)
+    ? hashSeed(`${story.date}|${story.profile_name ?? ''}|${JSON.stringify(story.scores)}`)
     : 0
   const palette = currentCard
     ? cardPalette(currentCard.kind, (currentCard as { category_key?: string }).category_key, colorSeed)

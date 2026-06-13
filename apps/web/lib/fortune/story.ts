@@ -108,6 +108,8 @@ export function hexToRgba(hex: string, alpha: number): string {
 export interface CardPalette {
   /** 슬라이드 풀스크린 배경 (비비드 단색 또는 같은 색조의 미세 2색 grad) */
   bg: string
+  /** 배경 단색 hex — 캔버스(이미지 저장)처럼 그라데이션을 못 쓰는 곳에서 사용 */
+  base: string
   /** 헤드라인·점수·본문 메인 텍스트색 (배경 대비 최우선) */
   ink: string
   /** 본문 보조 텍스트색 (ink의 약화 버전) */
@@ -145,9 +147,6 @@ export const POOL = [
   '#6A4FE0', // 19 인디고바이올렛
 ] as const
 
-const ACCENT_LIGHT = '#FFD900' // 밝은 잉크일 때 포인트
-const ACCENT_DARK = '#1B2A6B'  // 어두운 잉크일 때 포인트
-
 /** 카테고리 키 → 풀 인덱스 (모두 서로 다름). */
 const CATEGORY_SLOT: Record<string, number> = {
   exam: 8, money: 3, love: 0, career: 11, health: 1, social: 7,
@@ -164,18 +163,18 @@ function slotIndex(kind: string, categoryKey?: string): number {
   return 10 // fallback
 }
 
+/** hex → sRGB 상대 휘도 근사(0~1). */
+function lum(hex: string): number {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
+  if (!m) return 1
+  const int = parseInt(m[1], 16)
+  return (0.299 * ((int >> 16) & 255) + 0.587 * ((int >> 8) & 255) + 0.114 * (int & 255)) / 255
+}
+
 /** 배경색 위에서 가독성 높은 잉크색을 고른다 (상대 휘도 기반). */
 function inkFor(bgHex: string): { ink: string; inkLight: boolean } {
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(bgHex.trim())
-  if (!m) return { ink: INK_WHITE, inkLight: true }
-  const int = parseInt(m[1], 16)
-  const r = (int >> 16) & 255
-  const g = (int >> 8) & 255
-  const b = int & 255
-  // sRGB 상대 휘도 근사
-  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   // 밝은 배경(라임·옐로 등)은 네이비 잉크, 그 외엔 흰 잉크
-  return lum > 0.62 ? { ink: INK_DARK, inkLight: false } : { ink: INK_WHITE, inkLight: true }
+  return lum(bgHex) > 0.62 ? { ink: INK_DARK, inkLight: false } : { ink: INK_WHITE, inkLight: true }
 }
 
 /** ink hex + alpha → rgba (보조 텍스트색). */
@@ -192,6 +191,58 @@ function lighten(hex: string, amount: number): string {
   const g = Math.round(((int >> 8) & 255) + (255 - ((int >> 8) & 255)) * amount)
   const b = Math.round((int & 255) + (255 - (int & 255)) * amount)
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+}
+
+/** hex → HSL([h0~360, s0~1, l0~1]). */
+function hexToHsl(hex: string): [number, number, number] {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
+  if (!m) return [0, 0, 0]
+  const int = parseInt(m[1], 16)
+  const r = ((int >> 16) & 255) / 255
+  const g = ((int >> 8) & 255) / 255
+  const b = (int & 255) / 255
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  let h = 0
+  let s = 0
+  const d = max - min
+  if (d !== 0) {
+    s = d / (1 - Math.abs(2 * l - 1))
+    if (max === r) h = ((g - b) / d) % 6
+    else if (max === g) h = (b - r) / d + 2
+    else h = (r - g) / d + 4
+    h *= 60
+    if (h < 0) h += 360
+  }
+  return [h, s, l]
+}
+
+/** HSL → hex. */
+function hslToHex(h: number, s: number, l: number): string {
+  const c = (1 - Math.abs(2 * l - 1)) * s
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
+  const mm = l - c / 2
+  let r = 0
+  let g = 0
+  let b = 0
+  if (h < 60) [r, g, b] = [c, x, 0]
+  else if (h < 120) [r, g, b] = [x, c, 0]
+  else if (h < 180) [r, g, b] = [0, c, x]
+  else if (h < 240) [r, g, b] = [0, x, c]
+  else if (h < 300) [r, g, b] = [x, 0, c]
+  else [r, g, b] = [c, 0, x]
+  const to = (v: number) => Math.round((v + mm) * 255).toString(16).padStart(2, '0')
+  return `#${to(r)}${to(g)}${to(b)}`
+}
+
+/** 보색 악센트 — 색상환 180° 회전 + 가독 위해 명도 대비(어두운 배경엔 밝게, 밝은 배경엔 어둡게). 색 이론 기반이라 항상 어울린다. */
+function complementAccent(base: string): string {
+  const [h, s, l] = hexToHsl(base)
+  const h2 = (h + 180) % 360
+  const l2 = l < 0.5 ? Math.min(0.72, l + 0.3) : Math.max(0.32, l - 0.28)
+  const s2 = Math.min(1, Math.max(0.6, s))
+  return hslToHex(h2, s2, l2)
 }
 
 /** 단색 비비드 배경 — 같은 색조로 위가 살짝 밝은 미세 grad (뭉갠 다크 grad 아님). */
@@ -224,18 +275,24 @@ function shuffledPool(seed: number): readonly string[] {
   return arr
 }
 
-/** 단일 베이스색 → 비비드 스킨(배경·잉크·악센트). 검토용 /palette 페이지에서도 사용. */
-export function paletteFromBase(base: string): CardPalette {
+/** 단일 베이스색 → 비비드 스킨(배경·잉크·악센트). 검토용 /palette 페이지에서도 사용.
+ *  accent 미지정 시 잉크 밝기 기반 기본값(옐로/네이비). */
+export function paletteFromBase(base: string, accent?: string): CardPalette {
   const { ink, inkLight } = inkFor(base)
-  const accent = inkLight ? ACCENT_LIGHT : ACCENT_DARK
-  return { bg: vividBg(base), ink, inkSoft: softInk(ink), accent, inkLight }
+  // 기본 악센트 = 보색(확 대비되는 포인트). 명시 지정 시 그 값 사용.
+  const acc = accent ?? complementAccent(base)
+  return { bg: vividBg(base), base, ink, inkSoft: softInk(ink), accent: acc, inkLight }
 }
 
 /** 카드 종류/카테고리 → Wrapped 비비드 스킨. seed로 사람·날짜마다 색이 셔플(결정론·무충돌). */
 export function cardPalette(kind: string, categoryKey?: string, seed = 0): CardPalette {
   // 슬롯 인덱스(모두 distinct)를 시드 셔플된 풀에 매핑 → 한 운세 내 무충돌 + 시드별 변주.
-  const pool = shuffledPool(seed)
-  const base = pool[slotIndex(kind, categoryKey) % pool.length]
+  const idx = slotIndex(kind, categoryKey)
+  // 배경: 시드 셔플 풀에서 슬롯 인덱스로 — 한 운세 내 슬롯마다 서로 다른 색.
+  const bgPool = shuffledPool(seed)
+  const base = bgPool[idx % bgPool.length]
+
+  // 악센트는 paletteFromBase 기본값(보색)을 사용 — 확 대비되는 포인트, 배경마다 자동 변주.
   return paletteFromBase(base)
 }
 
