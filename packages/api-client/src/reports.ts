@@ -1,5 +1,6 @@
 import type { ApiClient } from './client'
 import type { SajuCalcRequest } from './types'
+import type { JobCreated } from './jobs'
 
 // ── 공통 API 계약 타입 (plan §트랙B — 변경 금지) ──────────────────────────────
 
@@ -60,12 +61,12 @@ export interface ShareReportResponse {
 
 // ── API 함수 ──────────────────────────────────────────────────────────────────
 
-/** POST /api/reports — 리포트 생성 + 저장 (로그인 필수). 201 ReportDetail */
-export function createReport(
+/** POST /api/reports — 리포트 생성 job 등록 (로그인 필수). 202 { job_id } */
+export function createReportJob(
   api: ApiClient,
   body: CreateReportBody,
-): Promise<ReportDetail> {
-  return api.post<ReportDetail>('/api/reports', body)
+): Promise<JobCreated> {
+  return api.post<JobCreated>('/api/reports', body)
 }
 
 /** GET /api/reports — 내 리포트 목록 (로그인). */

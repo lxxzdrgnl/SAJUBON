@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ApiClient } from './client'
-import { createReport, listReports, getReport, deleteReport, shareReport, getSharedReport } from './reports'
+import { createReportJob, listReports, getReport, deleteReport, shareReport, getSharedReport } from './reports'
 
 const mockFetch = vi.fn()
 beforeEach(() => { vi.stubGlobal('fetch', mockFetch); mockFetch.mockReset() })
@@ -22,20 +22,20 @@ const mockDetail = {
   },
 }
 
-describe('createReport', () => {
-  it('POST /api/reports with body', async () => {
-    mockFetch.mockResolvedValue(new Response(JSON.stringify(mockDetail), { status: 201 }))
+describe('createReportJob', () => {
+  it('POST /api/reports with body — 202 { job_id }', async () => {
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ job_id: 7 }), { status: 202 }))
     const api = new ApiClient('http://x')
     const body = {
       birth_input: { birth_date: '1990-03-15', birth_time: null, gender: 'male' as const },
       request_topics: '이직 시기',
     }
-    const r = await createReport(api, body)
+    const r = await createReportJob(api, body)
     const [url, init] = mockFetch.mock.calls[0]
     expect(url).toBe('http://x/api/reports')
     expect(init.method).toBe('POST')
     expect(JSON.parse(init.body).request_topics).toBe('이직 시기')
-    expect(r.id).toBe(1)
+    expect(r.job_id).toBe(7)
   })
 })
 

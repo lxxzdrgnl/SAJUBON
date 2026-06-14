@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ApiClient } from './client'
 import {
-  createCompatibilityReport,
-  createCompatibilityFromSession,
+  createCompatibilityJob,
+  createCompatibilityJobFromSession,
   listCompatibilityReports,
   getCompatibilityReport,
   shareCompatibilityReport,
@@ -81,32 +81,31 @@ const mockSummary: CompatibilityReportSummary = {
   created_at: '2026-06-13T00:00:00Z',
 }
 
-describe('createCompatibilityReport', () => {
-  it('POST /api/compatibility with body', async () => {
-    mockFetch.mockResolvedValue(new Response(JSON.stringify(mockDetail), { status: 201 }))
+describe('createCompatibilityJob', () => {
+  it('POST /api/compatibility with body — 202 { job_id }', async () => {
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ job_id: 3 }), { status: 202 }))
     const body = {
       person_a: mockPersonA,
       person_b: mockPersonB,
       request_topics: '결혼 시기',
     }
-    const r = await createCompatibilityReport(makeApi(), body)
+    const r = await createCompatibilityJob(makeApi(), body)
     const [url, init] = mockFetch.mock.calls[0]
     expect(url).toBe('http://localhost:8000/api/compatibility')
     expect(init.method).toBe('POST')
     expect(JSON.parse(init.body).request_topics).toBe('결혼 시기')
-    expect(r.id).toBe(1)
-    expect(r.score.total).toBe(97)
+    expect(r.job_id).toBe(3)
   })
 })
 
-describe('createCompatibilityFromSession', () => {
-  it('POST /api/compatibility/from-session/{sessionId}', async () => {
-    mockFetch.mockResolvedValue(new Response(JSON.stringify(mockDetail), { status: 201 }))
-    const r = await createCompatibilityFromSession(makeApi(), 'sess-uuid-123')
+describe('createCompatibilityJobFromSession', () => {
+  it('POST /api/compatibility/from-session/{sessionId} — 202 { job_id }', async () => {
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ job_id: 8 }), { status: 202 }))
+    const r = await createCompatibilityJobFromSession(makeApi(), 'sess-uuid-123')
     const [url, init] = mockFetch.mock.calls[0]
     expect(url).toBe('http://localhost:8000/api/compatibility/from-session/sess-uuid-123')
     expect(init.method).toBe('POST')
-    expect(r.synastry.day_ten_god).toBe('정재')
+    expect(r.job_id).toBe(8)
   })
 })
 

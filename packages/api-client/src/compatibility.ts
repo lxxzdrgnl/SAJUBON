@@ -6,21 +6,22 @@ import type {
   CompatibilityShareRequest,
   CompatibilityShareResponse,
 } from './types'
+import type { JobCreated } from './jobs'
 
-/** POST /api/compatibility — 궁합 리포트 생성+저장 (로그인 필수). 201 CompatibilityReportDetail */
-export function createCompatibilityReport(
+/** POST /api/compatibility — 궁합 생성 job 등록. 202 { job_id } */
+export function createCompatibilityJob(
   api: ApiClient,
   body: CompatibilityReportRequest,
-): Promise<CompatibilityReportDetail> {
-  return api.post<CompatibilityReportDetail>('/api/compatibility', body)
+): Promise<JobCreated> {
+  return api.post<JobCreated>('/api/compatibility', body)
 }
 
-/** POST /api/compatibility/from-session/{sessionId} — 챗 세션 두 사주로 궁합 리포트 생성 (소유자). 201 */
-export function createCompatibilityFromSession(
+/** POST /api/compatibility/from-session/{id} — 세션 기반 궁합 생성 job. 202 */
+export function createCompatibilityJobFromSession(
   api: ApiClient,
   sessionId: string,
-): Promise<CompatibilityReportDetail> {
-  return api.post<CompatibilityReportDetail>(`/api/compatibility/from-session/${sessionId}`)
+): Promise<JobCreated> {
+  return api.post<JobCreated>(`/api/compatibility/from-session/${sessionId}`)
 }
 
 /** GET /api/compatibility — 내 궁합 리포트 목록 (로그인). */
