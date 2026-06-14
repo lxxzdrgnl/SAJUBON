@@ -75,7 +75,11 @@ async def lifespan(app: FastAPI):
 
     from arq import create_pool
     from arq.connections import RedisSettings
-    app.state.arq = await create_pool(RedisSettings.from_dsn(settings.redis_url))
+    from worker import QUEUE_NAME
+    app.state.arq = await create_pool(
+        RedisSettings.from_dsn(settings.redis_url),
+        default_queue_name=QUEUE_NAME,
+    )
 
     async with AsyncPostgresSaver.from_conn_string(settings.postgres_url) as checkpointer:
         await checkpointer.setup()
