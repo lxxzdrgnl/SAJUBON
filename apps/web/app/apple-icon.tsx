@@ -8,7 +8,8 @@ export const contentType = 'image/png'
 export const runtime = 'nodejs'
 
 export default function AppleIcon() {
-  const svg = readFileSync(join(process.cwd(), 'public', 'mascot.svg'), 'utf-8')
+  // 프레임리스(흰 사각 테두리 제거) 마스코트 — 시안 6번: 옐로 배경 + 살짝 확대.
+  const svg = readFileSync(join(process.cwd(), 'public', 'mascot-icon.svg'), 'utf-8')
   const src = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
   return new ImageResponse(
     (
@@ -19,11 +20,12 @@ export default function AppleIcon() {
           height: '100%',
           alignItems: 'center',
           justifyContent: 'center',
+          overflow: 'hidden',
           background: '#FFD900',
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} width={168} height={168} alt="" />
+        <img src={src} width={202} height={202} alt="" />
       </div>
     ),
     size,
