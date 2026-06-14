@@ -173,14 +173,37 @@ async def create_share(
             share_url=_share_url(record.share_token),
         )
 
-    # 스토리 스냅샷을 신규 저장 (토큰 충돌 시 1회 재생성)
+    # 스토리 스냅샷을 신규 저장. 로그인 사용자는 (user_id, birth_hash, date) 키로
+    # 본인 저장 레코드와 충돌할 수 있으므로(재공유), 충돌 시 기존 레코드를 재사용한다.
     story = req.story
     payload = story.model_dump()
     birth_hash = _birth_hash(req.birth_input.model_dump()) if req.birth_input else ""
     parsed_date = _date.fromisoformat(story.date)
-    record = None
-    for _ in range(2):
-        try:
+    try:
+        record = await record_crud.insert_share_snapshot(
+            db,
+            user_id=user_id,
+            birth_hash=birth_hash,
+            date=parsed_date,
+            profile_name=story.profile_name,
+            keyword=story.keyword,
+            payload=payload,
+            share_token=generate_share_token(),
+        )
+        await db.commit()
+        await db.refresh(record)
+    except IntegrityError:
+        # 같은 키의 기존 레코드 재사용 — 토큰 발급(없으면) + 이름/키워드/payload 최신화.
+        await db.rollback()
+        record = (
+            await record_crud.get_by_key(
+                db, user_id=user_id, birth_hash=birth_hash, date=parsed_date
+            )
+            if user_id is not None
+            else None
+        )
+        if record is None:
+            # 키 충돌이 아니라 토큰 충돌이었던 경우 — 토큰만 바꿔 1회 재시도.
             record = await record_crud.insert_share_snapshot(
                 db,
                 user_id=user_id,
@@ -191,10 +214,14 @@ async def create_share(
                 payload=payload,
                 share_token=generate_share_token(),
             )
-            break
-        except IntegrityError:
-            await db.rollback()
-    await db.commit()
+        else:
+            if record.share_token is None:
+                record.share_token = generate_share_token()
+            record.profile_name = story.profile_name
+            record.keyword = story.keyword
+            record.payload = payload
+        await db.commit()
+        await db.refresh(record)
     return DailyShareResponse(
         share_token=record.share_token,
         share_url=_share_url(record.share_token),
