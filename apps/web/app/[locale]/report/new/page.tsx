@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { api } from '@/lib/api'
-import { createReport } from '@sajuguri/api-client'
+import { createReport, listReports } from '@sajuguri/api-client'
 import type { SajuCalcRequest } from '@sajuguri/api-client'
 import PageHeading from '@/components/ui/PageHeading'
 
@@ -89,13 +89,40 @@ export default function ReportNewPage() {
       const status = (err as { status?: number })?.status
       if (status === 401) {
         setError(t('errorLogin'))
+        setLoading(false)
       } else if (status === 429) {
         setError(t('errorLimit'))
+        setLoading(false)
       } else {
-        setError(t('errorFallback'))
+        // 백엔드는 성공했는데 클라이언트가 끊긴 경우(모바일 Safari 타임아웃 등)
+        // 방금 만든 리포트를 찾아 복구한다.
+        const recovered = await recoverRecentReport()
+        if (recovered) {
+          router.replace(`/report/${recovered}`)
+        } else {
+          setError(t('errorFallback'))
+          setLoading(false)
+        }
       }
-      setLoading(false)
     }
+  }
+
+  // createReport 응답을 못 받았을 때 방금 생성된 리포트를 폴링으로 복구
+  async function recoverRecentReport(): Promise<number | null> {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const reports = await listReports(api)
+        const newest = reports[0]
+        if (newest) {
+          const age = Date.now() - new Date(newest.created_at).getTime()
+          if (age < 3 * 60 * 1000) return newest.id
+        }
+      } catch {
+        // 무시하고 재시도
+      }
+      await new Promise(r => setTimeout(r, 3000))
+    }
+    return null
   }
 
   // 로딩 중 화면
