@@ -2157,14 +2157,19 @@ ssh home-server 'grep -q REDIS_URL ~/servers/sajuguri/backend.env || echo "REDIS
     image: servers-sajuguri-backend
     container_name: sajuguri-worker
     restart: always
-    command: arq worker.WorkerSettings
-    env_file:
-      - ./sajuguri/backend.env
+    command: uv run arq worker.WorkerSettings   # 이미지가 uv 기반 — bare `arq`는 PATH에 없어 실패
+    env_file: ./sajuguri/backend.env
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     networks:
       - blueming-net
-    depends_on:
-      - redis
 ```
+> **배포에서 확인됨**: backend Dockerfile CMD가 `uv run ...`라 worker도 **`uv run arq`** 필수(bare `arq`는 `executable not found`). backend가 `build:`이므로 worker는 자동 빌드 이미지명 `servers-sajuguri-backend`를 `image:`로 재사용(중복 빌드 없음).
 > 실제 backend 서비스의 `image`/`env_file`/`networks` 키 이름을 그대로 따른다(파일을 먼저 열어 확인). `redis`가 같은 compose에 있으므로 `depends_on: redis` 가능.
 
 - [ ] **Step 3: 마이그레이션 적용 + 기동 (서버)**
