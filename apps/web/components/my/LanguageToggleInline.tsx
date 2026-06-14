@@ -14,7 +14,7 @@ export default function LanguageToggleInline() {
   function setLocale(next: 'ko' | 'en') {
     if (next === locale) return
     persistLocale(next)
-    router.replace(pathname, { locale: next })
+    router.replace(pathname, { locale: next, scroll: false })
   }
 
   return (
