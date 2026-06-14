@@ -9,6 +9,12 @@ on:
       - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:  # 수동 트리거 (BACKEND_ENV 시크릿 변경 후 사용)
 
+# 백엔드·웹 배포가 같은 서버 레포를 공유하므로 동시에 돌면 git ref 레이스가 난다.
+# 동일 그룹으로 묶어 순차 실행(진행 중인 배포는 취소하지 않고 대기).
+concurrency:
+  group: sajuguri-server-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -31,7 +37,8 @@ jobs:
             BACKENDENV_EOF
 
             cd ~/servers/sajuguri/repo
-            git fetch origin
+            # ref 불일치 자가복구: 평소 fetch, 실패 시 원격추적 ref 삭제 후 재fetch
+            git fetch --prune --force origin || { git update-ref -d refs/remotes/origin/main || true; git update-ref -d refs/remotes/origin/dev || true; git fetch --prune --force origin; }
             git reset --hard origin/main
 
             cd ~/servers
