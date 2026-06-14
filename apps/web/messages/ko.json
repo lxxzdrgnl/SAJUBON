@@ -181,7 +181,9 @@
       "shared": {
         "metaTitle": "{name}님의 만세력 · {ilju}",
         "metaTitleFallback": "사주구리",
+        "metaTitleAnon": "사주구리 만세력 · {ilju}",
         "metaDescription": "{name}님의 만세력 결과를 확인해보세요.",
+        "metaDescriptionAnon": "사주구리에서 만세력을 확인해보세요.",
         "notFoundTitle": "공유 링크를 찾을 수 없어요.",
         "notFoundBody": "링크가 만료됐거나 잘못된 주소예요.",
         "ctaTitle": "나도 내 사주가 궁금하다면?",
@@ -671,6 +673,7 @@
       "title": "링크 공유",
       "copy": "복사",
       "copied": "복사됨",
+      "copiedBanner": "링크가 복사되었습니다!",
       "share": "공유",
       "close": "닫기"
     }

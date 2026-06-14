@@ -127,8 +127,18 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
           </button>
         </div>
 
+        {/* 자동 복사 완료 배너 — 모달 열리는 순간 복사됐음을 명확히 알림 */}
+        {copied && (
+          <div className="mx-4 mt-3 flex items-center justify-center gap-1.5 rounded-xl border-2 border-ink bg-yellow py-2 text-[13px] font-black text-ink">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            {t('copiedBanner')}
+          </div>
+        )}
+
         {/* URL 표시 필드 */}
-        <div className="px-4 pt-4 pb-3">
+        <div className="px-4 pt-3 pb-3">
           <div className="rounded-xl border-2 border-ink bg-[#F5F5F0] px-3 py-2.5">
             <p
               className="break-all text-[12px] font-mono leading-relaxed text-ink"

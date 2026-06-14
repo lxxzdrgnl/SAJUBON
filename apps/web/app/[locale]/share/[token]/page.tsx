@@ -35,10 +35,11 @@ export async function generateMetadata({
     return { title: t('metaTitleFallback'), robots: { index: false } }
   }
 
-  const name = shared.birth_input?.name || t('metaTitleFallback')
+  // 이름이 있으면 "{이름}님의 만세력", 없으면(게스트) "님의" 없는 익명 제목.
+  const name = shared.birth_input?.name
   const ilju = shared.calc_snapshot.day_pillar.ganji_name
-  const title = t('metaTitle', { name, ilju })
-  const description = t('metaDescription', { name })
+  const title = name ? t('metaTitle', { name, ilju }) : t('metaTitleAnon', { ilju })
+  const description = name ? t('metaDescription', { name }) : t('metaDescriptionAnon')
 
   return {
     title,

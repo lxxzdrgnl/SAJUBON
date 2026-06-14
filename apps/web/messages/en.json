@@ -181,7 +181,9 @@
       "shared": {
         "metaTitle": "{name}'s Saju chart · {ilju}",
         "metaTitleFallback": "SajuGuri",
+        "metaTitleAnon": "SajuGuri Saju Chart · {ilju}",
         "metaDescription": "Check out {name}'s Saju chart.",
+        "metaDescriptionAnon": "Check out this Saju chart on SajuGuri.",
         "notFoundTitle": "Share link not found.",
         "notFoundBody": "The link has expired or the address is invalid.",
         "ctaTitle": "Curious about your own Saju?",
@@ -671,6 +673,7 @@
       "title": "Share link",
       "copy": "Copy",
       "copied": "Copied",
+      "copiedBanner": "Link copied!",
       "share": "Share",
       "close": "Close"
     }

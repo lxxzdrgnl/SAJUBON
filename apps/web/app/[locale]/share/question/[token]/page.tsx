@@ -30,8 +30,10 @@ export async function generateMetadata({
     return { title: t('notFoundTitle'), robots: { index: false } }
   }
 
-  const name = detail.name || '사주구리'
-  const title = `${name}님의 한줄상담 · ${detail.headline} | 사주구리`
+  // 이름이 있으면 "{이름}님의 한줄상담", 없으면(게스트) "님의" 없는 익명 제목.
+  const title = detail.name
+    ? `${detail.name}님의 한줄상담 · ${detail.headline} | 사주구리`
+    : `사주구리 한줄상담 · ${detail.headline}`
   return {
     title,
     description: detail.headline,

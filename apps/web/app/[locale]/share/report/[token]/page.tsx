@@ -12,21 +12,26 @@ export async function generateMetadata({
   params: Promise<{ token: string }>
 }): Promise<Metadata> {
   const { token } = await params
-  let name = '사주구리'
+  let profileName = ''
   try {
     const report = await getSharedReport(serverApi, token)
-    name = report.profile_name || name
+    profileName = report.profile_name || ''
   } catch {
     /* fallback */
   }
-  const title = `${name}님의 사주 리포트 | 사주구리`
+  // 이름이 있으면 "{이름}님의 사주 리포트", 없으면(게스트) "님의" 없는 익명 제목.
+  const hasName = Boolean(profileName)
+  const title = hasName ? `${profileName}님의 사주 리포트 | 사주구리` : '사주구리 사주 리포트'
+  const description = hasName
+    ? `${profileName}님의 AI 사주 리포트를 확인해보세요.`
+    : 'AI 사주 리포트를 확인해보세요. · 사주구리'
   return {
     title,
-    description: `${name}님의 AI 사주 리포트를 확인해보세요.`,
+    description,
     robots: { index: false },
     openGraph: {
       title,
-      description: `${name}님의 AI 사주 리포트를 확인해보세요.`,
+      description,
       siteName: '사주구리',
     },
   }
