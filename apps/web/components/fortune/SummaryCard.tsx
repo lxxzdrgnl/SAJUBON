@@ -216,11 +216,11 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
     }
   }
 
-  // 공유 요청 본문 — 저장된 레코드면 record_id로(토큰 재사용·중복 방지),
-  // 아니면 story 스냅샷으로. 레코드 다시보기에서 매번 스냅샷을 새로 만들다
-  // 실패하던 문제를 막는다.
-  const shareBody = () =>
-    story.record_id != null ? { record_id: story.record_id } : { story }
+  // 공유 요청 본문 — story 스냅샷으로 보낸다. 스냅샷은 story.profile_name(뷰에서
+  // pname으로 보정된 이름)을 그대로 저장하므로 공유 미리보기에 이름이 정상 표기된다.
+  // (record_id로 보내면 이름이 비어 저장됐던 옛 레코드를 재사용해 익명으로 나간다.)
+  // 백엔드는 토큰 충돌만 재시도하므로 재공유해도 실패하지 않는다.
+  const shareBody = () => ({ story })
 
   // 공유 토큰을 미리 발급해 둔다 — 공유하기 탭 '그 순간' 동기 복사가 가능하도록
   // (await 이후 복사하면 iOS 사용자 제스처가 끊겨 복사 실패).
