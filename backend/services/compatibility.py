@@ -8,16 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.exceptions import (
-    CalcFailedException,
     CompatibilityReportNotFoundException,
     ForbiddenException,
-    LLMFailedException,
-    ValidationException,
 )
-from crud import chat as chat_crud
 from crud import compatibility as compat_crud
 from db.models import CompatibilityReport
-from llm.pipelines.compatibility_report import run_compatibility_report
 from schemas.compatibility import (
     BirthInput,
     CompatibilityReportDetail,
@@ -94,83 +89,51 @@ def _to_detail(
 
 # ─── 유스케이스 ───────────────────────────────────────────────────────────────
 
-async def _run_and_store(
-    db: AsyncSession,
-    user_id: int,
-    person_a: BirthInput,
-    person_b: BirthInput,
-    request_topics: str | None,
-    language: str,
-) -> CompatibilityReportDetail:
-    """파이프라인 실행 → 저장(단일 commit) → Detail. 예외 변환 포함."""
-    req = CompatibilityReportRequest(
-        person_a=person_a,
-        person_b=person_b,
-        request_topics=request_topics,
-        language=language,
-    )
-
-    # 엔진(ValueError) + Writer(RuntimeError) 예외 변환
-    try:
-        score, synastry, tabs = await run_compatibility_report(req)
-    except ValueError as e:
-        raise CalcFailedException(str(e))
-    except RuntimeError as e:
-        raise LLMFailedException(str(e))
-
-    report = await compat_crud.create_report(
-        db,
-        user_id=user_id,
-        person_a=person_a.model_dump(),
-        person_b=person_b.model_dump(),
-        request_topics=request_topics,
-        language=language,
-        score=_score_to_dict(score),
-        synastry=_synastry_to_dict(synastry),
-        tabs=[t.model_dump() for t in tabs],
-    )
-    await db.commit()
-    await db.refresh(report)
-
-    return _to_detail(report)
-
-
 async def create_report(
     db: AsyncSession,
     user_id: int,
     req: CompatibilityReportRequest,
-) -> CompatibilityReportDetail:
-    """두 입력 → 궁합 리포트 생성·저장 → Detail."""
-    return await _run_and_store(
-        db,
-        user_id,
-        req.person_a,
-        req.person_b,
-        req.request_topics,
-        req.language,
+    arq,
+) -> int:
+    """궁합 생성 job 등록 → job_id."""
+    from services import jobs as jobs_service
+
+    payload = {
+        "mode": "direct",
+        "person_a": req.person_a.model_dump(),
+        "person_b": req.person_b.model_dump(),
+        "request_topics": req.request_topics,
+        "language": req.language,
+    }
+    job_id = await jobs_service.create_job_and_enqueue(
+        db, user_id=user_id, job_type="compatibility",
+        payload=payload, enqueue_fn="generate_compatibility", arq=arq,
     )
+    await db.commit()
+    return job_id
 
 
 async def create_from_session(
     db: AsyncSession,
     session_id: uuid.UUID,
     user_id: int,
+    arq,
     request_topics: str | None = None,
-) -> CompatibilityReportDetail:
-    """챗 세션의 person A(birth_info) + person B(partner_info)로 리포트 생성."""
-    session = await chat_crud.get_session_or_404(db, session_id, user_id)
-    if not session.partner_info:
-        raise ValidationException(
-            "세션에 상대 사주가 첨부되어 있지 않습니다. 먼저 상대를 첨부하세요.",
-            {"session_id": str(session_id)},
-        )
+) -> int:
+    """챗 세션 기반 궁합 생성 job 등록 → job_id."""
+    from services import jobs as jobs_service
 
-    person_a = BirthInput(**session.birth_info)
-    person_b = BirthInput(**session.partner_info)
-
-    return await _run_and_store(
-        db, user_id, person_a, person_b, request_topics, "ko"
+    payload = {
+        "mode": "session",
+        "session_id": str(session_id),
+        "request_topics": request_topics,
+    }
+    job_id = await jobs_service.create_job_and_enqueue(
+        db, user_id=user_id, job_type="compatibility",
+        payload=payload, enqueue_fn="generate_compatibility", arq=arq,
     )
+    await db.commit()
+    return job_id
 
 
 async def list_reports(db: AsyncSession, user_id: int) -> list[CompatibilityReportSummary]:

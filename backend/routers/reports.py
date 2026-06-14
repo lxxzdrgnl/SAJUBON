@@ -7,8 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from crud import reports as reports_crud
 from db.models import User
+from dependencies.arq import get_arq
 from dependencies.auth import get_current_user
 from dependencies.db import get_db
+from schemas.jobs import JobCreatedResponse
 from schemas.report import (
     ReportCreateRequest, ReportDetail, ReportSummary,
     ReportShareRequest, ReportShareResponse,
@@ -19,13 +21,15 @@ router = APIRouter(prefix="/api/reports", tags=["AI 리포트"])
 share_router = APIRouter(prefix="/api/share/reports", tags=["AI 리포트 공유"])
 
 
-@router.post("", response_model=ReportDetail, status_code=status.HTTP_201_CREATED, summary="리포트 생성+저장")
+@router.post("", response_model=JobCreatedResponse, status_code=status.HTTP_202_ACCEPTED, summary="리포트 생성 job 등록")
 async def create_report(
     body: ReportCreateRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> ReportDetail:
-    return await reports_service.create_report(db, user.id, body)
+    arq=Depends(get_arq),
+) -> JobCreatedResponse:
+    job_id = await reports_service.create_report(db, user.id, body, arq)
+    return JobCreatedResponse(job_id=job_id)
 
 
 @router.get("", response_model=list[ReportSummary], summary="내 리포트 목록")

@@ -10,7 +10,6 @@ from core.exceptions import ForbiddenException, ReportNotFoundException
 from crud import reports as reports_crud
 from db.models import SajuReport
 from engine.handlers.calculate_saju import handle_calculate_saju
-from llm.pipelines.saju_report import run_saju_report_full
 from llm.tools.chart_payloads import (
     payload_palja, payload_strength, payload_ten_gods, payload_wuxing_balance,
     payload_sin_sal, payload_twelve_un_seong, payload_hap_chung, payload_dae_un,
@@ -97,9 +96,11 @@ async def create_report(
     db: AsyncSession,
     user_id: int,
     req: ReportCreateRequest,
-) -> ReportDetail:
-    """리포트 생성: 일일 한도 검사 → 파이프라인 2회 → 저장(단일 commit)."""
-    # 1. 일일 한도 (429)
+    arq,
+) -> int:
+    """리포트 생성 job 등록 → job_id 반환. 실제 생성은 워커가 수행."""
+    from services import jobs as jobs_service
+
     limit = settings.report_daily_limit
     if limit is not None:
         used = await reports_crud.count_today(db, user_id)
@@ -109,38 +110,16 @@ async def create_report(
                 detail=f"하루 리포트 생성 한도({limit}개)를 초과했습니다. 내일 다시 시도해주세요.",
             )
 
-    b = req.birth_input
-
-    # 2~3. 본 리포트(Writer)와 올해의 흐름(UnFlow)을 병렬 생성 — saju·RAG는 1회만.
-    saju, writer_output, un_flow = await run_saju_report_full(
-        birth_date=b.birth_date,
-        birth_time=b.birth_time,
-        gender=b.gender,
-        calendar=b.calendar,
-        is_leap_month=b.is_leap_month,
-        concern=req.request_topics,
-        birth_longitude=b.birth_longitude,
-        birth_utc_offset=b.birth_utc_offset,
-        language=req.language,
-    )
-
-    # 4. 저장 (birth_input은 입력 원본 + name 보존)
-    birth_input = b.model_dump()
-    report = await reports_crud.insert_report(
+    job_id = await jobs_service.create_job_and_enqueue(
         db,
         user_id=user_id,
-        profile_id=req.profile_id,
-        birth_input=birth_input,
-        request_topics=req.request_topics,
-        language=req.language,
-        tabs=[t.model_dump() for t in writer_output.tabs],
-        year_flow=un_flow.year_flow.model_dump(),
-        dae_un_analysis=un_flow.dae_un_analysis.model_dump(),
+        job_type="saju_report",
+        payload=req.model_dump(),
+        enqueue_fn="generate_saju_report",
+        arq=arq,
     )
     await db.commit()
-    await db.refresh(report)
-
-    return _to_detail(report)
+    return job_id
 
 
 async def list_reports(db: AsyncSession, user_id: int) -> list[ReportSummary]:

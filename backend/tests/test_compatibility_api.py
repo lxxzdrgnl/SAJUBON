@@ -1,6 +1,8 @@
 """궁합 리포트 생성·목록·단건·공유·공개열람·from-session API 통합 테스트.
 
-LLM/엔진 파이프라인은 monkeypatch 스텁 (실호출 금지). DB는 로컬 postgres(5433).
+생성 endpoint는 이제 202 {job_id} 를 반환한다 (워커가 실제 생성).
+목록·단건·공유 테스트는 crud.compatibility.create_report 로 행을 직접 삽입한다.
+DB는 로컬 postgres(5433).
 """
 
 from __future__ import annotations
@@ -12,53 +14,30 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete, select
 
 from core.security import create_access_token
-from db.models import ChatSession, CompatibilityReport, CompatibilityShare
-from llm.reports.base import ReportTab
+from crud import compatibility as compat_crud
+from db.models import ChatSession, CompatibilityReport, CompatibilityShare, GenerationJob
+from dependencies.arq import get_arq
 from main import app
-import services.compatibility as compat_service
 
 
-# ── 파이프라인 스텁 ──
+# ── FakeArq ──
 
-_FAKE_SCORE = {
-    "total_score": 97,
-    "day_pillar_score": 90,
-    "element_harmony_score": 88,
-    "branch_relation_score": 80,
-    "ten_gods_score": 85,
-    "conflict_branches": [],
-    "complement_elements": ["수"],
-    "complement_a_to_b": ["수"],
-    "complement_b_to_a": ["목"],
-}
+class _FakeArq:
+    def __init__(self):
+        self.calls = []
 
-_FAKE_SYNASTRY = {
-    "stem_hap": "수",
-    "day_ten_god": "정재",
-    "element_synergy": "상생",
-    "clash_pairs": [["인", "신"]],
-    "complement_a_to_b": ["수"],
-    "complement_b_to_a": ["목"],
-    "yongsin_help": "mutual",
-    "interaction_tags": ["stem_hap_수"],
-}
-
-_FAKE_TABS = [
-    ReportTab(category="종합 케미", headline="물과 나무처럼 서로를 키우는 궁합", content="본문1"),
-    ReportTab(category="갈등 포인트", headline="속도가 다른 두 사람", content="본문2"),
-    ReportTab(category="관계 조언", headline="함께 더 멀리 가는 법", content="본문3"),
-    ReportTab(category="연애 스타일", headline="끌림의 결이 다르다", content="본문4"),
-    ReportTab(category="결혼 시기", headline="내년 봄이 적기", content="본문5", requested=True),
-]
+    async def enqueue_job(self, fn, *args):
+        self.calls.append((fn, args))
 
 
 @pytest.fixture(autouse=True)
-def _stub_pipeline(monkeypatch):
-    async def _fake_run(req):
-        return _FAKE_SCORE, _FAKE_SYNASTRY, list(_FAKE_TABS)
+def _override_arq():
+    app.dependency_overrides[get_arq] = lambda: _FakeArq()
+    yield
+    app.dependency_overrides.pop(get_arq, None)
 
-    monkeypatch.setattr(compat_service, "run_compatibility_report", _fake_run)
 
+# ── 공통 픽스처 ──
 
 @pytest.fixture
 async def _cleanup(test_sessionmaker, db_user):
@@ -81,7 +60,9 @@ async def _cleanup(test_sessionmaker, db_user):
             await s.execute(
                 delete(CompatibilityReport).where(CompatibilityReport.id.in_(ids))
             )
-            await s.commit()
+        # GenerationJob
+        await s.execute(delete(GenerationJob).where(GenerationJob.user_id == db_user.id))
+        await s.commit()
 
 
 @pytest.fixture
@@ -117,6 +98,64 @@ _BODY = {
     "request_topics": "결혼 시기",
 }
 
+# 직접 삽입용 스텁 데이터 (DB 저장 형식 — score/synastry는 이미 변환된 형태)
+_SCORE = {
+    "total": 97,
+    "day_pillar": 90,
+    "element_harmony": 88,
+    "branch_relation": 80,
+    "ten_gods": 85,
+}
+
+_SYNASTRY = {
+    "stem_hap": "수",
+    "day_ten_god": "정재",
+    "element_synergy": "상생",
+    "clash_pairs": [["인", "신"]],
+    "complement_a_to_b": ["수"],
+    "complement_b_to_a": ["목"],
+    "yongsin_help": "mutual",
+    "interaction_tags": ["stem_hap_수"],
+}
+
+_TABS = [
+    {"category": "종합 케미", "headline": "물과 나무처럼 서로를 키우는 궁합", "content": "본문1", "requested": False},
+    {"category": "갈등 포인트", "headline": "속도가 다른 두 사람", "content": "본문2", "requested": False},
+    {"category": "관계 조언", "headline": "함께 더 멀리 가는 법", "content": "본문3", "requested": False},
+    {"category": "연애 스타일", "headline": "끌림의 결이 다르다", "content": "본문4", "requested": False},
+    {"category": "결혼 시기", "headline": "내년 봄이 적기", "content": "본문5", "requested": True},
+]
+
+_PERSON_A = {
+    "birth_date": "1990-03-15", "birth_time": "14:30", "gender": "male",
+    "calendar": "solar", "is_leap_month": False, "name": "이용재",
+}
+
+_PERSON_B = {
+    "birth_date": "1992-07-21", "birth_time": "09:00", "gender": "female",
+    "calendar": "solar", "is_leap_month": False, "name": "유다연",
+}
+
+
+async def _insert_report(test_sessionmaker, db_user) -> CompatibilityReport:
+    """테스트용 CompatibilityReport 행을 직접 삽입하고 반환한다."""
+    async with test_sessionmaker() as s:
+        report = await compat_crud.create_report(
+            s,
+            user_id=db_user.id,
+            person_a=_PERSON_A,
+            person_b=_PERSON_B,
+            request_topics="결혼 시기",
+            language="ko",
+            score=_SCORE,
+            synastry=_SYNASTRY,
+            tabs=_TABS,
+        )
+        await s.commit()
+        rid = report.id
+    async with test_sessionmaker() as s:
+        return await s.get(CompatibilityReport, rid)
+
 
 def _client(token=None):
     transport = ASGITransport(app=app)
@@ -124,24 +163,14 @@ def _client(token=None):
     return AsyncClient(transport=transport, base_url="http://t", cookies=cookies)
 
 
-async def test_create_returns_detail(db_user, _cleanup):
+# ── 생성 테스트 ──
+
+async def test_create_returns_job_id(db_user, _cleanup):
     token = create_access_token(db_user.id)
     async with _client(token) as c:
         r = await c.post("/api/compatibility", json=_BODY)
-    assert r.status_code == 201, r.text
-    body = r.json()
-    for key in ("id", "person_a", "person_b", "score", "synastry", "tabs",
-                "request_topics", "language", "created_at"):
-        assert key in body, key
-    assert body["score"]["total"] == 97
-    assert body["score"]["day_pillar"] == 90
-    assert body["synastry"]["stem_hap"] == "수"
-    assert body["synastry"]["yongsin_help"] == "mutual"
-    assert len(body["tabs"]) == 5
-    assert body["tabs"][0]["category"] == "종합 케미"
-    assert body["tabs"][4]["requested"] is True
-    assert body["person_a"]["name"] == "이용재"
-    assert body["person_a"]["birth_date"] == "1990-03-15"
+    assert r.status_code == 202, r.text
+    assert isinstance(r.json()["job_id"], int)
 
 
 async def test_create_requires_auth(override_db):
@@ -150,10 +179,12 @@ async def test_create_requires_auth(override_db):
     assert r.status_code == 401
 
 
-async def test_list_reports(db_user, _cleanup):
+# ── 목록·단건·공유 테스트 (직접 삽입) ──
+
+async def test_list_reports(test_sessionmaker, db_user, _cleanup):
+    await _insert_report(test_sessionmaker, db_user)
     token = create_access_token(db_user.id)
     async with _client(token) as c:
-        await c.post("/api/compatibility", json=_BODY)
         r = await c.get("/api/compatibility")
     assert r.status_code == 200
     arr = r.json()
@@ -167,10 +198,10 @@ async def test_list_reports(db_user, _cleanup):
 
 
 async def test_get_single_owner_only(test_sessionmaker, db_user, _cleanup):
+    report = await _insert_report(test_sessionmaker, db_user)
+    rid = report.id
     token = create_access_token(db_user.id)
     async with _client(token) as c:
-        created = (await c.post("/api/compatibility", json=_BODY)).json()
-        rid = created["id"]
         ok = await c.get(f"/api/compatibility/{rid}")
     assert ok.status_code == 200
     assert ok.json()["id"] == rid
@@ -198,11 +229,11 @@ async def test_get_single_404(db_user, override_db):
     assert r.status_code == 404
 
 
-async def test_share_flow_and_masking(db_user, _cleanup):
+async def test_share_flow_and_masking(test_sessionmaker, db_user, _cleanup):
+    report = await _insert_report(test_sessionmaker, db_user)
+    rid = report.id
     token = create_access_token(db_user.id)
     async with _client(token) as c:
-        created = (await c.post("/api/compatibility", json=_BODY)).json()
-        rid = created["id"]
         share = await c.post(f"/api/compatibility/{rid}/share", json={"mask_birth": True})
         assert share.status_code == 200, share.text
         sb = share.json()
@@ -220,11 +251,11 @@ async def test_share_flow_and_masking(db_user, _cleanup):
     assert pb["person_b"]["birth_date"] is None
 
 
-async def test_share_no_mask_keeps_birth(db_user, _cleanup):
+async def test_share_no_mask_keeps_birth(test_sessionmaker, db_user, _cleanup):
+    report = await _insert_report(test_sessionmaker, db_user)
+    rid = report.id
     token = create_access_token(db_user.id)
     async with _client(token) as c:
-        created = (await c.post("/api/compatibility", json=_BODY)).json()
-        rid = created["id"]
         share = (await c.post(f"/api/compatibility/{rid}/share", json={"mask_birth": False})).json()
     async with _client() as c:
         pb = (await c.get(f"/api/compatibility/shared/{share['share_token']}")).json()
@@ -237,15 +268,15 @@ async def test_shared_token_404(override_db):
     assert r.status_code == 404
 
 
+# ── from-session 테스트 ──
+
 async def test_from_session(db_user, chat_session, _cleanup):
+    """세션 기반 생성: 202 + job_id 반환 (워커가 실제 생성)."""
     token = create_access_token(db_user.id)
     async with _client(token) as c:
         r = await c.post(f"/api/compatibility/from-session/{chat_session}")
-    assert r.status_code == 201, r.text
-    body = r.json()
-    assert body["person_a"]["name"] == "이용재"
-    assert body["person_b"]["name"] == "유다연"
-    assert body["score"]["total"] == 97
+    assert r.status_code == 202, r.text
+    assert isinstance(r.json()["job_id"], int)
 
 
 async def test_from_session_requires_auth(override_db, chat_session):
@@ -254,8 +285,17 @@ async def test_from_session_requires_auth(override_db, chat_session):
     assert r.status_code == 401
 
 
-async def test_from_session_foreign_404(db_user, chat_session):
-    other_token = create_access_token(db_user.id + 999999)
-    async with _client(other_token) as c:
+async def test_from_session_enqueues_payload(db_user, chat_session, _cleanup, test_sessionmaker):
+    """세션 기반 job 등록 시 payload에 session_id가 포함되는지 확인."""
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
         r = await c.post(f"/api/compatibility/from-session/{chat_session}")
-    assert r.status_code in (401, 404)
+    assert r.status_code == 202, r.text
+    job_id = r.json()["job_id"]
+    # DB의 job payload 확인
+    import crud.generation_jobs as jobs_crud
+    async with test_sessionmaker() as s:
+        job = await jobs_crud.get_job(s, job_id)
+    assert job is not None
+    assert job.payload.get("mode") == "session"
+    assert job.payload.get("session_id") == str(chat_session)

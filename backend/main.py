@@ -22,7 +22,7 @@ from core.exceptions import AppException
 from db.models import Base
 from db.session import engine
 from core.middleware import AccessLogMiddleware
-from routers import saju, cities, auth, profiles, share, question, chat, reports, daily_story, compatibility
+from routers import saju, cities, auth, profiles, share, question, chat, reports, daily_story, compatibility, jobs, devices
 
 # ─── 로깅 설정 ───────────────────────────────────────────────────────────────
 
@@ -73,10 +73,17 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("DB 연결 실패 (create_all 건너뜀): %s", e)
 
+    from arq import create_pool
+    from arq.connections import RedisSettings
+    app.state.arq = await create_pool(RedisSettings.from_dsn(settings.redis_url))
+
     async with AsyncPostgresSaver.from_conn_string(settings.postgres_url) as checkpointer:
         await checkpointer.setup()
         app.state.checkpointer = checkpointer
-        yield
+        try:
+            yield
+        finally:
+            await app.state.arq.close()
 
 # ─── FastAPI 앱 ──────────────────────────────────────────────────────────────
 
@@ -160,6 +167,8 @@ app.include_router(chat.router)
 app.include_router(reports.router)
 app.include_router(reports.share_router)
 app.include_router(daily_story.router)
+app.include_router(jobs.router)
+app.include_router(devices.router)
 
 
 @app.get("/health", tags=["상태 확인"])

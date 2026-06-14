@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import User
+from dependencies.arq import get_arq
 from dependencies.auth import get_current_user
 from dependencies.db import get_db
 from schemas.compatibility import (
@@ -17,37 +18,32 @@ from schemas.compatibility import (
     CompatibilityShareRequest,
     CompatibilityShareResponse,
 )
+from schemas.jobs import JobCreatedResponse
 from services import compatibility as compatibility_service
 
 router = APIRouter(prefix="/api/compatibility", tags=["궁합 리포트"])
 
 
-@router.post(
-    "",
-    response_model=CompatibilityReportDetail,
-    status_code=status.HTTP_201_CREATED,
-    summary="궁합 리포트 생성+저장",
-)
+@router.post("", response_model=JobCreatedResponse, status_code=status.HTTP_202_ACCEPTED, summary="궁합 생성 job 등록")
 async def create_report(
     body: CompatibilityReportRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> CompatibilityReportDetail:
-    return await compatibility_service.create_report(db, user.id, body)
+    arq=Depends(get_arq),
+) -> JobCreatedResponse:
+    job_id = await compatibility_service.create_report(db, user.id, body, arq)
+    return JobCreatedResponse(job_id=job_id)
 
 
-@router.post(
-    "/from-session/{session_id}",
-    response_model=CompatibilityReportDetail,
-    status_code=status.HTTP_201_CREATED,
-    summary="챗 세션 두 사주로 궁합 리포트 생성 (소유자)",
-)
+@router.post("/from-session/{session_id}", response_model=JobCreatedResponse, status_code=status.HTTP_202_ACCEPTED, summary="세션 기반 궁합 생성 job")
 async def create_report_from_session(
     session_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> CompatibilityReportDetail:
-    return await compatibility_service.create_from_session(db, session_id, user.id)
+    arq=Depends(get_arq),
+) -> JobCreatedResponse:
+    job_id = await compatibility_service.create_from_session(db, session_id, user.id, arq)
+    return JobCreatedResponse(job_id=job_id)
 
 
 @router.get(
