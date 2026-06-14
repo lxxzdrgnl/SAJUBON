@@ -8,8 +8,9 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { createCompatibilityFromSession } from '@sajuguri/api-client'
+import { createCompatibilityJobFromSession } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
+import { useGenerationJob } from '@/lib/hooks/useGenerationJob'
 
 interface Props {
   sessionId: string
@@ -18,19 +19,20 @@ interface Props {
 export default function CompatibilityReportCTA({ sessionId }: Props) {
   const t = useTranslations('chat')
   const router = useRouter()
-  const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { loading: busy, start } = useGenerationJob((_type, resultId) => {
+    router.push(`/compatibility/${resultId}`)
+  })
 
   const handleClick = async () => {
     if (busy) return
-    setBusy(true)
     setError(null)
     try {
-      const detail = await createCompatibilityFromSession(api, sessionId)
-      router.push(`/compatibility/${detail.id}`)
+      const { job_id } = await createCompatibilityJobFromSession(api, sessionId)
+      start(job_id)
     } catch {
       setError(t('compatibilityCta.error'))
-      setBusy(false)
     }
   }
 

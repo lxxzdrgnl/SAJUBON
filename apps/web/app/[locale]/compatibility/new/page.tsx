@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import type { ProfileResponse, BirthInput } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
-import { createCompatibilityReport } from '@sajuguri/api-client'
+import { createCompatibilityJob } from '@sajuguri/api-client'
+import { useGenerationJob } from '@/lib/hooks/useGenerationJob'
 import PersonSlotPicker, { type PersonPick } from '@/components/compatibility/PersonSlotPicker'
 
 export default function CompatibilityNewPage() {
@@ -16,10 +17,13 @@ export default function CompatibilityNewPage() {
 
   const [profiles, setProfiles] = useState<ProfileResponse[]>([])
   const [topics, setTopics] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [phraseIdx, setPhraseIdx] = useState(0)
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)
+
+  const { loading, error: jobError, start } = useGenerationJob((_type, resultId) => {
+    router.replace(`/compatibility/${resultId}`)
+  })
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
   const GOOGLE_LOGIN_URL = `${API_URL}/api/auth/google?client=web`
@@ -68,16 +72,15 @@ export default function CompatibilityNewPage() {
   }
 
   async function handleComplete(a: PersonPick, b: PersonPick) {
-    setLoading(true)
     setError('')
     try {
-      const report = await createCompatibilityReport(api, {
+      const { job_id } = await createCompatibilityJob(api, {
         person_a: toBirthInput(a),
         person_b: toBirthInput(b),
         ...(topics.trim() ? { request_topics: topics.trim() } : {}),
         language: locale,
       })
-      router.replace(`/compatibility/${report.id}`)
+      start(job_id)
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
       if (status === 401) {
@@ -87,7 +90,6 @@ export default function CompatibilityNewPage() {
       } else {
         setError(t('new.errorFallback'))
       }
-      setLoading(false)
     }
   }
 
@@ -157,9 +159,9 @@ export default function CompatibilityNewPage() {
         <p className="text-[12px] text-text-sub">{t('new.topicsHint')}</p>
       </div>
 
-      {error && (
+      {(error || jobError) && (
         <p className="rounded-xl border-[1.5px] border-orange-tint bg-orange-tint px-4 py-3 text-[13px] font-bold text-orange">
-          {error}
+          {error || t('new.errorFallback')}
         </p>
       )}
 
