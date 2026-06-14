@@ -47,15 +47,6 @@ export default async function ManseIndex() {
         isLoggedIn={!!user}
         savedKeys={profiles.map((p) => `${p.birth_date}|${p.birth_time ?? ''}|${p.gender}`)}
       />
-
-      {!user && (
-        <Link
-          href="/my"
-          className="mt-5 block rounded-xl border-2 border-ink bg-surface py-3 text-center text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A]"
-        >
-          {ts('loginPrompt')}
-        </Link>
-      )}
     </main>
   )
 }
