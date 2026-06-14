@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     # 리포트 일일 생성 한도 (None = 무제한)
     report_daily_limit: int | None = None
 
+    # ── 비동기 Job (arq + redis) ──
+    redis_url: str = "redis://localhost:6379/2"
+    gen_worker_max_jobs: int = 8
+    gen_job_stale_minutes: int = 10
+    # ── Expo 푸시 (선택) ──
+    expo_access_token: str | None = None
+
     # 운세 스토리 게스트 어뷰즈 대비 IP별 일일 한도 (None = 무제한) — 자리만, 미사용
     daily_story_guest_limit_per_ip: int | None = None
 
