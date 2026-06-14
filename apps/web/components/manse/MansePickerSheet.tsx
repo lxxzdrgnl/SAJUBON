@@ -13,10 +13,12 @@
  */
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import type { ProfileResponse } from '@sajuguri/api-client'
+import type { ProfileResponse, SajuCalcRequest } from '@sajuguri/api-client'
+import { calcSaju } from '@sajuguri/api-client'
 import type { RecentBirthInput } from '@sajuguri/core'
 import { loadRecentInputs, saveRecentInput } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
+import { api } from '@/lib/api'
 import MascotTinted from '@/components/ui/MascotTinted'
 import BirthInputForm, { type ManseBirthInput } from '@/components/manse/BirthInputForm'
 
@@ -105,9 +107,17 @@ export default function MansePickerSheet({
   }
 
   async function pickFromForm(input: ManseBirthInput) {
+    // 일간(day_stem) 계산 — 마스코트 틴팅에 사용.
+    let dayStem: string | null = null
+    try {
+      const saju = await calcSaju(api, input as unknown as SajuCalcRequest)
+      dayStem = saju.day_pillar?.stem ?? null
+    } catch {
+      // 계산 실패 시 day_stem 없이 진행
+    }
     // 모달에서 직접 입력한 만세력도 "최근 본 만세력"에 저장한다.
     try {
-      await saveRecentInput(webStorage, input)
+      await saveRecentInput(webStorage, { ...input, day_stem: dayStem })
     } catch {
       // 저장 실패해도 픽 진행은 막지 않는다.
     }
@@ -118,6 +128,7 @@ export default function MansePickerSheet({
       gender: input.gender,
       calendar: input.calendar,
       is_leap_month: input.is_leap_month,
+      day_stem: dayStem,
       ...(input.birth_longitude != null ? { birth_longitude: input.birth_longitude } : {}),
     })
     onClose()

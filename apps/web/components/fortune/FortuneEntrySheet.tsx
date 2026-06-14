@@ -8,10 +8,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import type { ProfileResponse } from '@sajuguri/api-client'
+import type { ProfileResponse, SajuCalcRequest } from '@sajuguri/api-client'
+import { calcSaju } from '@sajuguri/api-client'
 import type { RecentBirthInput } from '@sajuguri/core'
 import { loadRecentInputs, saveRecentInput } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
+import { api } from '@/lib/api'
 import { buildBirthKey } from '@/lib/fortune/cache'
 import { manseNavQuery, profileToManseSource } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
@@ -72,9 +74,17 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
   )
 
   async function pickFromForm(input: ManseBirthInput) {
+    // 일간(day_stem) 계산 — 마스코트 틴팅에 사용.
+    let dayStem: string | null = null
+    try {
+      const saju = await calcSaju(api, input as unknown as SajuCalcRequest)
+      dayStem = saju.day_pillar?.stem ?? null
+    } catch {
+      // 계산 실패 시 day_stem 없이 진행
+    }
     // 모달 내 직접 입력분도 최근 본 만세력에 저장
     try {
-      await saveRecentInput(webStorage, input)
+      await saveRecentInput(webStorage, { ...input, day_stem: dayStem })
     } catch {
       // 저장 실패해도 진행
     }
