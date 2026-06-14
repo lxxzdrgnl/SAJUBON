@@ -93,6 +93,8 @@ class CompatibilityReportModule:
         return {
             "person_a_chart": chart_a,
             "person_b_chart": chart_b,
+            "name_a": _get(a, "name") or "사람 A",
+            "name_b": _get(b, "name") or "사람 B",
             "synastry": syn,
             "score": score,
             "request_topics": inputs.get("request_topics"),

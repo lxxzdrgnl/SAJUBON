@@ -437,8 +437,8 @@ function CompatBranchesCard({ payload }: { payload: Record<string, unknown> }) {
   type HapPair = { pair: [string, string]; element: string }
   const clashRaw = (payload.clash_pairs ?? []) as Array<string | [string, string]>
   const hapPairs = (payload.hap_pairs ?? []) as HapPair[]
-  const nameA = (payload.name_a as string) || 'A'
-  const nameB = (payload.name_b as string) || 'B'
+  const nameA = payload.name_a ? `${payload.name_a as string}님` : 'A'
+  const nameB = payload.name_b ? `${payload.name_b as string}님` : 'B'
 
   // clash_pairs 는 string 또는 [string, string] 형태 모두 허용
   const clashLabels = clashRaw.map((p) => (Array.isArray(p) ? p.join('-') : p))
@@ -482,8 +482,8 @@ function CompatBranchesCard({ payload }: { payload: Record<string, unknown> }) {
 
 /** 두 일간(天干) 관계 카드 */
 function DayRelationCard({ payload }: { payload: Record<string, unknown> }) {
-  const nameA = (payload.name_a as string) || 'A'
-  const nameB = (payload.name_b as string) || 'B'
+  const nameA = payload.name_a ? `${payload.name_a as string}님` : 'A'
+  const nameB = payload.name_b ? `${payload.name_b as string}님` : 'B'
   const stemA = payload.stem_a as string | undefined
   const stemB = payload.stem_b as string | undefined
   const stemHap = payload.stem_hap as string | null
@@ -518,8 +518,8 @@ function DayRelationCard({ payload }: { payload: Record<string, unknown> }) {
 
 /** 용신 보완 카드 */
 function YongsinComplementCard({ payload }: { payload: Record<string, unknown> }) {
-  const nameA = (payload.name_a as string) || 'A'
-  const nameB = (payload.name_b as string) || 'B'
+  const nameA = payload.name_a ? `${payload.name_a as string}님` : 'A'
+  const nameB = payload.name_b ? `${payload.name_b as string}님` : 'B'
   const yongA = payload.yong_a as string | null
   const yongB = payload.yong_b as string | null
   const yongsinHelp = payload.yongsin_help as 'a_helps_b' | 'b_helps_a' | 'mutual' | null
@@ -700,7 +700,20 @@ export default function ToolCard({ tool, payload }: Props) {
   const content = renderContent(tool, payload, t)
   if (!content) return null
 
-  const label = t.has(`labels.${tool}`) ? t(`labels.${tool}`) : tool
+  // 궁합 per-person 차트는 "A/B" 라벨 대신 본인 이름으로 표시
+  const personName = payload._person_name as string | undefined
+  const PERSON_TYPE_LABEL: Record<string, string> = {
+    compat_palja_a: 'get_palja', compat_palja_b: 'get_palja',
+    compat_wuxing_a: 'get_wuxing_balance', compat_wuxing_b: 'get_wuxing_balance',
+    compat_ten_gods_a: 'get_ten_gods', compat_ten_gods_b: 'get_ten_gods',
+    compat_strength_a: 'get_strength', compat_strength_b: 'get_strength',
+  }
+  const label =
+    personName && PERSON_TYPE_LABEL[tool]
+      ? `${personName}님 · ${t(`labels.${PERSON_TYPE_LABEL[tool]}`)}`
+      : t.has(`labels.${tool}`)
+        ? t(`labels.${tool}`)
+        : tool
 
   return (
     <div className="w-full min-w-0 rounded-2xl border-[1.5px] border-teal bg-teal-tint px-3 py-2.5 overflow-hidden">

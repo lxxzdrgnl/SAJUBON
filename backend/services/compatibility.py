@@ -82,14 +82,15 @@ def _build_compat_charts(
         day_b = chart_b["day_pillar"]
 
         out = {
-            "compat_palja_a":     payload_palja(chart_a),
-            "compat_palja_b":     payload_palja(chart_b),
-            "compat_wuxing_a":    payload_wuxing_balance(chart_a),
-            "compat_wuxing_b":    payload_wuxing_balance(chart_b),
-            "compat_ten_gods_a":  payload_ten_gods(chart_a),
-            "compat_ten_gods_b":  payload_ten_gods(chart_b),
-            "compat_strength_a":  payload_strength(chart_a),
-            "compat_strength_b":  payload_strength(chart_b),
+            # per-person 차트 — 라벨에 쓰도록 본인 이름(_person_name) 동봉
+            "compat_palja_a":     {**payload_palja(chart_a), "_person_name": name_a},
+            "compat_palja_b":     {**payload_palja(chart_b), "_person_name": name_b},
+            "compat_wuxing_a":    {**payload_wuxing_balance(chart_a), "_person_name": name_a},
+            "compat_wuxing_b":    {**payload_wuxing_balance(chart_b), "_person_name": name_b},
+            "compat_ten_gods_a":  {**payload_ten_gods(chart_a), "_person_name": name_a},
+            "compat_ten_gods_b":  {**payload_ten_gods(chart_b), "_person_name": name_b},
+            "compat_strength_a":  {**payload_strength(chart_a), "_person_name": name_a},
+            "compat_strength_b":  {**payload_strength(chart_b), "_person_name": name_b},
             "compat_branches": {
                 "clash_pairs": syn.get("clash_pairs", []),
                 "hap_pairs": syn.get("hap_pairs", []),

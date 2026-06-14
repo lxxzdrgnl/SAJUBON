@@ -50,6 +50,7 @@ SYSTEM_PROMPT = """당신은 명리학(사주팔자)에 정통한 모던 궁합 
    - 각 탭 본문은 **최소 8문장 이상** 풍부하게 쓰세요. 한두 문장으로 끝내지 마세요.
 
 6. **문체 — 모던 궁합 해설가 톤**:
+   - **두 사람을 항상 이름(예: 이용재님, 유다연님)으로 칭하세요.** 'A', 'B', '사람 A', '상대 A' 같은 표기는 절대 쓰지 마세요. 입력 메시지 맨 위에 두 사람의 이름이 주어집니다.
    - 존댓말, 단문 위주로 또박또박.
    - **모든 문장은 자연스러운 한국어로만 쓰세요.** 영어 단어·표현(mutual, synergy 등)을 그대로 쓰지 마세요. 개념은 한국어로 풀어 쓰고, 명리 용어(간지·십성명 등)만 예외.
    - 이모지·과장된 감탄사 금지. 밑줄(`_`) 기호 금지(기울임으로 깨짐).
@@ -157,12 +158,21 @@ def format_message(signals: dict) -> str:
     """
     parts: list[str] = []
 
+    name_a = signals.get("name_a") or "사람 A"
+    name_b = signals.get("name_b") or "사람 B"
+    label_a = f"{name_a}님"
+    label_b = f"{name_b}님"
+
+    # ── 이름 안내 (리포트에서 두 사람을 이름으로 칭하도록) ──
+    parts.append(f"※ 두 사람의 이름: A={label_a}, B={label_b}. "
+                 f"리포트 본문에서는 'A'/'B'/'사람 A' 대신 반드시 이 이름({label_a}, {label_b})으로 칭하세요.")
+
     # ── 두 사람 사주 요약 ──
-    parts.append("=== 두 사람 사주 ===")
+    parts.append("\n=== 두 사람 사주 ===")
     person_a = signals.get("person_a_chart", {})
     person_b = signals.get("person_b_chart", {})
-    parts.append(_person_summary(person_a, "사람 A"))
-    parts.append(_person_summary(person_b, "사람 B"))
+    parts.append(_person_summary(person_a, label_a))
+    parts.append(_person_summary(person_b, label_b))
 
     # ── 궁합 점수 ──
     score = signals.get("score", {})
@@ -178,8 +188,9 @@ def format_message(signals: dict) -> str:
     syn = signals.get("synastry", {})
     parts.append("\n=== 궁합 방향성 신호 (서술·다이어그램 소스) ===")
     parts.append(f"천간합화: {syn.get('stem_hap') or '없음'}")
-    parts.append(f"십성 관계 (A→B): {syn.get('day_ten_god', '?')}")
-    parts.append(f"오행 상호작용 (A→B): {syn.get('element_synergy') or '없음'}")
+    parts.append(f"십성 관계 ({label_a}→{label_b}): {syn.get('day_ten_god', '?')}")
+    parts.append(f"십성 관계 ({label_b}→{label_a}): {syn.get('ten_god_b_to_a', '?')}")
+    parts.append(f"오행 상호작용 ({label_a}→{label_b}): {syn.get('element_synergy') or '없음'}")
 
     clash = syn.get("clash_pairs", [])
     if clash:
@@ -194,9 +205,9 @@ def format_message(signals: dict) -> str:
     comp_ab = syn.get("complement_a_to_b", [])
     comp_ba = syn.get("complement_b_to_a", [])
     if comp_ab:
-        parts.append(f"A→B 보완 오행 (A가 B의 부족을 채움): {', '.join(comp_ab)}")
+        parts.append(f"보완 오행 ({label_a}가 {label_b}의 부족을 채움): {', '.join(comp_ab)}")
     if comp_ba:
-        parts.append(f"B→A 보완 오행 (B가 A의 부족을 채움): {', '.join(comp_ba)}")
+        parts.append(f"보완 오행 ({label_b}가 {label_a}의 부족을 채움): {', '.join(comp_ba)}")
 
     yh = syn.get("yongsin_help")
     if yh:
