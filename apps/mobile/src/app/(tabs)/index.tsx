@@ -7,6 +7,21 @@ import { BrutalShadow } from '@/components/ui/BrutalShadow'
 import { CardIcon, ICON_PATHS } from '@/components/ui/CardIcon'
 import { MascotTinted } from '@/components/ui/MascotTinted'
 import { colors, radii } from '@/theme'
+import { useAuth } from '@/lib/auth/AuthContext'
+import { useProfiles } from '@/lib/queries'
+import { pickGreeting } from '@/lib/greetings'
+
+// 일간(오행) 색에 맞춘 운세 배너 — 마스코트 색과 어우러지게 (웹 STEM_BANNER 대응 단색 버전).
+const STEM_BANNER: Record<string, string> = {
+  갑: '#9FD8D0', 을: '#9FD8D0',
+  병: '#F4845F', 정: '#F4845F',
+  무: colors.yellow, 기: colors.yellow,
+  경: '#E3E7EC', 신: '#E3E7EC',
+  임: '#AEB6C4', 계: '#AEB6C4',
+}
+function bannerColor(stem?: string | null): string {
+  return (stem && STEM_BANNER[stem]) || colors.yellow
+}
 
 function Chevron() {
   return (
@@ -58,12 +73,22 @@ function FeatureCard({
 
 export default function Home() {
   const router = useRouter()
+  const { user } = useAuth()
+  const { data: profiles } = useProfiles()
+
+  // 대표 만세력 → 없으면 이메일 로컬파트 폴백
+  const rep = profiles?.find((p) => p.is_representative) ?? profiles?.[0]
+  const name = rep?.name ?? (user?.email ? user.email.split('@')[0] : null)
+  const repStem = rep?.day_stem ?? null
+  const hourKST = (new Date().getUTCHours() + 9) % 24
+  const fortuneSub = name ? pickGreeting(name, hourKST) : '매일 달라지는 나의 하루 흐름'
+
   return (
     <Screen>
       {/* 헤더 */}
       <View className="mb-4 flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
-          <MascotTinted size={26} />
+          <MascotTinted stem={repStem} size={26} />
           <Text className="text-xl font-black text-ink">
             사주<Text className="bg-yellow">구리</Text>
           </Text>
@@ -74,14 +99,14 @@ export default function Home() {
       <BrutalShadow radius={radii.card}>
         <View
           className="flex-row items-center gap-3 rounded-2xl border-2 border-ink p-4"
-          style={{ backgroundColor: colors.yellow }}
+          style={{ backgroundColor: bannerColor(repStem) }}
         >
           <View className="h-11 w-11 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
-            <MascotTinted size={40} />
+            <MascotTinted stem={repStem} size={40} />
           </View>
           <View className="min-w-0 flex-1">
             <Text className="text-lg font-black text-ink">오늘의 운세</Text>
-            <Text className="text-xs font-semibold text-ink">매일 달라지는 나의 하루 흐름</Text>
+            <Text className="text-xs font-semibold text-ink">{fortuneSub}</Text>
           </View>
           <Chevron />
         </View>
