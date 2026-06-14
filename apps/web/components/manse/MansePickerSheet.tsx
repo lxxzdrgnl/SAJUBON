@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { ProfileResponse } from '@sajuguri/api-client'
 import type { RecentBirthInput } from '@sajuguri/core'
-import { loadRecentInputs } from '@sajuguri/core'
+import { loadRecentInputs, saveRecentInput } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
 import MascotTinted from '@/components/ui/MascotTinted'
 import BirthInputForm, { type ManseBirthInput } from '@/components/manse/BirthInputForm'
@@ -104,7 +104,13 @@ export default function MansePickerSheet({
     onClose()
   }
 
-  function pickFromForm(input: ManseBirthInput) {
+  async function pickFromForm(input: ManseBirthInput) {
+    // 모달에서 직접 입력한 만세력도 "최근 본 만세력"에 저장한다.
+    try {
+      await saveRecentInput(webStorage, input)
+    } catch {
+      // 저장 실패해도 픽 진행은 막지 않는다.
+    }
     onPick({
       name: input.name,
       birth_date: input.birth_date,
