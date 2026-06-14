@@ -19,6 +19,7 @@ import { api } from '@/lib/api'
 import { calcScoreBars } from '@/lib/fortune/canvas'
 import { hexToRgba, scatterDots, type CardPalette } from '@/lib/fortune/story'
 import ShareModal from '@/components/ui/ShareModal'
+import { useShareModal } from '@/lib/hooks/useShareModal'
 
 const BAR_LOW_THRESHOLD = 60
 
@@ -43,8 +44,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   const t = useTranslations('fortune.summary')
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [saving, setSaving] = useState(false)
-  const [sharing, setSharing] = useState(false)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const { shareUrl, sharing, share, prepare, close } = useShareModal()
 
   const { ink, inkSoft, accent, base } = palette
 
@@ -222,39 +222,19 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
   // 백엔드는 토큰 충돌만 재시도하므로 재공유해도 실패하지 않는다.
   const shareBody = () => ({ story })
 
+  // 공유 링크 생성 — story 스냅샷을 토큰화해 /share/fortune/{token} URL 조립.
+  const createShareUrl = () =>
+    createFortuneShare(api, shareBody()).then(
+      ({ share_token }) => `${window.location.origin}/share/fortune/${share_token}`,
+    )
+
   // 공유 토큰을 미리 발급해 둔다 — 공유하기 탭 '그 순간' 동기 복사가 가능하도록
   // (await 이후 복사하면 iOS 사용자 제스처가 끊겨 복사 실패).
-  const preparedUrlRef = useRef<string | null>(null)
   useEffect(() => {
     if (shareMode) return
-    let cancelled = false
-    createFortuneShare(api, shareBody())
-      .then(({ share_token }) => {
-        if (!cancelled) preparedUrlRef.current = `${window.location.origin}/share/fortune/${share_token}`
-      })
-      .catch(() => {})
-    return () => { cancelled = true }
+    return prepare(createShareUrl)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story, shareMode])
-
-  /**
-   * 링크 공유 — 미리 받은 토큰이 있으면 탭 제스처 안에서 '즉시' 클립보드에 복사하고
-   * 모달을 연다(복사됨 표시). 아직 미발급이면 발급 후 모달(모달이 자동 복사).
-   */
-  function handleShareLink() {
-    const prepared = preparedUrlRef.current
-    if (prepared) {
-      // 사용자 제스처 안에서 동기 호출 — iOS에서도 복사 성공
-      try { void navigator.clipboard?.writeText(prepared) } catch { /* 모달 복사 버튼으로 폴백 */ }
-      setShareUrl(prepared)
-      return
-    }
-    setSharing(true)
-    createFortuneShare(api, shareBody())
-      .then(({ share_token }) => setShareUrl(`${window.location.origin}/share/fortune/${share_token}`))
-      .catch(() => {})
-      .finally(() => setSharing(false))
-  }
 
   const rise = (delay: number) => ({
     opacity: revealed ? 1 : 0,
@@ -403,7 +383,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
             color: ink,
             background: 'transparent',
           }}
-          onClick={(e) => { e.stopPropagation(); handleShareLink() }}
+          onClick={(e) => { e.stopPropagation(); share(createShareUrl) }}
           disabled={sharing}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -422,7 +402,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
         open={shareUrl !== null}
         url={shareUrl ?? ''}
         title={t('shareLabel')}
-        onClose={() => setShareUrl(null)}
+        onClose={close}
       />
     </div>
   )

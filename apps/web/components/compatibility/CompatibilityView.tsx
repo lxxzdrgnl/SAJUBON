@@ -6,13 +6,13 @@
  * 소유자 페이지에서는 onShare로 공유 모달을 띄우고, shareMode면 공유 CTA를 숨긴다.
  */
 
-import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { CompatibilityReportDetail, ReportTab } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import { shareCompatibilityReport } from '@sajuguri/api-client'
 import TabbedReport from '@/components/report/TabbedReport'
 import ShareModal from '@/components/ui/ShareModal'
+import { useShareModal } from '@/lib/hooks/useShareModal'
 import ScoreOverview from './ScoreOverview'
 import ElementFlowDiagram from './ElementFlowDiagram'
 
@@ -26,25 +26,18 @@ export default function CompatibilityView({
   shareMode?: boolean
 }) {
   const t = useTranslations('compatibility')
-  const [sharing, setSharing] = useState(false)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const { shareUrl, sharing, share, close } = useShareModal()
 
   const nameA = detail.person_a.name ?? t('scoreOverview.personA')
   const nameB = detail.person_b.name ?? t('scoreOverview.personB')
 
-  async function handleShare() {
+  function handleShare() {
     if (shareUrl) return
-    setSharing(true)
-    try {
-      const res = await shareCompatibilityReport(api, detail.id, { mask_birth: false })
-      setShareUrl(
-        res.share_url || `${window.location.origin}/compatibility/shared/${res.share_token}`,
-      )
-    } catch {
-      // silent fail
-    } finally {
-      setSharing(false)
-    }
+    share(() =>
+      shareCompatibilityReport(api, detail.id, { mask_birth: false }).then(
+        (res) => res.share_url || `${window.location.origin}/compatibility/shared/${res.share_token}`,
+      ),
+    )
   }
 
   return (
@@ -67,7 +60,7 @@ export default function CompatibilityView({
         open={shareUrl !== null}
         url={shareUrl ?? ''}
         title={t('share.title')}
-        onClose={() => setShareUrl(null)}
+        onClose={close}
       />
     </div>
   )

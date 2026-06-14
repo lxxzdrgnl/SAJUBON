@@ -17,6 +17,7 @@ import MansePickerSheet, { type MansePick } from '@/components/manse/MansePicker
 import ToolCard from '@/components/chat/ToolCard'
 import Markdown from '@/components/ui/Markdown'
 import ShareModal from '@/components/ui/ShareModal'
+import { useShareModal } from '@/lib/hooks/useShareModal'
 
 // ── 메인 페이지 ──────────────────────────────────────────────────────────────
 
@@ -33,8 +34,7 @@ export default function QuestionPage() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ id: number; headline: string; content: string; category: string; charts?: ToolChartItem[]; more?: ToolChartItem[] } | null>(null)
   const [openMore, setOpenMore] = useState<Set<number>>(new Set())
-  const [sharing, setSharing] = useState(false)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const { shareUrl, sharing, share, close } = useShareModal()
 
   // 프로필 목록 — 클라이언트에서 로드 (SSR 없음, 게스트 허용 페이지)
   const [profiles, setProfiles] = useState<ProfileResponse[]>([])
@@ -99,17 +99,9 @@ export default function QuestionPage() {
     }
   }
 
-  async function handleShare() {
+  function handleShare() {
     if (!result || sharing) return
-    setSharing(true)
-    try {
-      const { share_url } = await shareConsultation(api, result.id)
-      setShareUrl(share_url)
-    } catch {
-      // silent fail
-    } finally {
-      setSharing(false)
-    }
+    share(() => shareConsultation(api, result.id).then(({ share_url }) => share_url))
   }
 
   function toggleMore(idx: number) {
@@ -190,7 +182,7 @@ export default function QuestionPage() {
           </button>
           <button
             className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
-            onClick={() => { setResult(null); setQuestion(''); setOpenMore(new Set()); setShareUrl(null) }}
+            onClick={() => { setResult(null); setQuestion(''); setOpenMore(new Set()); close() }}
           >
             {t('askAgain')}
           </button>
@@ -200,7 +192,7 @@ export default function QuestionPage() {
           open={shareUrl !== null}
           url={shareUrl ?? ''}
           title={t('share')}
-          onClose={() => setShareUrl(null)}
+          onClose={close}
         />
       </main>
     )

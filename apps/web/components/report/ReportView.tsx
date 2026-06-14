@@ -7,6 +7,7 @@ import type { ReportDetail, YearFlowMonth } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import { shareReport } from '@sajuguri/api-client'
 import ShareModal from '@/components/ui/ShareModal'
+import { useShareModal } from '@/lib/hooks/useShareModal'
 import TabbedReport from './TabbedReport'
 
 // ── 올해의 흐름 ────────────────────────────────────────────────────────────────
@@ -129,20 +130,15 @@ export default function ReportView({
   shareMode?: boolean
 }) {
   const t = useTranslations('report')
-  const [sharing, setSharing] = useState(false)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const { shareUrl, sharing, share, close } = useShareModal()
 
-  async function handleShare() {
+  function handleShare() {
     if (shareUrl) return
-    setSharing(true)
-    try {
-      const res = await shareReport(api, reportId, false)
-      setShareUrl(res.share_url || `${window.location.origin}/share/report/${res.share_token}`)
-    } catch {
-      // silent fail — 버튼 상태만 복구
-    } finally {
-      setSharing(false)
-    }
+    share(() =>
+      shareReport(api, reportId, false).then(
+        (res) => res.share_url || `${window.location.origin}/share/report/${res.share_token}`,
+      ),
+    )
   }
 
   // birth 쿼리 재구성 (다시 생성 CTA용)
@@ -192,7 +188,7 @@ export default function ReportView({
         open={shareUrl !== null}
         url={shareUrl ?? ''}
         title={t('page.shareTitle')}
-        onClose={() => setShareUrl(null)}
+        onClose={close}
       />
     </div>
   )
