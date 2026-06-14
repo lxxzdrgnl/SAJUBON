@@ -87,7 +87,9 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
     navigator.share({ title: title ?? url, url }).catch(() => {/* 사용자 취소 무시 */})
   }, [url, title])
 
+  // 모달 내부 클릭이 부모(예: 운세 스토리의 좌/우 탭=뒤로/다음)로 버블링되지 않게 차단.
   const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation()
     if (e.target === backdropRef.current) onClose()
   }, [onClose])
 

@@ -216,23 +216,37 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
     }
   }
 
+  // 공유 토큰을 미리 발급해 둔다 — 공유하기 탭 '그 순간' 동기 복사가 가능하도록
+  // (await 이후 복사하면 iOS 사용자 제스처가 끊겨 복사 실패).
+  const preparedUrlRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (shareMode) return
+    let cancelled = false
+    createFortuneShare(api, { story })
+      .then(({ share_token }) => {
+        if (!cancelled) preparedUrlRef.current = `${window.location.origin}/share/fortune/${share_token}`
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [story, shareMode])
+
   /**
-   * 링크 공유 — 추측 불가 토큰 발급 후 ShareModal 오픈.
-   * iOS Safari 대응: await(네트워크) 이후 navigator.share / clipboard를 직접
-   * 호출하면 사용자 제스처 컨텍스트가 소실된다. 따라서 모달을 열고,
-   * 복사/공유는 모달 버튼의 새 제스처에서 실행한다.
+   * 링크 공유 — 미리 받은 토큰이 있으면 탭 제스처 안에서 '즉시' 클립보드에 복사하고
+   * 모달을 연다(복사됨 표시). 아직 미발급이면 발급 후 모달(모달이 자동 복사).
    */
-  async function handleShareLink() {
-    setSharing(true)
-    try {
-      const { share_token } = await createFortuneShare(api, { story })
-      const url = `${window.location.origin}/share/fortune/${share_token}`
-      setShareUrl(url)
-    } catch {
-      // 발급 실패 — silent fail
-    } finally {
-      setSharing(false)
+  function handleShareLink() {
+    const prepared = preparedUrlRef.current
+    if (prepared) {
+      // 사용자 제스처 안에서 동기 호출 — iOS에서도 복사 성공
+      try { void navigator.clipboard?.writeText(prepared) } catch { /* 모달 복사 버튼으로 폴백 */ }
+      setShareUrl(prepared)
+      return
     }
+    setSharing(true)
+    createFortuneShare(api, { story })
+      .then(({ share_token }) => setShareUrl(`${window.location.origin}/share/fortune/${share_token}`))
+      .catch(() => {})
+      .finally(() => setSharing(false))
   }
 
   const rise = (delay: number) => ({
