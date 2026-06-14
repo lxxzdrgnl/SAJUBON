@@ -478,7 +478,16 @@
         "get_palja": "사주팔자",
         "get_strength": "강약·용신",
         "get_twelve_un_seong": "12운성",
-        "get_hap_chung": "합충 관계"
+        "get_hap_chung": "합충 관계",
+        "compat_palja_a": "A · 사주팔자",
+        "compat_palja_b": "B · 사주팔자",
+        "compat_wuxing_a": "A · 오행 균형",
+        "compat_wuxing_b": "B · 오행 균형",
+        "compat_ten_gods_a": "A · 십성 분포",
+        "compat_ten_gods_b": "B · 십성 분포",
+        "compat_strength_a": "A · 강약·용신",
+        "compat_strength_b": "B · 강약·용신",
+        "compat_branches": "지지 충(衝) 관계"
       },
       "fields": {
         "dayMaster": "일간",

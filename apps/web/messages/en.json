@@ -515,7 +515,16 @@
         "get_palja": "Four Pillars",
         "get_strength": "Strength & Yongsin",
         "get_twelve_un_seong": "12-Stage Cycle",
-        "get_hap_chung": "Combinations & Clashes"
+        "get_hap_chung": "Combinations & Clashes",
+        "compat_palja_a": "A · Four Pillars",
+        "compat_palja_b": "B · Four Pillars",
+        "compat_wuxing_a": "A · Five Elements",
+        "compat_wuxing_b": "B · Five Elements",
+        "compat_ten_gods_a": "A · Ten Gods",
+        "compat_ten_gods_b": "B · Ten Gods",
+        "compat_strength_a": "A · Strength & Yongsin",
+        "compat_strength_b": "B · Strength & Yongsin",
+        "compat_branches": "Branch Clashes"
       },
       "fields": {
         "dayMaster": "Day Master",
