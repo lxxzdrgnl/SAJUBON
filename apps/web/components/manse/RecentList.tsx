@@ -10,7 +10,7 @@ import { createProfile } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
-import { toResultQuery } from '@/lib/manse/query'
+import { manseNavQuery } from '@/lib/manse/query'
 
 function TrashIcon({ className }: { className?: string }) {
   return (
@@ -154,7 +154,7 @@ export default function RecentList({
 
         return (
           <div key={key} className="relative">
-            <Link href={`/manse/result?${toResultQuery(i)}`}>
+            <Link href={`/manse/result?${manseNavQuery(i)}`}>
               <BrutalCard className="flex items-center gap-3 pr-24">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
                   <MascotTinted stem={i.day_stem} width={40} height={40} />

@@ -7,6 +7,7 @@ import SaveButton from '@/components/manse/SaveButton'
 import ShareButton from '@/components/manse/ShareButton'
 import ResultView from '@/components/manse/ResultView'
 import RecentEnricher from '@/components/manse/RecentEnricher'
+import { manseNavQuery } from '@/lib/manse/query'
 
 export default async function ManseResult({
   searchParams,
@@ -65,10 +66,8 @@ export default async function ManseResult({
         }
       : undefined
 
-  // birth 쿼리를 그대로 /report/new에 전달하기 위한 직렬화
-  const birthQuery = new URLSearchParams(
-    Object.entries(p).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, v as string]),
-  ).toString()
+  // birth 쿼리를 /report/new·/fortune에 전달하기 위한 통합 직렬화 (name/pname 포함)
+  const birthQuery = manseNavQuery(p)
 
   return (
     <main className="flex flex-col gap-3">

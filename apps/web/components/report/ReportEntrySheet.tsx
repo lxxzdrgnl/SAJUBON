@@ -12,7 +12,7 @@ import type { ProfileResponse } from '@sajuguri/api-client'
 import type { RecentBirthInput } from '@sajuguri/core'
 import { loadRecentInputs } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
-import { toResultQuery, profileToQueryInput } from '@/lib/manse/query'
+import { manseNavQuery, profileToManseSource } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
 
 interface Props {
@@ -82,7 +82,7 @@ export default function ReportEntrySheet({ open, onClose, profiles, isLoggedIn }
                   <li key={p.id}>
                     <button
                       className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
-                      onClick={() => goReport(toResultQuery(profileToQueryInput(p)))}
+                      onClick={() => goReport(manseNavQuery(profileToManseSource(p)))}
                     >
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
                         <MascotTinted stem={p.day_stem} width={38} height={38} />
@@ -116,7 +116,7 @@ export default function ReportEntrySheet({ open, onClose, profiles, isLoggedIn }
               </p>
               <ul className="flex flex-col gap-2">
                 {filteredRecent.map((r) => {
-                  const q = toResultQuery(r)
+                  const q = manseNavQuery(r)
                   return (
                     <li key={q}>
                       <button

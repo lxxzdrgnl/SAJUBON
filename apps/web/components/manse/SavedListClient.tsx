@@ -7,7 +7,7 @@ import { ApiClient, setRepresentative, deleteProfile } from '@sajuguri/api-clien
 import type { ProfileResponse } from '@sajuguri/api-client'
 import { Link } from '@/i18n/navigation'
 import BrutalCard from '@/components/ui/BrutalCard'
-import { toResultQuery, profileToQueryInput } from '@/lib/manse/query'
+import { manseNavQuery, profileToManseSource } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
 
 const api = new ApiClient('')
@@ -107,7 +107,7 @@ export default function SavedListClient({
     <div className="flex flex-col gap-3">
       {profiles.map((p) => (
         <div key={p.id} className="relative">
-          <Link href={`/manse/result?${toResultQuery(profileToQueryInput(p))}`}>
+          <Link href={`/manse/result?${manseNavQuery(profileToManseSource(p))}`}>
             <BrutalCard className="flex items-center gap-3 pr-24">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
                 <MascotTinted stem={p.day_stem} width={40} height={40} />

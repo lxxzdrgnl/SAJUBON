@@ -21,6 +21,7 @@ import InlinePartnerCard from './InlinePartnerCard'
 import CompatibilityReportCTA from './CompatibilityReportCTA'
 import ChatNavCTA from './ChatNavCTA'
 import Markdown from '@/components/ui/Markdown'
+import { manseNavQuery } from '@/lib/manse/query'
 
 // 사주 풀 리포트로 안내할 사주분석 툴 집합
 const REPORT_TOOLS = new Set([
@@ -85,20 +86,10 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
   const router = useRouter()
 
   // 세션 사주를 쿼리로 직렬화 — 리포트/운세 CTA가 해당 만세력으로 연결되도록.
-  const birthQuery = (() => {
-    const b = birthInfo as Record<string, unknown> | null | undefined
-    if (!b || !b.birth_date || !b.gender) return ''
-    const params = new URLSearchParams()
-    for (const k of ['birth_date', 'birth_time', 'gender', 'calendar', 'is_leap_month', 'birth_longitude', 'name']) {
-      const v = b[k]
-      if (v !== null && v !== undefined && v !== '') params.set(k, String(v))
-    }
-    return params.toString()
-  })()
-  const reportHref = birthQuery ? `/report/new?${birthQuery}` : '/report/new'
-  const fortuneHref = birthQuery
-    ? `/fortune?${birthQuery}${birthInfo && (birthInfo as Record<string, unknown>).name ? `&pname=${encodeURIComponent(String((birthInfo as Record<string, unknown>).name))}` : ''}`
-    : '/fortune'
+  // manseNavQuery가 name/pname을 함께 붙여주므로 수동 pname 결합은 불필요.
+  const q = manseNavQuery(birthInfo ?? {})
+  const reportHref = q ? `/report/new?${q}` : '/report/new'
+  const fortuneHref = q ? `/fortune?${q}` : '/fortune'
 
   const [title, setTitle] = useState(initialTitle)
   const [messages, setMessages] = useState<DisplayMessage[]>([])

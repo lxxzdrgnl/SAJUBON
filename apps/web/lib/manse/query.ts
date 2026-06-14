@@ -52,3 +52,60 @@ export function profileToQueryInput(profile: ProfileResponse): ResultQueryInput 
     city: profile.city,
   }
 }
+
+/**
+ * 만세력 내비게이션 소스 — 저장 프로필·게스트 최근 입력·채팅 세션 birth_info를 한 함수로 받기 위한 느슨한 타입.
+ * profile_id가 있으면 저장 만세력, name이 있으면 이름(pname)으로도 직렬화된다.
+ */
+export type ManseNavSource =
+  | (ResultQueryInput & { profile_id?: number })
+  | RecentBirthInput
+  | Record<string, unknown>
+
+/** 저장 프로필 → 내비게이션 소스 (profile_id 포함). */
+export function profileToManseSource(p: ProfileResponse): ResultQueryInput & { profile_id: number } {
+  return { ...profileToQueryInput(p), profile_id: p.id }
+}
+
+/** birth 직렬화 대상 키 — 모든 만세력 진입 페이지가 읽는 출생 정보. */
+const BIRTH_KEYS = [
+  'birth_date',
+  'birth_time',
+  'gender',
+  'calendar',
+  'is_leap_month',
+  'birth_longitude',
+  'birth_utc_offset',
+  'city',
+] as const
+
+/**
+ * 만세력 소스(저장 프로필·게스트 최근·채팅 세션 birth_info) → 통합 내비게이션 쿼리.
+ * - birth 필드를 직렬화(birth_time은 HH:MM 정규화), null/undefined/'' 는 제외.
+ * - name이 있으면 name과 pname을 둘 다 설정 (일부 페이지는 name, 운세는 pname을 읽음).
+ * - profile_id가 있으면 설정 (저장 만세력 → 리포트가 프로필에 연결되도록).
+ * - 느슨한 타입을 안전하게 강제 변환 — birth_date/gender 없으면 '' 반환.
+ */
+export function manseNavQuery(src: ManseNavSource): string {
+  const b = (src ?? {}) as Record<string, unknown>
+  if (!b.birth_date || !b.gender) return ''
+
+  const params = new URLSearchParams()
+  for (const k of BIRTH_KEYS) {
+    const v = k === 'birth_time' ? normalizeTime(b[k] as string | null | undefined) : b[k]
+    if (v !== null && v !== undefined && v !== '') params.set(k, String(v))
+  }
+
+  const name = b.name
+  if (name !== null && name !== undefined && name !== '') {
+    params.set('name', String(name))
+    params.set('pname', String(name))
+  }
+
+  const profileId = b.profile_id
+  if (profileId !== null && profileId !== undefined && profileId !== '') {
+    params.set('profile_id', String(profileId))
+  }
+
+  return params.toString()
+}

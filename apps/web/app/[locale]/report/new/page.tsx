@@ -77,9 +77,11 @@ export default function ReportNewPage() {
     setLoading(true)
     setError('')
     try {
+      const profileId = searchParams.get('profile_id')
       const report = await createReport(api, {
         birth_input: birthInput,
         ...(topics.trim() ? { request_topics: topics.trim() } : {}),
+        ...(profileId ? { profile_id: Number(profileId) } : {}),
         language: locale,
       })
       router.replace(`/report/${report.id}`)

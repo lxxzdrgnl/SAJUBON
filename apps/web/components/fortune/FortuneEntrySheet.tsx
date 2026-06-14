@@ -13,7 +13,7 @@ import type { RecentBirthInput } from '@sajuguri/core'
 import { loadRecentInputs } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
 import { buildBirthKey } from '@/lib/fortune/cache'
-import { toResultQuery, profileToQueryInput } from '@/lib/manse/query'
+import { manseNavQuery, profileToManseSource } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
 
 /** 오늘 이미 본 birthKey 셋 — localStorage에서 로드. */
@@ -109,7 +109,7 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                     <li key={p.id}>
                       <button
                         className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
-                        onClick={() => goFortune(toResultQuery(profileToQueryInput(p)) + `&pname=${encodeURIComponent(p.name)}`)}
+                        onClick={() => goFortune(manseNavQuery(profileToManseSource(p)))}
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
                           <MascotTinted stem={p.day_stem} width={38} height={38} />
@@ -151,12 +151,12 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                 {filteredRecent.map((r) => {
                   const key = recentToBirthKey(r)
                   const seen = seenKeys.has(key)
-                  const q = toResultQuery(r)
+                  const q = manseNavQuery(r)
                   return (
                     <li key={q}>
                       <button
                         className="flex w-full items-center gap-3 rounded-2xl border-[1.5px] border-border-soft bg-surface p-4 text-left hover:border-ink hover:shadow-[2px_2px_0_#1A1A1A] transition-all"
-                        onClick={() => goFortune(q + `&pname=${encodeURIComponent(r.name)}`)}
+                        onClick={() => goFortune(q)}
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
                           <MascotTinted stem={r.day_stem} width={38} height={38} />
