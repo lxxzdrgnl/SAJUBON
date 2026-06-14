@@ -62,6 +62,67 @@ interface PartnerAttachedBlock {
 
 type MessageBlock = string | ToolResultBlock | InlinePartnerBlock | PartnerAttachedBlock
 
+// 본문 안의 차트 마커 토큰. `[[chart:get_palja]]` 형태. 완전히 닫힌 것만 매칭(스트리밍 중 부분 토큰은 그냥 텍스트로 남는다).
+const CHART_MARKER_RE = /\[\[chart:([a-z_]+)\]\]/g
+
+/** 텍스트 안에서 마커로 참조된 tool 이름 집합을 추출한다. */
+function markerToolsInText(text: string): string[] {
+  const out: string[] = []
+  for (const m of text.matchAll(CHART_MARKER_RE)) out.push(m[1])
+  return out
+}
+
+/**
+ * AI 텍스트 블록을 `[[chart:TOOL]]` 마커 기준으로 쪼개어,
+ * 텍스트 세그먼트(Markdown) 사이에 해당 차트 카드를 끼워 렌더한 React 노드 배열을 만든다.
+ * 마커가 가리키는 tool의 payload가 없으면(아직 안 옴 등) 카드는 건너뛴다.
+ */
+function renderTextWithCharts(
+  text: string,
+  toolByName: Record<string, Record<string, unknown>>,
+  keyPrefix: string,
+): React.ReactNode[] {
+  const nodes: React.ReactNode[] = []
+  let lastIndex = 0
+  let seg = 0
+  for (const m of text.matchAll(CHART_MARKER_RE)) {
+    const before = text.slice(lastIndex, m.index)
+    if (before.trim()) {
+      nodes.push(
+        <div
+          key={`${keyPrefix}-t${seg}`}
+          className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
+        >
+          <Markdown>{before}</Markdown>
+        </div>,
+      )
+    }
+    const tool = m[1]
+    const payload = toolByName[tool]
+    if (payload) {
+      nodes.push(
+        <div key={`${keyPrefix}-c${seg}`} className="flex flex-col gap-2 w-full min-w-0">
+          <ToolCard tool={tool} payload={payload} />
+        </div>,
+      )
+    }
+    lastIndex = (m.index ?? 0) + m[0].length
+    seg++
+  }
+  const tail = text.slice(lastIndex)
+  if (tail.trim()) {
+    nodes.push(
+      <div
+        key={`${keyPrefix}-t${seg}`}
+        className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
+      >
+        <Markdown>{tail}</Markdown>
+      </div>,
+    )
+  }
+  return nodes
+}
+
 interface DisplayMessage {
   role: 'human' | 'ai'
   /** 텍스트는 string, tool_result/request_partner는 블록 */
@@ -416,7 +477,18 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1 flex flex-col gap-3">
-        {messages.map((m, i) => (
+        {messages.map((m, i) => {
+          // 이 메시지의 tool_result 블록을 tool 이름 → payload 맵으로 모은다(중복 시 마지막 우선).
+          const toolByName: Record<string, Record<string, unknown>> = {}
+          for (const b of m.blocks) {
+            if (typeof b !== 'string' && b.kind === 'tool_result') toolByName[b.tool] = b.payload
+          }
+          // 어떤 텍스트 블록의 마커가 참조한 tool은 인라인으로 렌더되므로 standalone 카드는 숨긴다.
+          const consumedTools = new Set<string>()
+          for (const b of m.blocks) {
+            if (typeof b === 'string') for (const t of markerToolsInText(b)) consumedTools.add(t)
+          }
+          return (
           <div
             key={i}
             className={`flex gap-2 min-w-0 ${m.role === 'human' ? 'flex-row-reverse' : 'flex-row'}`}
@@ -446,16 +518,13 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                       </div>
                     )
                   }
-                  return (
-                    <div
-                      key={bi}
-                      className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
-                    >
-                      <Markdown>{block}</Markdown>
-                    </div>
-                  )
+                  // AI 본문: `[[chart:TOOL]]` 마커 위치에 해당 차트 카드를 끼워 렌더.
+                  const nodes = renderTextWithCharts(block, toolByName, `${i}-${bi}`)
+                  return <div key={bi} className="flex flex-col gap-2 w-full min-w-0">{nodes}</div>
                 }
                 if (block.kind === 'tool_result') {
+                  // 마커로 인라인 렌더된 차트는 standalone 카드로 중복 표시하지 않는다.
+                  if (consumedTools.has(block.tool)) return null
                   return (
                     <div key={bi} className="flex flex-col gap-2 w-full min-w-0">
                       <ToolCard tool={block.tool} payload={block.payload} />
@@ -503,7 +572,8 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
               ) : null}
             </div>
           </div>
-        ))}
+          )
+        })}
         <div ref={bottomRef} />
       </div>
 
