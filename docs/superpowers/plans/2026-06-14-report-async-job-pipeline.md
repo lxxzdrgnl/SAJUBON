@@ -1278,7 +1278,7 @@ git commit -m "feat: add generation runner for saju and compatibility jobs"
 
 `backend/core/config.py`의 `class Settings`에서 `gen_job_stale_minutes: int = 10` 줄 아래에 추가:
 ```python
-    gen_job_retention_days: int = 14
+    gen_job_retention_days: int = 3
 ```
 
 - [ ] **Step 1: 실패하는 워커 태스크 테스트 작성**

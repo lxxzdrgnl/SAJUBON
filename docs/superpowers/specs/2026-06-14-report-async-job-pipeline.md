@@ -134,13 +134,13 @@ GET /api/jobs/{job_id}  → { status, job_type, result_id?, error? }   # 두 기
 - **redis 구조 변경/flush/재시작/버전업**: 큐에는 **`job_id`(정수)만** 싣고 실제 payload·진실은 Postgres에 둔다. 따라서 redis가 비워지거나 바뀌어도 상태가 깨지지 않는다. 큐에서 사라진 job은 DB에 `pending`으로 남아 스윕이 처리. redis db 인덱스/호스트 변경은 `REDIS_URL` 환경변수만 수정(코드 0). 함수명 고정이라 배포 중 큐 잔존 job도 안전.
 - 워커가 생성 중 크래시 → job `running` 잔류 → 스윕이 `gen_job_stale_minutes` 후 `failed` 정리(부분작업 재개 안 함, 사용자 재시도).
 - enqueue 직후 워커 다운(또는 redis가 큐 유실) → job `pending` 잔류 → 스윕이 `failed` 처리 → 사용자 재시도.
-- **완료 행 보존/정리**: 스윕은 멈춘(stale active) job만 다룬다. done/failed 행은 계속 쌓이므로, 워커 cron이 `gen_job_retention_days`(기본 14) 지난 done/failed 행을 **삭제**한다(`delete_old_jobs`).
+- **완료 행 보존/정리**: 스윕은 멈춘(stale active) job만 다룬다. done/failed 행은 계속 쌓이므로, 워커 cron이 `gen_job_retention_days`(기본 3) 지난 done/failed 행을 **삭제**한다(`delete_old_jobs`).
 - 사용자가 대기 중 이탈 → 생성 계속, 다음 방문 시 내 기록에 존재(앱이면 추후 푸시).
 - 같은 입력 재요청/중복 클릭 → 활성 job 있으면 그 job_id 반환(중복 생성 방지).
 - 푸시 토큰 만료 → 발송 시 provider가 invalid 응답 → 해당 토큰 삭제(회전).
 - **배포 시 마이그레이션**: main.py의 `Base.metadata.create_all`이 기동 시 신규 테이블을 생성하므로, 배포 후 alembic은 `upgrade`가 아니라 **`stamp head`로 버전만 reconcile**한다(이미 생성된 테이블에 `upgrade`하면 DuplicateTable). 향후 기존 테이블 변경은 반드시 alembic.
 
-`core/config.py`에 추가 설정: `gen_job_retention_days: int = 14`.
+`core/config.py`에 추가 설정: `gen_job_retention_days: int = 3`.
 
 ## 11. 테스트
 
