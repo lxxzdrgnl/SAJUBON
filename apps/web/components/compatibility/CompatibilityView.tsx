@@ -16,6 +16,32 @@ import { useShareModal } from '@/lib/hooks/useShareModal'
 import ScoreOverview from './ScoreOverview'
 import ElementFlowDiagram from './ElementFlowDiagram'
 
+// ── 궁합 차트 → tool 이름 맵 ──────────────────────────────────────────────────
+// detail.charts 의 각 키를 compat_* tool 이름에 매핑한다.
+// 탭 content의 `[[chart:TOOL]]` 마커가 이 맵으로 인라인 ToolCard로 치환된다.
+
+function buildCompatChartsToolByName(
+  charts: Record<string, unknown> | undefined,
+): Record<string, Record<string, unknown>> {
+  const out: Record<string, Record<string, unknown>> = {}
+  if (!charts) return out
+  // 백엔드 detail.charts 키 = 마커 tool 이름과 동일(compat_*). 그대로 매핑한다.
+  const tools = [
+    'compat_palja_a', 'compat_palja_b',
+    'compat_wuxing_a', 'compat_wuxing_b',
+    'compat_ten_gods_a', 'compat_ten_gods_b',
+    'compat_strength_a', 'compat_strength_b',
+    'compat_branches',
+  ]
+  for (const tool of tools) {
+    const payload = charts[tool]
+    if (payload && typeof payload === 'object') {
+      out[tool] = payload as Record<string, unknown>
+    }
+  }
+  return out
+}
+
 // ── 메인 CompatibilityView ─────────────────────────────────────────────────────
 
 export default function CompatibilityView({
@@ -40,6 +66,8 @@ export default function CompatibilityView({
     )
   }
 
+  const chartsToolByName = buildCompatChartsToolByName(detail.charts)
+
   return (
     <div className="flex flex-col gap-4">
       <TabbedReport
@@ -53,6 +81,7 @@ export default function CompatibilityView({
         onShare={handleShare}
         shareLabel={sharing ? t('share.creating') : t('share.shareBtn')}
         shareMode={shareMode}
+        chartsToolByName={chartsToolByName}
       />
 
       {/* 공유 모달 */}

@@ -432,6 +432,27 @@ function TwelveUnSeongMini({ payload, t }: { payload: Record<string, unknown>; t
   )
 }
 
+/** 궁합 지지 충(衝) 쌍 카드 */
+function CompatBranchesCard({ payload }: { payload: Record<string, unknown> }) {
+  const clash = (payload.clash_pairs ?? []) as string[]
+  const nameA = (payload.name_a as string) || 'A'
+  const nameB = (payload.name_b as string) || 'B'
+  return (
+    <div className="flex flex-col gap-1.5">
+      <p className="text-[11px] font-bold text-text-sub">{nameA} ↔ {nameB} 지지 충(衝)</p>
+      {clash.length === 0 ? (
+        <p className="text-[13px] text-ink">두 사람 사이에 두드러진 충(衝)이 없어요 — 큰 마찰 요인이 적은 편이에요.</p>
+      ) : (
+        <div className="flex flex-wrap gap-1.5">
+          {clash.map((p, i) => (
+            <span key={i} className="rounded-lg border-2 border-ink bg-surface px-2 py-1 font-serif text-[13px] font-bold text-ink">{p}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** 합충 관계 — 활성 관계 타입별 컴팩트 표시 */
 function HapChungMini({ payload, t }: { payload: Record<string, unknown>; t: ReturnType<typeof useTranslations> }) {
   const br = (payload.branch_relations ?? {}) as Record<string, unknown>
@@ -531,6 +552,20 @@ function renderContent(tool: string, payload: Record<string, unknown>, t: Return
       return <TwelveUnSeongMini payload={payload} t={t} />
     case 'get_hap_chung':
       return <HapChungMini payload={payload} t={t} />
+    case 'compat_palja_a':
+    case 'compat_palja_b':
+      return <PaljaMini payload={payload} />
+    case 'compat_wuxing_a':
+    case 'compat_wuxing_b':
+      return <WuxingMini payload={payload} />
+    case 'compat_ten_gods_a':
+    case 'compat_ten_gods_b':
+      return <TenGodsMini payload={payload} />
+    case 'compat_strength_a':
+    case 'compat_strength_b':
+      return <StrengthMini payload={payload} t={t} />
+    case 'compat_branches':
+      return <CompatBranchesCard payload={payload} />
     default:
       return null
   }

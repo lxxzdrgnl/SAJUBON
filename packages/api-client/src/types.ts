@@ -396,6 +396,7 @@ export interface CompatibilityReportDetail {
   request_topics: string | null
   language: string
   created_at: string
+  charts?: Record<string, unknown>
 }
 
 /** POST /api/compatibility/{id}/share — 공유 토큰 발급 요청 */
