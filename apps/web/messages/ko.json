@@ -86,6 +86,7 @@
     "fortuneSub": "너의 하루는?",
     "sectionTitle": "이런 건 어때?",
     "cards": {
+      "manse": { "title": "만세력 보기", "desc": "내 사주 원국을 한눈에" },
       "report": {
         "title": "내 사주 풀리포트",
         "badge": "10탭",

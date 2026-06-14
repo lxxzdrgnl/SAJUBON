@@ -86,6 +86,7 @@
     "fortuneSub": "How's your day?",
     "sectionTitle": "What about these?",
     "cards": {
+      "manse": { "title": "View Saju Chart", "desc": "Your full natal chart at a glance" },
       "report": {
         "title": "My Full Saju Report",
         "badge": "10 tabs",

@@ -7,6 +7,7 @@ import { pickGreeting } from '@/lib/greetings'
 import { listProfiles, type ProfileResponse } from '@sajuguri/api-client'
 import FortuneBannerClient from '@/components/fortune/FortuneBannerClient'
 import ReportEntryButton from '@/components/report/ReportEntryButton'
+import ManseEntryButton from '@/components/manse/ManseEntryButton'
 import LanguageToggleCompact from '@/components/LanguageToggleCompact'
 
 const ICONS = {
@@ -15,6 +16,7 @@ const ICONS = {
   bolt: 'M13 2 L5 13 H11 L9 22 L19 10 H12 Z',
   moon: 'M20 13 A8 8 0 1 1 11 4 A6.5 6.5 0 0 0 20 13 Z',
   heart: 'M12 20 C12 20 4 13.5 4 8.5 A4 4 0 0 1 12 6 A4 4 0 0 1 20 8.5 C20 13.5 12 20 12 20 Z',
+  manse: 'M4 5 h16 M4 9 h16 M4 13 h10 M4 17 h10',
 } as const
 
 // 일간(오행) 색에 맞춘 운세 배너 그라데이션 — 마스코트 색과 어우러지게.
@@ -121,6 +123,18 @@ export default async function Home() {
 
       <h3 className="mb-3 mt-5 text-[15px] font-extrabold">{t('sectionTitle')}</h3>
       <div className="flex flex-col gap-3">
+        {/* 만세력 보기 — 만세력 선택 시트 → /manse/result */}
+        <ManseEntryButton profiles={profiles} isLoggedIn={!!user}>
+          <BrutalCard className="flex items-center gap-3">
+            <CardIcon d={ICONS.manse} bg="#7BD3C8" color="var(--ink)" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-extrabold">{t('cards.manse.title')}</p>
+              <p className="mt-0.5 text-xs text-text-sub">{t('cards.manse.desc')}</p>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          </BrutalCard>
+        </ManseEntryButton>
+
         {/* 사주 풀리포트 — 프로필 선택 시트 → /report/new */}
         <ReportEntryButton profiles={profiles} isLoggedIn={!!user}>
           <BrutalCard className="flex items-center gap-3">
@@ -172,14 +186,6 @@ export default async function Home() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </BrutalCard>
         </Link>
-
-        <BrutalCard intensity="soft" className="flex items-center gap-3 opacity-55">
-          <CardIcon d={ICONS.moon} bg="#F5F0E2" color="var(--text-sub)" />
-          <div>
-            <p className="text-sm font-extrabold text-text-sub">{t('cards.soon.title')}</p>
-            <p className="mt-0.5 text-xs text-text-sub">{t('cards.soon.desc')}</p>
-          </div>
-        </BrutalCard>
       </div>
     </main>
   )
