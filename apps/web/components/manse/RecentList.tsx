@@ -12,6 +12,9 @@ import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
 import { manseNavQuery } from '@/lib/manse/query'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+const GOOGLE_LOGIN_URL = `${API_URL}/api/auth/google?client=web`
+
 function TrashIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -77,6 +80,7 @@ export default function RecentList({
   const router = useRouter()
   const [items, setItems] = useState<RecentBirthInput[] | null>(null)
   const [itemStates, setItemStates] = useState<Record<string, ItemState>>({})
+  const [loginPrompt, setLoginPrompt] = useState(false)
 
   useEffect(() => {
     loadRecentInputs(webStorage).then(setItems)
@@ -211,12 +215,14 @@ export default function RecentList({
                     <span>{saveLabel}</span>
                   </button>
                 ) : (
-                  <span
-                    className="rounded-lg border-2 border-ink px-2 py-1 text-[11px] font-bold text-text-sub"
-                    title={t('recentSaveLoginHint')}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setLoginPrompt(true) }}
+                    className="flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]"
                   >
-                    {t('recentSave')}
-                  </span>
+                    <SaveIcon className="h-3 w-3 shrink-0" />
+                    <span>{t('recentSave')}</span>
+                  </button>
                 )}
                 <button
                   type="button"
@@ -231,6 +237,36 @@ export default function RecentList({
           </div>
         )
       })}
+
+      {/* 비로그인 저장 시 로그인 안내 모달 */}
+      {loginPrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-6"
+          onClick={() => setLoginPrompt(false)}
+        >
+          <div className="absolute inset-0 bg-ink/40" aria-hidden="true" />
+          <div
+            className="relative w-full max-w-[320px] rounded-2xl border-2 border-ink bg-surface p-5 text-center shadow-[4px_4px_0_#1A1A1A]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="mb-1 text-[16px] font-extrabold text-ink">{t('recentLoginTitle')}</p>
+            <p className="mb-4 text-[13px] text-text-sub">{t('loginHint')}</p>
+            <a
+              href={GOOGLE_LOGIN_URL}
+              className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold text-ink shadow-[4px_4px_0_#1A1A1A]"
+            >
+              {t('recentLoginCta')}
+            </a>
+            <button
+              type="button"
+              onClick={() => setLoginPrompt(false)}
+              className="mt-2 w-full py-2 text-[13px] font-bold text-text-sub"
+            >
+              {t('recentLoginClose')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
