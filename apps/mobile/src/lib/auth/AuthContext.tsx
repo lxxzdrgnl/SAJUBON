@@ -4,6 +4,7 @@ import { getMe, logout as apiLogout, type MeResponse } from '@sajuguri/api-clien
 import { API_BASE, AUTH_REDIRECT } from '../config'
 import { createAuthedApi, type AuthedApiClient } from './client'
 import { clearTokens, getRefreshToken, saveTokens } from './tokens'
+import { registerPushToken } from '../push'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (me) {
         setUser(me)
         setStatus('authed')
+        void registerPushToken(api)
       } else {
         await clearTokens()
         setStatus('guest')
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setUser(me)
     setStatus('authed')
+    void registerPushToken(api)
     return true
   }, [api])
 

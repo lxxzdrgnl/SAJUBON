@@ -7,10 +7,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StatusBar } from 'expo-status-bar'
 import { Stack } from 'expo-router'
 import { AuthProvider } from '@/lib/auth/AuthContext'
+import { setupNotificationHandler, useNotificationTapRouter } from '@/lib/push'
+
+setupNotificationHandler()
 
 export default function RootLayout() {
   // QueryClient는 마운트당 1회만 생성 (리렌더 시 캐시 유지)
   const [queryClient] = useState(() => new QueryClient())
+  useNotificationTapRouter()
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
