@@ -564,7 +564,9 @@
       "metaTitle": "{name}님의 오늘 운세 · {keyword} {score}점",
       "metaDescription": "{name}님의 오늘 운세를 확인해보세요. 키워드는 \"{keyword}\".",
       "metaTitleFallback": "사주구리 오늘의 운세",
-      "metaDescriptionFallback": "사주구리에서 오늘의 운세를 확인해보세요."
+      "metaDescriptionFallback": "사주구리에서 오늘의 운세를 확인해보세요.",
+      "metaTitleAnon": "사주구리 오늘의 운세 · {keyword} {score}점",
+      "metaDescriptionAnon": "사주구리에서 오늘의 운세를 확인해보세요. 키워드는 \"{keyword}\"."
     },
     "my": {
       "title": "운세 기록",

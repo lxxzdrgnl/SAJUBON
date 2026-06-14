@@ -42,15 +42,15 @@ export async function generateMetadata({
   }
 
   const score = overallScore(story)
-  const title = t('metaTitle', {
-    name: story.profile_name || t('metaTitleFallback'),
-    keyword: story.keyword,
-    score: score ?? '',
-  })
-  const description = t('metaDescription', {
-    name: story.profile_name || t('metaTitleFallback'),
-    keyword: story.keyword,
-  })
+  // 이름이 있으면 "{이름}님의 오늘 운세", 없으면(게스트) "님의" 없는 익명 제목.
+  // (이전엔 이름이 없을 때 fallback 문구를 이름 자리에 넣어 "사주구리 오늘의 운세님의…"가 됐다.)
+  const hasName = Boolean(story.profile_name)
+  const title = hasName
+    ? t('metaTitle', { name: story.profile_name, keyword: story.keyword, score: score ?? '' })
+    : t('metaTitleAnon', { keyword: story.keyword, score: score ?? '' })
+  const description = hasName
+    ? t('metaDescription', { name: story.profile_name, keyword: story.keyword })
+    : t('metaDescriptionAnon', { keyword: story.keyword })
 
   return {
     title,
