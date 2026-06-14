@@ -25,12 +25,12 @@ from llm.prompts.compatibility_report import build_compatibility_system_prompt, 
 logger = logging.getLogger(__name__)
 
 # ─── 앵커 탭 카테고리 (항상 포함) ─────────────────────────────────────────────
-_ANCHOR_CATEGORIES = ["종합 케미", "갈등 포인트", "관계 조언"]
+_ANCHOR_CATEGORIES = ["종합 케미", "두 사람의 매력", "관계 조언"]
 
 # 앵커 탭이 Writer 출력에 없을 때 사용하는 폴백 헤드라인
 _ANCHOR_FALLBACK: dict[str, str] = {
     "종합 케미": "두 사람이 만들어내는 고유한 에너지",
-    "갈등 포인트": "서로 다른 리듬 — 인식해야 할 마찰",
+    "두 사람의 매력": "서로를 끌어당기는 두 사람의 결",
     "관계 조언": "함께 더 멀리 가기 위한 실천 조언",
 }
 
@@ -170,7 +170,7 @@ class CompatibilityReportModule:
         1. Writer 출력 탭을 기반으로 시작.
         2. 앵커 3탭(종합 케미·갈등 포인트·관계 조언) 누락 시 삽입.
         3. request_topics 쉼표 분리 → requested=True 탭 추가.
-        4. 총 탭을 5~8개로 클램프.
+        4. 총 탭을 6~10개로 클램프.
         """
         writer_tabs: list[ReportTab] = list(parsed.tabs) if parsed else []
 
@@ -220,9 +220,9 @@ class CompatibilityReportModule:
 
         all_tabs = tabs + requested_tabs
 
-        # 최소 5탭 보장 (앵커 3 + 가변 최소 2)
-        MIN_TABS = 5
-        MAX_TABS = 8
+        # 최소 6탭 보장 (앵커 3 + 가변 최소 3)
+        MIN_TABS = 6
+        MAX_TABS = 10
         if len(all_tabs) < MIN_TABS:
             # 부족하면 그대로 반환 (Writer가 충분히 못 만든 경우)
             pass

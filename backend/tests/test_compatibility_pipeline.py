@@ -163,29 +163,29 @@ async def test_pipeline_multiple_request_topics():
 
 @pytest.mark.asyncio
 async def test_pipeline_tabs_count_within_range():
-    """요청 탭 없으면 총 탭이 5~8 사이여야 한다."""
+    """요청 탭 없으면 총 탭이 6~10 사이여야 한다."""
     from llm.pipelines.compatibility_report import run_compatibility_report
 
     fake_output = _make_writer_output()
     with patch("llm.reports.runner._invoke_writer", new=AsyncMock(return_value=fake_output)):
         score, synastry, tabs = await run_compatibility_report(_make_req())
 
-    assert 3 <= len(tabs) <= 8  # 최소 앵커 3개
+    assert 3 <= len(tabs) <= 10  # 최소 앵커 3개
 
 
 @pytest.mark.asyncio
 async def test_pipeline_tabs_not_exceed_max_without_request():
-    """Writer가 9개 이상 반환해도 max 8개로 클램프."""
+    """Writer가 11개 이상 반환해도 max 10개로 클램프."""
     from llm.pipelines.compatibility_report import run_compatibility_report
     from llm.reports.compatibility import CompatibilityReportModule
 
     schema = CompatibilityReportModule().output_schema()
     too_many = schema(tabs=[
         ReportTab(category=f"탭_{i}", headline="h", content="b")
-        for i in range(10)
+        for i in range(12)
     ])
 
     with patch("llm.reports.runner._invoke_writer", new=AsyncMock(return_value=too_many)):
         score, synastry, tabs = await run_compatibility_report(_make_req())
 
-    assert len(tabs) <= 8
+    assert len(tabs) <= 10

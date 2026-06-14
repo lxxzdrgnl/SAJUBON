@@ -128,7 +128,7 @@ def test_assemble_tabs_requested_topic_added():
     m = CompatibilityReportModule()
     writer_tabs = [
         ReportTab(category="종합 케미", headline="좋은 궁합", content="..."),
-        ReportTab(category="갈등 포인트", headline="작은 불꽃", content="..."),
+        ReportTab(category="두 사람의 매력", headline="작은 불꽃", content="..."),
         ReportTab(category="관계 조언", headline="함께 성장", content="..."),
         ReportTab(category="연애 스타일", headline="뜨거운 연애", content="..."),
     ]
@@ -145,7 +145,7 @@ def test_assemble_tabs_multiple_request_topics():
     m = CompatibilityReportModule()
     writer_tabs = [
         ReportTab(category="종합 케미", headline="h", content="b"),
-        ReportTab(category="갈등 포인트", headline="h", content="b"),
+        ReportTab(category="두 사람의 매력", headline="h", content="b"),
         ReportTab(category="관계 조언", headline="h", content="b"),
     ]
     parsed = _make_parsed(writer_tabs)
@@ -160,7 +160,7 @@ def test_assemble_tabs_no_duplicate_request_topics():
     m = CompatibilityReportModule()
     writer_tabs = [
         ReportTab(category="종합 케미", headline="h", content="b"),
-        ReportTab(category="갈등 포인트", headline="h", content="b"),
+        ReportTab(category="두 사람의 매력", headline="h", content="b"),
         ReportTab(category="관계 조언", headline="h", content="b"),
         ReportTab(category="결혼시기", headline="h", content="b"),
     ]
@@ -171,16 +171,16 @@ def test_assemble_tabs_no_duplicate_request_topics():
 
 
 def test_assemble_tabs_max_clamp():
-    """탭이 8개를 초과하면 클램프."""
+    """탭이 10개를 초과하면 클램프."""
     m = CompatibilityReportModule()
     writer_tabs = [
         ReportTab(category=f"tab_{i}", headline="h", content="b")
-        for i in range(10)
+        for i in range(12)
     ]
     parsed = _make_parsed(writer_tabs)
     sig = {}
     tabs = m.assemble_tabs(parsed, sig, request_topics=None)
-    assert len(tabs) <= 8
+    assert len(tabs) <= 10
 
 
 def test_assemble_tabs_anchor_order():
@@ -189,7 +189,7 @@ def test_assemble_tabs_anchor_order():
     # Writer가 역순으로 앵커 반환
     writer_tabs = [
         ReportTab(category="관계 조언", headline="h", content="b"),
-        ReportTab(category="갈등 포인트", headline="h", content="b"),
+        ReportTab(category="두 사람의 매력", headline="h", content="b"),
         ReportTab(category="종합 케미", headline="h", content="b"),
     ]
     parsed = _make_parsed(writer_tabs)
@@ -229,7 +229,7 @@ async def test_run_report_with_mocked_writer():
     output_schema = m.output_schema()
     fake_output = output_schema(tabs=[
         ReportTab(category="종합 케미", headline="좋은 궁합", content="..."),
-        ReportTab(category="갈등 포인트", headline="작은 마찰", content="..."),
+        ReportTab(category="두 사람의 매력", headline="작은 마찰", content="..."),
         ReportTab(category="관계 조언", headline="함께 성장", content="..."),
         ReportTab(category="연애 스타일", headline="뜨거운 연애", content="..."),
         ReportTab(category="보완 시너지", headline="서로를 채우는 오행", content="..."),
