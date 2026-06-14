@@ -16,6 +16,7 @@ from crud import chat as chat_crud
 from crud import compatibility as compat_crud
 from db.models import CompatibilityReport
 from engine.handlers.calculate_saju import handle_calculate_saju
+from engine.calc.synastry import synastry_for_report
 from llm.tools.chart_payloads import (
     payload_palja, payload_wuxing_balance, payload_ten_gods, payload_strength,
 )
@@ -68,27 +69,58 @@ def _build_compat_charts(
     try:
         kwargs_a = {k: person_a[k] for k in _SAJU_CALC_KEYS if k in person_a}
         kwargs_b = {k: person_b[k] for k in _SAJU_CALC_KEYS if k in person_b}
-        saju_a = handle_calculate_saju(**kwargs_a)
-        saju_b = handle_calculate_saju(**kwargs_b)
+        chart_a = handle_calculate_saju(**kwargs_a)
+        chart_b = handle_calculate_saju(**kwargs_b)
 
-        # clash_pairs: synastry 우선, 없으면 score의 conflict_branches 폴백
-        clash_pairs = synastry.get("clash_pairs") or score.get("conflict_branches", [])
+        # 신선한 synastry 재계산 — 새 필드(ten_god_b_to_a, hap_pairs)를 포함
+        syn = synastry_for_report(chart_a, chart_b)
 
-        return {
-            "compat_palja_a":     payload_palja(saju_a),
-            "compat_palja_b":     payload_palja(saju_b),
-            "compat_wuxing_a":    payload_wuxing_balance(saju_a),
-            "compat_wuxing_b":    payload_wuxing_balance(saju_b),
-            "compat_ten_gods_a":  payload_ten_gods(saju_a),
-            "compat_ten_gods_b":  payload_ten_gods(saju_b),
-            "compat_strength_a":  payload_strength(saju_a),
-            "compat_strength_b":  payload_strength(saju_b),
+        name_a = _name(person_a)
+        name_b = _name(person_b)
+
+        day_a = chart_a["day_pillar"]
+        day_b = chart_b["day_pillar"]
+
+        out = {
+            "compat_palja_a":     payload_palja(chart_a),
+            "compat_palja_b":     payload_palja(chart_b),
+            "compat_wuxing_a":    payload_wuxing_balance(chart_a),
+            "compat_wuxing_b":    payload_wuxing_balance(chart_b),
+            "compat_ten_gods_a":  payload_ten_gods(chart_a),
+            "compat_ten_gods_b":  payload_ten_gods(chart_b),
+            "compat_strength_a":  payload_strength(chart_a),
+            "compat_strength_b":  payload_strength(chart_b),
             "compat_branches": {
-                "clash_pairs": clash_pairs,
-                "name_a": _name(person_a),
-                "name_b": _name(person_b),
+                "clash_pairs": syn.get("clash_pairs", []),
+                "hap_pairs": syn.get("hap_pairs", []),
+                "name_a": name_a,
+                "name_b": name_b,
+            },
+            # 두 일간 관계
+            "compat_day_relation": {
+                "name_a": name_a,
+                "name_b": name_b,
+                "stem_a": day_a["stem"],
+                "stem_b": day_b["stem"],
+                "stem_element_a": day_a["stem_element"],
+                "stem_element_b": day_b["stem_element"],
+                "stem_hap": syn.get("stem_hap"),
+                "element_synergy": syn.get("element_synergy"),
+                "ten_god_a_to_b": syn.get("day_ten_god"),
+                "ten_god_b_to_a": syn.get("ten_god_b_to_a"),
+            },
+            # 용신 보완
+            "compat_yongsin": {
+                "name_a": name_a,
+                "name_b": name_b,
+                "yong_a": (chart_a.get("yong_sin") or {}).get("primary"),
+                "yong_b": (chart_b.get("yong_sin") or {}).get("primary"),
+                "yongsin_help": syn.get("yongsin_help"),
+                "complement_a_to_b": syn.get("complement_a_to_b", []),
+                "complement_b_to_a": syn.get("complement_b_to_a", []),
             },
         }
+        return out
     except Exception:
         return None
 

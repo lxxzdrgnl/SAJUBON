@@ -14,6 +14,12 @@ calc1 + calc2 → interaction_tags (궁합 RAG 쿼리 seed)
 from __future__ import annotations
 from engine.calc.ten_gods import calculate_ten_god
 from engine.calc.se_un import get_element_interaction
+from engine.data.earthly_branches import YUK_HAP
+
+# ─── 육합 조회용 frozenset 맵 ────────────────────────────────────────────────
+_YUK_HAP_MAP: dict[frozenset, str] = {
+    frozenset(entry["pair"]): entry["element"] for entry in YUK_HAP
+}
 
 # ─── 천간합 테이블 ────────────────────────────────────────────────────────────
 
@@ -91,16 +97,21 @@ def compute_synastry(calc1: dict, calc2: dict) -> dict:
     elif not weak1 and not weak2:
         tags.append("element_balanced_both")
 
-    # 4. 지지충
+    # 4. 지지충 + 육합
     branches1 = _get_all_branches(calc1)
     branches2 = _get_all_branches(calc2)
     clash_pairs: list[tuple] = []
+    hap_pairs: list[dict] = []
     for b1 in branches1:
         for b2 in branches2:
             if frozenset({b1, b2}) in _BRANCH_CLASH_SET:
                 clash_pairs.append((b1, b2))
                 tags.append(f"branch_clash_{b1}_{b2}")
+            hap_element = _YUK_HAP_MAP.get(frozenset({b1, b2}))
+            if hap_element:
+                hap_pairs.append({"pair": [b1, b2], "element": hap_element})
     details["clash_pairs"] = clash_pairs
+    details["hap_pairs"] = hap_pairs
 
     # 5. 일간 십성 관계 (person1 기준)
     ten_god_rel = calculate_ten_god(stem1, stem2)
@@ -129,8 +140,10 @@ def synastry_for_report(calc1: dict, calc2: dict) -> dict:
         {
           "stem_hap": None | "토/금/수/목/화",
           "day_ten_god": "정재" (person1 기준 person2 일간의 십성),
+          "ten_god_b_to_a": "정관" (person2 기준 person1 일간의 십성),
           "element_synergy": "상생" | "상극" | "동기" | None,
           "clash_pairs": [("인", "신"), ...],
+          "hap_pairs": [{"pair": ["자", "축"], "element": "토"}, ...],
           "complement_a_to_b": ["목", ...],  # calc1 약한 오행 ∩ calc2 dominant
           "complement_b_to_a": ["화", ...],  # calc2 약한 오행 ∩ calc1 dominant
           "yongsin_help": None | "a_helps_b" | "b_helps_a" | "mutual",
@@ -139,8 +152,13 @@ def synastry_for_report(calc1: dict, calc2: dict) -> dict:
     """
     base = compute_synastry(calc1, calc2)
 
+    stem1 = calc1["day_pillar"]["stem"]
+    stem2 = calc2["day_pillar"]["stem"]
     el1 = calc1["day_pillar"]["stem_element"]
     el2 = calc2["day_pillar"]["stem_element"]
+
+    # B→A 십성 (B 일간 기준 A 일간의 십성)
+    ten_god_b_to_a = calculate_ten_god(stem2, stem1)
 
     # yong_sin — raw calculate_saju 결과에는 없을 수 있음
     _raw_ys1 = (calc1.get("yong_sin") or {}).get("primary")
@@ -181,8 +199,10 @@ def synastry_for_report(calc1: dict, calc2: dict) -> dict:
     return {
         "stem_hap": base["stem_hap"],
         "day_ten_god": base["day_ten_god"],
+        "ten_god_b_to_a": ten_god_b_to_a,
         "element_synergy": base["element_synergy"],
         "clash_pairs": base["clash_pairs"],
+        "hap_pairs": base["hap_pairs"],
         "complement_a_to_b": complement_a_to_b,
         "complement_b_to_a": complement_b_to_a,
         "yongsin_help": yongsin_help,

@@ -64,13 +64,16 @@ SYSTEM_PROMPT = """당신은 명리학(사주팔자)에 정통한 모던 궁합 
      `[[chart:compat_wuxing_a]]`, `[[chart:compat_wuxing_b]]`,
      `[[chart:compat_ten_gods_a]]`, `[[chart:compat_ten_gods_b]]`,
      `[[chart:compat_strength_a]]`, `[[chart:compat_strength_b]]`,
-     `[[chart:compat_branches]]`
+     `[[chart:compat_branches]]`,
+     `[[chart:compat_day_relation]]`, `[[chart:compat_yongsin]]`
    - A = 사람 A, B = 사람 B.
-   - **"두 사람의 매력" 탭**과 각 사람을 개별로 설명하는 탭에는 per-person 차트를 넣으세요
+   - **"두 사람의 매력" 탭** 또는 "종합 케미" 탭에는 `[[chart:compat_day_relation]]`을 넣으세요 — 두 일간의 천간합·오행·서로 보는 십성을 보여줍니다.
+   - **"시너지/보완" 성격 탭**에는 `[[chart:compat_yongsin]]`을 넣으세요 — 용신·부족 기운을 서로 채워주는 관계를 시각화합니다.
+   - **충·갈등을 다루는 탭**에는 `[[chart:compat_branches]]`를 넣으세요 — 지지 충(갈등)과 육합(지지 관계)을 함께 보여줍니다.
+   - 그 외 각 사람을 개별로 설명하는 탭에는 per-person 차트를 넣으세요
      (예: `[[chart:compat_wuxing_a]]`, `[[chart:compat_palja_a]]`로 A의 특징을,
           `[[chart:compat_wuxing_b]]`, `[[chart:compat_palja_b]]`로 B의 특징을 시각화).
-   - **충·갈등을 다루는 탭**에는 `[[chart:compat_branches]]`를 넣으세요.
-   - **차트는 개수를 채우려 억지로 넣지 말고, 그 내용을 설명하는 대목에 자연스럽게** 곁들이세요. 두 사람 각각의 성향·오행·팔자를 묘사하는 자리에 해당 사람의 차트를 붙이면 글과 그림이 맞물립니다(두 사람을 다루니 자연히 여러 개가 들어갑니다). 본문과 무관한 차트를 끼워 넣지는 마세요.
+   - **차트는 개수를 채우려 억지로 넣지 말고, 그 내용을 설명하는 대목에 자연스럽게** 곁들이세요. 본문과 무관한 차트를 끼워 넣지는 마세요.
    - 각 마커는 전체 리포트에서 **한 번씩만** 사용하고, 가장 잘 어울리는 탭 본문에 배치하세요(한 탭에 몰지 말고 관련 내용이 있는 탭에 분산).
    - 마커는 **단독 줄**로 놓고, 바로 다음 줄에 해당 차트에 대한 한 문장 설명을 붙이세요.
    - 목록에 없는 마커 이름·변형은 절대 쓰지 마세요.
