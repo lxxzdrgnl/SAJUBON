@@ -8,49 +8,33 @@ import { api } from '@/lib/api'
 import { shareReport } from '@sajuguri/api-client'
 import ShareModal from '@/components/ui/ShareModal'
 import { useShareModal } from '@/lib/hooks/useShareModal'
-import ToolCard from '@/components/chat/ToolCard'
 import TabbedReport from './TabbedReport'
 
-// ── 사주 원국 차트 ───────────────────────────────────────────────────────────────
-// detail.charts(백엔드가 birth_input으로 재계산)를 채팅 ToolCard로 그대로 렌더.
-// payload 모양은 chat tool과 동일하므로 ToolCard 컴포넌트를 재사용한다.
+// ── 원국 차트 → tool 이름 맵 ─────────────────────────────────────────────────────
+// detail.charts(백엔드가 birth_input으로 재계산)를 채팅 ToolCard payload 모양 그대로
+// tool 이름에 매핑한다. 탭 content의 `[[chart:TOOL]]` 마커가 이 맵으로 인라인 렌더된다.
 
-const WONGUK_CHARTS: Array<{ key: string; tool: string }> = [
-  { key: 'palja', tool: 'get_palja' },
-  { key: 'wuxing_balance', tool: 'get_wuxing_balance' }, // 합화 토글 포함
-  { key: 'strength', tool: 'get_strength' },
-  { key: 'ten_gods', tool: 'get_ten_gods' },
-]
-
-function WonGukSection({
-  charts,
-  t,
-}: {
-  charts: Record<string, unknown>
-  t: ReturnType<typeof useTranslations>
-}) {
-  const available = WONGUK_CHARTS.filter(
-    (c) => charts[c.key] && typeof charts[c.key] === 'object',
-  )
-  if (available.length === 0) return null
-
-  return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-[17px] font-extrabold">
-        <span className="text-teal">{t('page.wonGukTitle')}</span>
-      </h2>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {available.map((c) => (
-          <div
-            key={c.key}
-            className="rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]"
-          >
-            <ToolCard tool={c.tool} payload={charts[c.key] as Record<string, unknown>} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+function buildChartsToolByName(
+  charts: Record<string, unknown> | undefined,
+): Record<string, Record<string, unknown>> {
+  const out: Record<string, Record<string, unknown>> = {}
+  if (!charts) return out
+  const map: Array<[string, string]> = [
+    ['get_palja', 'palja'],
+    ['get_wuxing_balance', 'wuxing_balance'],
+    ['get_strength', 'strength'],
+    ['get_ten_gods', 'ten_gods'],
+    ['get_sin_sal', 'sin_sal'],
+    ['get_twelve_un_seong', 'twelve_un_seong'],
+    ['get_hap_chung', 'hap_chung'],
+  ]
+  for (const [tool, key] of map) {
+    const payload = charts[key]
+    if (payload && typeof payload === 'object') {
+      out[tool] = payload as Record<string, unknown>
+    }
+  }
+  return out
 }
 
 // ── 올해의 흐름 ────────────────────────────────────────────────────────────────
@@ -199,10 +183,10 @@ export default function ReportView({
       .map(([k, v]) => [k, String(v)]),
   ).toString()
 
+  const chartsToolByName = buildChartsToolByName(report.charts)
+
   return (
     <div className="flex flex-col gap-4">
-      {report.charts && <WonGukSection charts={report.charts} t={t} />}
-
       <TabbedReport
         overview={
           <>
@@ -214,6 +198,7 @@ export default function ReportView({
         onShare={handleShare}
         shareLabel={sharing ? t('page.shareBtn') + '...' : t('page.shareBtn')}
         shareMode={shareMode}
+        chartsToolByName={chartsToolByName}
       />
 
       {/* 다시 생성 CTA (공유 모드에서는 숨김) */}

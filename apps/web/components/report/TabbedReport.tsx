@@ -5,10 +5,43 @@ import { useTranslations } from 'next-intl'
 import type { ReportTab } from '@sajuguri/api-client'
 import type { ReactNode } from 'react'
 import Markdown from '@/components/ui/Markdown'
+import { renderTextWithCharts } from '@/lib/chat/chartMarkers'
 
 // ── 헤드라인 아코디언 ──────────────────────────────────────────────────────────
 
-function TabAccordion({ tab, t }: { tab: ReportTab; t: ReturnType<typeof useTranslations> }) {
+/**
+ * 한 문단(Markdown) 안의 `[[chart:TOOL]]` 마커를 인라인 ToolCard로 치환해 렌더.
+ * 마커가 없으면(대부분) 평소처럼 Markdown 한 덩이만 렌더된다.
+ * chartsToolByName가 비면 마커는 토큰만 제거되고 텍스트는 평문 렌더된다.
+ */
+function ParagraphWithCharts({
+  text,
+  chartsToolByName,
+  keyPrefix,
+  className,
+}: {
+  text: string
+  chartsToolByName: Record<string, Record<string, unknown>>
+  keyPrefix: string
+  className: string
+}) {
+  const nodes = renderTextWithCharts(text, chartsToolByName, keyPrefix, {
+    renderText: (seg, key) => (
+      <Markdown key={key} className={className}>{seg}</Markdown>
+    ),
+  })
+  return <>{nodes}</>
+}
+
+function TabAccordion({
+  tab,
+  t,
+  chartsToolByName,
+}: {
+  tab: ReportTab
+  t: ReturnType<typeof useTranslations>
+  chartsToolByName: Record<string, Record<string, unknown>>
+}) {
   const [open, setOpen] = useState(false)
   const paragraphs = tab.content.split('\n\n').filter(Boolean)
   const lastIdx = paragraphs.length - 1
@@ -56,10 +89,21 @@ function TabAccordion({ tab, t }: { tab: ReportTab; t: ReturnType<typeof useTran
             i === lastIdx ? (
               <div key={i} className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
                 <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
-                <Markdown className="text-[14px] text-ink">{para}</Markdown>
+                <ParagraphWithCharts
+                  text={para}
+                  chartsToolByName={chartsToolByName}
+                  keyPrefix={`p${i}`}
+                  className="text-[14px] text-ink"
+                />
               </div>
             ) : (
-              <Markdown key={i} className="mb-3 text-[14px] text-ink">{para}</Markdown>
+              <ParagraphWithCharts
+                key={i}
+                text={para}
+                chartsToolByName={chartsToolByName}
+                keyPrefix={`p${i}`}
+                className="mb-3 text-[14px] text-ink"
+              />
             ),
           )}
         </div>
@@ -76,6 +120,11 @@ export interface TabbedReportProps {
   onShare?: () => void
   shareLabel?: string
   shareMode?: boolean
+  /**
+   * 원국 차트 payload 맵 (tool 이름 → payload). 탭 content의 `[[chart:TOOL]]`
+   * 마커가 이 맵으로 인라인 ToolCard로 치환된다. 없으면 마커는 무시된다.
+   */
+  chartsToolByName?: Record<string, Record<string, unknown>>
 }
 
 export default function TabbedReport({
@@ -84,6 +133,7 @@ export default function TabbedReport({
   onShare,
   shareLabel,
   shareMode = false,
+  chartsToolByName = {},
 }: TabbedReportProps) {
   const t = useTranslations('report')
   const label = shareLabel ?? t('page.shareBtn')
@@ -95,7 +145,7 @@ export default function TabbedReport({
 
       {/* 헤드라인 아코디언 */}
       {tabs.map((tab, i) => (
-        <TabAccordion key={i} tab={tab} t={t} />
+        <TabAccordion key={i} tab={tab} t={t} chartsToolByName={chartsToolByName} />
       ))}
 
       {/* 공유 버튼 (공유 모드에서는 숨김) */}

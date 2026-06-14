@@ -22,6 +22,7 @@ import CompatibilityReportCTA from './CompatibilityReportCTA'
 import ChatNavCTA from './ChatNavCTA'
 import Markdown from '@/components/ui/Markdown'
 import { manseNavQuery } from '@/lib/manse/query'
+import { markerToolsInText, renderTextWithCharts } from '@/lib/chat/chartMarkers'
 
 // 사주 풀 리포트로 안내할 사주분석 툴 집합
 const REPORT_TOOLS = new Set([
@@ -61,67 +62,6 @@ interface PartnerAttachedBlock {
 }
 
 type MessageBlock = string | ToolResultBlock | InlinePartnerBlock | PartnerAttachedBlock
-
-// 본문 안의 차트 마커 토큰. `[[chart:get_palja]]` 형태. 완전히 닫힌 것만 매칭(스트리밍 중 부분 토큰은 그냥 텍스트로 남는다).
-const CHART_MARKER_RE = /\[\[chart:([a-z_]+)\]\]/g
-
-/** 텍스트 안에서 마커로 참조된 tool 이름 집합을 추출한다. */
-function markerToolsInText(text: string): string[] {
-  const out: string[] = []
-  for (const m of text.matchAll(CHART_MARKER_RE)) out.push(m[1])
-  return out
-}
-
-/**
- * AI 텍스트 블록을 `[[chart:TOOL]]` 마커 기준으로 쪼개어,
- * 텍스트 세그먼트(Markdown) 사이에 해당 차트 카드를 끼워 렌더한 React 노드 배열을 만든다.
- * 마커가 가리키는 tool의 payload가 없으면(아직 안 옴 등) 카드는 건너뛴다.
- */
-function renderTextWithCharts(
-  text: string,
-  toolByName: Record<string, Record<string, unknown>>,
-  keyPrefix: string,
-): React.ReactNode[] {
-  const nodes: React.ReactNode[] = []
-  let lastIndex = 0
-  let seg = 0
-  for (const m of text.matchAll(CHART_MARKER_RE)) {
-    const before = text.slice(lastIndex, m.index)
-    if (before.trim()) {
-      nodes.push(
-        <div
-          key={`${keyPrefix}-t${seg}`}
-          className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
-        >
-          <Markdown>{before}</Markdown>
-        </div>,
-      )
-    }
-    const tool = m[1]
-    const payload = toolByName[tool]
-    if (payload) {
-      nodes.push(
-        <div key={`${keyPrefix}-c${seg}`} className="flex flex-col gap-2 w-full min-w-0">
-          <ToolCard tool={tool} payload={payload} />
-        </div>,
-      )
-    }
-    lastIndex = (m.index ?? 0) + m[0].length
-    seg++
-  }
-  const tail = text.slice(lastIndex)
-  if (tail.trim()) {
-    nodes.push(
-      <div
-        key={`${keyPrefix}-t${seg}`}
-        className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
-      >
-        <Markdown>{tail}</Markdown>
-      </div>,
-    )
-  }
-  return nodes
-}
 
 interface DisplayMessage {
   role: 'human' | 'ai'
@@ -519,7 +459,17 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                     )
                   }
                   // AI 본문: `[[chart:TOOL]]` 마커 위치에 해당 차트 카드를 끼워 렌더.
-                  const nodes = renderTextWithCharts(block, toolByName, `${i}-${bi}`)
+                  // 텍스트 세그먼트는 채팅 틸 말풍선 스타일로 감싼다.
+                  const nodes = renderTextWithCharts(block, toolByName, `${i}-${bi}`, {
+                    renderText: (text, key) => (
+                      <div
+                        key={key}
+                        className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
+                      >
+                        <Markdown>{text}</Markdown>
+                      </div>
+                    ),
+                  })
                   return <div key={bi} className="flex flex-col gap-2 w-full min-w-0">{nodes}</div>
                 }
                 if (block.kind === 'tool_result') {

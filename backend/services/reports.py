@@ -13,6 +13,7 @@ from engine.handlers.calculate_saju import handle_calculate_saju
 from llm.pipelines.saju_report import run_saju_report_full
 from llm.tools.chart_payloads import (
     payload_palja, payload_strength, payload_ten_gods, payload_wuxing_balance,
+    payload_sin_sal, payload_twelve_un_seong, payload_hap_chung,
 )
 from schemas.report import (
     ReportCreateRequest, ReportDetail, ReportSummary, ReportShareResponse,
@@ -47,10 +48,13 @@ def _build_charts(birth_input: dict) -> dict | None:
         kwargs = {k: birth_input[k] for k in _SAJU_CALC_KEYS if k in birth_input}
         saju = handle_calculate_saju(**kwargs)
         return {
-            "palja":          payload_palja(saju),
-            "wuxing_balance": payload_wuxing_balance(saju),
-            "strength":       payload_strength(saju),
-            "ten_gods":       payload_ten_gods(saju),
+            "palja":            payload_palja(saju),
+            "wuxing_balance":   payload_wuxing_balance(saju),
+            "strength":         payload_strength(saju),
+            "ten_gods":         payload_ten_gods(saju),
+            "sin_sal":          payload_sin_sal(saju),
+            "twelve_un_seong":  payload_twelve_un_seong(saju),
+            "hap_chung":        payload_hap_chung(saju),
         }
     except Exception:
         return None
