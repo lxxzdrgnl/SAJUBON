@@ -216,18 +216,25 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
     }
   }
 
+  // 공유 요청 본문 — 저장된 레코드면 record_id로(토큰 재사용·중복 방지),
+  // 아니면 story 스냅샷으로. 레코드 다시보기에서 매번 스냅샷을 새로 만들다
+  // 실패하던 문제를 막는다.
+  const shareBody = () =>
+    story.record_id != null ? { record_id: story.record_id } : { story }
+
   // 공유 토큰을 미리 발급해 둔다 — 공유하기 탭 '그 순간' 동기 복사가 가능하도록
   // (await 이후 복사하면 iOS 사용자 제스처가 끊겨 복사 실패).
   const preparedUrlRef = useRef<string | null>(null)
   useEffect(() => {
     if (shareMode) return
     let cancelled = false
-    createFortuneShare(api, { story })
+    createFortuneShare(api, shareBody())
       .then(({ share_token }) => {
         if (!cancelled) preparedUrlRef.current = `${window.location.origin}/share/fortune/${share_token}`
       })
       .catch(() => {})
     return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story, shareMode])
 
   /**
@@ -243,7 +250,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       return
     }
     setSharing(true)
-    createFortuneShare(api, { story })
+    createFortuneShare(api, shareBody())
       .then(({ share_token }) => setShareUrl(`${window.location.origin}/share/fortune/${share_token}`))
       .catch(() => {})
       .finally(() => setSharing(false))

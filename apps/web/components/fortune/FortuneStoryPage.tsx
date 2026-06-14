@@ -125,7 +125,8 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
       const calendar = (params.get('calendar') ?? 'solar') as 'solar' | 'lunar'
       const isLeapMonth = params.get('is_leap_month') === 'true'
       const birthLong = params.get('birth_longitude')
-      const pname = params.get('pname') ?? ''
+      // pname 우선, 없으면 toResultQuery가 직렬화한 name도 본다(어느 진입 경로든 이름 보존).
+      const pname = params.get('pname') || params.get('name') || ''
 
       if (!birthDate || !gender) {
         if (!cancelled) { setError(t('error')); setLoading(false) }
