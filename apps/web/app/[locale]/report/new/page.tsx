@@ -5,7 +5,8 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { api } from '@/lib/api'
-import { createReport, listReports } from '@sajuguri/api-client'
+import { createReportJob } from '@sajuguri/api-client'
+import { useGenerationJob } from '@/lib/hooks/useGenerationJob'
 import type { SajuCalcRequest } from '@sajuguri/api-client'
 import PageHeading from '@/components/ui/PageHeading'
 
@@ -24,8 +25,11 @@ export default function ReportNewPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  const { loading, error: jobError, start } = useGenerationJob((_type, resultId) => {
+    router.replace(`/report/${resultId}`)
+  })
+
   const [topics, setTopics] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [phraseIdx, setPhraseIdx] = useState(0)
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)
@@ -48,6 +52,11 @@ export default function ReportNewPage() {
     }, 3000)
     return () => clearInterval(timer)
   }, [loading])
+
+  // 폴링 실패 시 에러 표시
+  useEffect(() => {
+    if (jobError) setError(t('errorFallback'))
+  }, [jobError, t])
 
   // searchParams에서 birth 정보 추출
   function buildBirthInput(): SajuCalcRequest | null {
@@ -74,55 +83,22 @@ export default function ReportNewPage() {
       setError(t('errorMissingBirth'))
       return
     }
-    setLoading(true)
     setError('')
     try {
       const profileId = searchParams.get('profile_id')
-      const report = await createReport(api, {
+      const { job_id } = await createReportJob(api, {
         birth_input: birthInput,
         ...(topics.trim() ? { request_topics: topics.trim() } : {}),
         ...(profileId ? { profile_id: Number(profileId) } : {}),
         language: locale,
       })
-      router.replace(`/report/${report.id}`)
+      start(job_id)
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
-      if (status === 401) {
-        setError(t('errorLogin'))
-        setLoading(false)
-      } else if (status === 429) {
-        setError(t('errorLimit'))
-        setLoading(false)
-      } else {
-        // 백엔드는 성공했는데 클라이언트가 끊긴 경우(모바일 Safari 타임아웃 등)
-        // 방금 만든 리포트를 찾아 복구한다.
-        const recovered = await recoverRecentReport()
-        if (recovered) {
-          router.replace(`/report/${recovered}`)
-        } else {
-          setError(t('errorFallback'))
-          setLoading(false)
-        }
-      }
+      if (status === 401) setError(t('errorLogin'))
+      else if (status === 429) setError(t('errorLimit'))
+      else setError(t('errorFallback'))
     }
-  }
-
-  // createReport 응답을 못 받았을 때 방금 생성된 리포트를 폴링으로 복구
-  async function recoverRecentReport(): Promise<number | null> {
-    for (let attempt = 0; attempt < 5; attempt++) {
-      try {
-        const reports = await listReports(api)
-        const newest = reports[0]
-        if (newest) {
-          const age = Date.now() - new Date(newest.created_at).getTime()
-          if (age < 3 * 60 * 1000) return newest.id
-        }
-      } catch {
-        // 무시하고 재시도
-      }
-      await new Promise(r => setTimeout(r, 3000))
-    }
-    return null
   }
 
   // 로딩 중 화면
