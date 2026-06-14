@@ -61,6 +61,6 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // /api·정적 파일 제외 — 백엔드 프록시가 로케일 리다이렉트에 걸리면 안 됨
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  // /api·정적 파일·메타데이터 라우트(apple-icon/icon/manifest) 제외 — 로케일 리다이렉트에 걸리면 안 됨
+  matcher: ['/((?!api|_next|apple-icon|icon|manifest|.*\\..*).*)'],
 }
