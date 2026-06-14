@@ -359,6 +359,7 @@
     "errorFallback": "리포트 생성에 실패했어요. 잠시 후 다시 시도해 주세요.",
     "page": {
       "summaryLabel": "사주 정보",
+      "wonGukTitle": "사주 원국",
       "guideText": "각 제목을 클릭하면 해설이 펼쳐져요",
       "requestedBadge": "요청",
       "adviceBoxLabel": "현실 조언",

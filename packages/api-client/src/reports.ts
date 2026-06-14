@@ -43,6 +43,7 @@ export interface ReportDetail extends ReportSummary {
   tabs: ReportTab[]                 // 10개 + 요청 주제 수만큼
   year_flow: YearFlow
   dae_un_analysis: DaeUnAnalysis
+  charts?: Record<string, unknown>  // 원국 차트 payload (palja·wuxing_balance·strength·ten_gods), 계산 실패 시 부재
 }
 
 export interface CreateReportBody {

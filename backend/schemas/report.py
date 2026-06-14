@@ -159,6 +159,10 @@ class ReportDetail(ReportSummary):
     tabs: list[TabContent] = Field(description="10개 + 요청 주제 수만큼")
     year_flow: YearFlow
     dae_un_analysis: DaeUnAnalysis
+    charts: dict | None = Field(
+        default=None,
+        description="원국 차트 payload (palja·wuxing_balance·strength·ten_gods). 계산 실패 시 null",
+    )
 
 
 class ReportShareRequest(BaseModel):

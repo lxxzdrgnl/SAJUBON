@@ -359,6 +359,7 @@
     "errorFallback": "Report generation failed. Please try again later.",
     "page": {
       "summaryLabel": "Saju Info",
+      "wonGukTitle": "Saju Origin Chart",
       "guideText": "Click each title to expand the reading",
       "requestedBadge": "Requested",
       "adviceBoxLabel": "Practical Advice",

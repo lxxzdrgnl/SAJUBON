@@ -9,9 +9,19 @@ from core.config import settings
 from core.exceptions import ForbiddenException, ReportNotFoundException
 from crud import reports as reports_crud
 from db.models import SajuReport
+from engine.handlers.calculate_saju import handle_calculate_saju
 from llm.pipelines.saju_report import run_saju_report_full
+from llm.tools.chart_payloads import (
+    payload_palja, payload_strength, payload_ten_gods, payload_wuxing_balance,
+)
 from schemas.report import (
     ReportCreateRequest, ReportDetail, ReportSummary, ReportShareResponse,
+)
+
+# handle_calculate_saju가 받는 kwargs (birth_input에 섞인 name 등은 제외)
+_SAJU_CALC_KEYS = (
+    "birth_date", "birth_time", "gender", "calendar", "is_leap_month",
+    "birth_longitude", "birth_utc_offset",
 )
 
 
@@ -25,6 +35,25 @@ def _first_headline(tabs: list[dict]) -> str:
     if tabs:
         return tabs[0].get("headline", "")
     return ""
+
+
+def _build_charts(birth_input: dict) -> dict | None:
+    """birth_input으로 원국을 재계산해 ToolCard용 차트 payload를 조립 (best-effort).
+
+    DB 마이그레이션 없이 조회 시점에 계산한다. 계산 실패 시 None을 반환해
+    리포트 본문(탭)은 깨지지 않게 한다. payload 키는 chat tool과 동일하다.
+    """
+    try:
+        kwargs = {k: birth_input[k] for k in _SAJU_CALC_KEYS if k in birth_input}
+        saju = handle_calculate_saju(**kwargs)
+        return {
+            "palja":          payload_palja(saju),
+            "wuxing_balance": payload_wuxing_balance(saju),
+            "strength":       payload_strength(saju),
+            "ten_gods":       payload_ten_gods(saju),
+        }
+    except Exception:
+        return None
 
 
 def _to_summary(report: SajuReport) -> ReportSummary:
@@ -53,6 +82,7 @@ def _to_detail(report: SajuReport, *, mask_birth: bool = False) -> ReportDetail:
         tabs=report.tabs,
         year_flow=report.year_flow,
         dae_un_analysis=report.dae_un_analysis,
+        charts=_build_charts(report.birth_input),
     )
 
 
