@@ -34,6 +34,7 @@ export default async function ChatSessionPage({ params }: Props) {
       initialTitle={session?.title ?? null}
       profiles={profiles}
       partnerName={null}
+      birthInfo={session?.birth_info ?? null}
     />
   )
 }

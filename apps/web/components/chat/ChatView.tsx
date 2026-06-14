@@ -76,11 +76,29 @@ interface Props {
   initialTitle: string | null
   profiles: ProfileResponse[]
   partnerName?: string | null
+  /** 세션의 사주(생년월일 등) — 보러가기 CTA가 이 사람으로 리포트·운세를 열게 한다. */
+  birthInfo?: Record<string, unknown> | null
 }
 
-export default function ChatView({ sessionId, initialTitle, profiles, partnerName: initialPartnerName }: Props) {
+export default function ChatView({ sessionId, initialTitle, profiles, partnerName: initialPartnerName, birthInfo }: Props) {
   const t = useTranslations('chat')
   const router = useRouter()
+
+  // 세션 사주를 쿼리로 직렬화 — 리포트/운세 CTA가 해당 만세력으로 연결되도록.
+  const birthQuery = (() => {
+    const b = birthInfo as Record<string, unknown> | null | undefined
+    if (!b || !b.birth_date || !b.gender) return ''
+    const params = new URLSearchParams()
+    for (const k of ['birth_date', 'birth_time', 'gender', 'calendar', 'is_leap_month', 'birth_longitude', 'name']) {
+      const v = b[k]
+      if (v !== null && v !== undefined && v !== '') params.set(k, String(v))
+    }
+    return params.toString()
+  })()
+  const reportHref = birthQuery ? `/report/new?${birthQuery}` : '/report/new'
+  const fortuneHref = birthQuery
+    ? `/fortune?${birthQuery}${birthInfo && (birthInfo as Record<string, unknown>).name ? `&pname=${encodeURIComponent(String((birthInfo as Record<string, unknown>).name))}` : ''}`
+    : '/fortune'
 
   const [title, setTitle] = useState(initialTitle)
   const [messages, setMessages] = useState<DisplayMessage[]>([])
@@ -447,29 +465,9 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                   )
                 }
                 if (block.kind === 'tool_result') {
-                  const isLastCompat = lastCheckCompatIdx?.mi === i && lastCheckCompatIdx?.bi === bi
-                  const isLastReport = lastReportToolIdx?.mi === i && lastReportToolIdx?.bi === bi
-                  const isLastFortune = lastFortuneToolIdx?.mi === i && lastFortuneToolIdx?.bi === bi
                   return (
                     <div key={bi} className="flex flex-col gap-2 w-full min-w-0">
                       <ToolCard tool={block.tool} payload={block.payload} />
-                      {isLastCompat && (
-                        <CompatibilityReportCTA sessionId={sessionId} />
-                      )}
-                      {isLastReport && (
-                        <ChatNavCTA
-                          title={t('reportCta.title')}
-                          buttonLabel={t('reportCta.button')}
-                          href="/report/new"
-                        />
-                      )}
-                      {isLastFortune && (
-                        <ChatNavCTA
-                          title={t('fortuneCta.title')}
-                          buttonLabel={t('fortuneCta.button')}
-                          href="/fortune"
-                        />
-                      )}
                     </div>
                   )
                 }
@@ -496,6 +494,22 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                 }
                 return null
               })}
+              {/* 보러가기 CTA — 메시지 맨 아래에 (차트·설명 모두 끝난 뒤). 우선순위 궁합 > 리포트 > 운세 */}
+              {lastCheckCompatIdx?.mi === i ? (
+                <CompatibilityReportCTA sessionId={sessionId} />
+              ) : lastReportToolIdx?.mi === i ? (
+                <ChatNavCTA
+                  title={t('reportCta.title')}
+                  buttonLabel={t('reportCta.button')}
+                  href={reportHref}
+                />
+              ) : lastFortuneToolIdx?.mi === i ? (
+                <ChatNavCTA
+                  title={t('fortuneCta.title')}
+                  buttonLabel={t('fortuneCta.button')}
+                  href={fortuneHref}
+                />
+              ) : null}
             </div>
           </div>
         ))}
