@@ -218,32 +218,25 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
     const prevBodyPri = body.getPropertyPriority('background')
     const prevHtml = html.getPropertyValue('background')
     const prevHtmlPri = html.getPropertyPriority('background')
-    const prevTheme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content ?? ''
+    const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    const prevTheme = themeMeta?.content ?? ''
     return () => {
       if (prevBody) body.setProperty('background', prevBody, prevBodyPri || '')
       else body.removeProperty('background')
       if (prevHtml) html.setProperty('background', prevHtml, prevHtmlPri || '')
       else html.removeProperty('background')
-      // 스토리에서 만든 theme-color 메타 정리 후 원래 색으로 복원
-      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
-      const meta = document.createElement('meta')
-      meta.setAttribute('name', 'theme-color')
-      meta.setAttribute('content', prevTheme || '#FFFBF2')
-      document.head.appendChild(meta)
+      if (themeMeta) themeMeta.setAttribute('content', prevTheme || '#FFFBF2')
     }
   }, [])
 
   // 현재 카드 색(solid base)을 body/html 배경 + theme-color 메타에 반영 — 카드 전환마다.
-  // iOS Safari는 theme-color 메타의 content '갱신'을 무시하고 첫 색에서 동결되는 버그가
-  // 있다. 그래서 카드마다 기존 theme-color 메타를 '제거 후 새로 생성'해 재인식을 유도한다.
+  // 참고: iOS Safari 탭 모드는 theme-color를 첫 1회만 반영(동적 갱신 무시)한다.
+  // PWA standalone(홈 화면 추가)에선 카드마다 정상 반영된다.
   useEffect(() => {
     document.body.style.setProperty('background', palette.base, 'important')
     document.documentElement.style.setProperty('background', palette.base, 'important')
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
-    const meta = document.createElement('meta')
-    meta.setAttribute('name', 'theme-color')
-    meta.setAttribute('content', palette.base)
-    document.head.appendChild(meta)
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    if (meta) meta.setAttribute('content', palette.base)
   }, [palette.base])
 
   return (
