@@ -415,7 +415,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
       )}
 
       {/* 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1 flex flex-col gap-3">
         {messages.map((m, i) => (
           <div
             key={i}
