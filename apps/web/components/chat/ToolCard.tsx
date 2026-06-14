@@ -7,6 +7,7 @@
  * 모든 데이터는 SSE payload에서 넘어온다 (payload 키 = 백엔드 _envelope data).
  */
 
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Pillar, SinSal, DayMasterStrength, YongSin } from '@sajuguri/api-client'
 import { ohaengColor, ohaengTintColor } from '@/lib/ohaeng'
@@ -190,11 +191,14 @@ function CompatibilityCard({ payload }: { payload: Record<string, unknown> }) {
   )
 }
 
-/** 오행 균형 — 5색 가로 바 (컴팩트). WuxingBalanceCard 막대 변형 */
+/** 오행 균형 — 5색 가로 바 (컴팩트). 합화 적용 토글 포함(만세력 차트와 동일). */
 function WuxingMini({ payload }: { payload: Record<string, unknown> }) {
+  const tw = useTranslations('manse.charts.wuxing')
   const hap = payload.wuxing_count_hap as Record<string, number> | undefined
   const raw = payload.wuxing_count as Record<string, number> | undefined
-  const source = hap ?? raw
+  const hasBoth = !!hap && !!raw
+  const [applyHap, setApplyHap] = useState(true)
+  const source = (applyHap ? hap : raw) ?? hap ?? raw
   if (!source) return null
   const pct = toPercent(source)
   const score = balanceScore(pct)
@@ -216,6 +220,18 @@ function WuxingMini({ payload }: { payload: Record<string, unknown> }) {
           {label.text}
         </span>
       </div>
+      {/* 합에 따른 오행 변화 적용 토글 — 만세력 차트와 동일 */}
+      {hasBoth && (
+        <label className="mb-2 flex cursor-pointer items-center gap-1.5 text-[11px] font-bold text-text-sub">
+          <input
+            type="checkbox"
+            checked={applyHap}
+            onChange={(e) => setApplyHap(e.target.checked)}
+            className="h-3.5 w-3.5 accent-ink"
+          />
+          {tw('applyHap')}
+        </label>
+      )}
       {WUXING_ORDER.map((el) => {
         const color = ohaengColor(el)
         const v = judge(pct[el])

@@ -304,7 +304,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
   }
 
   return (
-    <div className="flex flex-col overflow-x-hidden" style={{ height: 'calc(100dvh - 116px)' }}>
+    <div className="flex flex-col" style={{ height: 'calc(100dvh - 116px)' }}>
       {/* 헤더 */}
       <div className="flex shrink-0 items-center gap-2 border-b-2 border-border-soft pb-3">
         <button
