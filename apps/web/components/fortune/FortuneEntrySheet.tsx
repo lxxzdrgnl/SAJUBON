@@ -10,11 +10,12 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { ProfileResponse } from '@sajuguri/api-client'
 import type { RecentBirthInput } from '@sajuguri/core'
-import { loadRecentInputs } from '@sajuguri/core'
+import { loadRecentInputs, saveRecentInput } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
 import { buildBirthKey } from '@/lib/fortune/cache'
 import { manseNavQuery, profileToManseSource } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
+import BirthInputForm, { type ManseBirthInput } from '@/components/manse/BirthInputForm'
 
 /** 오늘 이미 본 birthKey 셋 — localStorage에서 로드. */
 function loadSeenTodayKeys(): Set<string> {
@@ -49,11 +50,15 @@ interface Props {
 export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn }: Props) {
   const t = useTranslations('fortune.sheet')
   const tf = useTranslations('manse.form')
+  const tp = useTranslations('mansePicker')
   const router = useRouter()
   const [recentInputs, setRecentInputs] = useState<RecentBirthInput[]>([])
   const [seenKeys, setSeenKeys] = useState<Set<string>>(new Set())
+  const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
+    if (!open) return
+    setShowForm(false)
     loadRecentInputs(webStorage).then(setRecentInputs)
     setSeenKeys(loadSeenTodayKeys())
   }, [open])
@@ -65,6 +70,16 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
     },
     [router, onClose],
   )
+
+  async function pickFromForm(input: ManseBirthInput) {
+    // 모달 내 직접 입력분도 최근 본 만세력에 저장
+    try {
+      await saveRecentInput(webStorage, input)
+    } catch {
+      // 저장 실패해도 진행
+    }
+    goFortune(manseNavQuery(input))
+  }
 
   if (!open) return null
 
@@ -95,6 +110,19 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
         <div className="max-h-[75dvh] overflow-y-auto px-5 pb-8 pt-3">
           <h2 className="mb-4 text-[17px] font-extrabold text-ink">{t('pickSheet')}</h2>
 
+          {showForm ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="mb-4 text-[13px] font-bold text-text-sub hover:text-ink"
+              >
+                ← {tp('backToList')}
+              </button>
+              <BirthInputForm onSubmit={pickFromForm} submitLabel={tp('confirmInput')} nameOptional={false} />
+            </>
+          ) : (
+          <>
           {/* 저장된 만세력 (로그인 시) */}
           {isLoggedIn && profiles.length > 0 && (
             <section className="mb-4">
@@ -184,16 +212,18 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
             </section>
           )}
 
-          {/* 직접 입력하기 */}
+          {/* 직접 입력하기 — 모달 내 폼 */}
           <button
             className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-[4px_4px_0_#1A1A1A] font-extrabold transition-opacity hover:opacity-80"
-            onClick={() => { onClose(); router.push('/manse/new') }}
+            onClick={() => setShowForm(true)}
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface text-lg">
               +
             </span>
             <span className="text-[14px] font-extrabold">{t('directInput')}</span>
           </button>
+          </>
+          )}
         </div>
       </div>
     </>
