@@ -25,6 +25,9 @@ def test_compatibility_keys_present():
     ]:
         assert k in r, f"key '{k}' missing from check_compatibility result"
     assert 0 <= r["total_score"] <= 100
+    # 오행조화 점수가 정상 분포에서 0으로 깔리던 버그 회귀 방지
+    assert r["element_harmony_score"] > 0
+    assert 0 <= r["element_harmony_score"] <= 100
 
 
 def test_complement_elements_backward_compat():

@@ -44,17 +44,19 @@ def _day_pillar_score(saju1: dict, saju2: dict) -> int:
 
 
 def _element_harmony_score(saju1: dict, saju2: dict) -> int:
-    """전체 오행 분포 조화도."""
+    """전체 오행 분포 조화도 — 두 사주 합산 분포가 고를수록 높음.
+
+    wuxing_count는 백분율(합 ~100)이라, 균등(이상)분포 대비 편차 비율로 환산한다.
+    spread = Σ|v - 이상값| / total  (0=완전균형 ~ 1.6=한 오행 집중).
+    """
     w1 = saju1["wuxing_count"]
     w2 = saju2["wuxing_count"]
-    # 두 사주의 오행 합계 분포 균형도
     combined = {e: w1.get(e, 0) + w2.get(e, 0) for e in ["목", "화", "토", "금", "수"]}
     total = sum(combined.values()) or 1
-    avg = total / 5
-    variance = sum((v - avg) ** 2 for v in combined.values()) / 5
-    # 분산이 낮을수록 균형 → 점수 높음
-    score = max(0, 100 - int(variance * 5))
-    return score
+    ideal = total / 5
+    spread = sum(abs(v - ideal) for v in combined.values()) / total
+    score = round(100 - spread * 60)
+    return max(0, min(100, score))
 
 
 def _branch_relation_score(saju1: dict, saju2: dict) -> tuple[int, list[str]]:
