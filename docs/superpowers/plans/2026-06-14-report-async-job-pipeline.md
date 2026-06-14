@@ -2137,9 +2137,10 @@ ssh home-server 'cd ~/servers && docker compose exec sajuguri-backend alembic up
 
 ```bash
 cd /home/rheon/Desktop/projects/SajuGuri
-git add backend/.github/workflows/deploy-backend.yml
+git add .github/workflows/deploy-backend.yml
 git commit -m "ci: start sajuguri-worker container on backend deploy"
 ```
+> 워크플로 실제 경로는 레포 루트 `.github/workflows/deploy-backend.yml`. 현재 내용: `docker compose build --no-cache sajuguri-backend` + `docker compose up -d sajuguri-backend` (alembic 단계 없음 — 신규 테이블은 main.py의 `Base.metadata.create_all`이 기동 시 생성). worker도 같은 이미지를 쓰므로 `up -d sajuguri-backend sajuguri-worker`로 함께 재기동되게 한다.
 > compose·env·시크릿은 레포 밖이라 커밋 대상 아님(메모리/문서로만 기록).
 
 ---
