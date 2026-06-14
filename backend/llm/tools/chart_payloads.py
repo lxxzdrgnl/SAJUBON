@@ -101,8 +101,11 @@ def payload_hap_chung(saju: dict) -> dict:
 
 
 def payload_dae_un(saju: dict) -> dict:
-    """대운 전체 타임라인 차트 payload."""
-    return {"dae_un_list": saju["dae_un_list"]}
+    """대운 전체 타임라인 차트 payload (현재 대운 강조용 current 포함)."""
+    return {
+        "dae_un_list": saju["dae_un_list"],
+        "current_dae_un": saju.get("current_dae_un"),
+    }
 
 
 # ─── 시계열(timing) 차트 ───────────────────────────────────────────────────────

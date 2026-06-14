@@ -8,6 +8,7 @@ import { api } from '@/lib/api'
 import { shareReport } from '@sajuguri/api-client'
 import ShareModal from '@/components/ui/ShareModal'
 import { useShareModal } from '@/lib/hooks/useShareModal'
+import ToolCard from '@/components/chat/ToolCard'
 import TabbedReport from './TabbedReport'
 
 // ── 원국 차트 → tool 이름 맵 ─────────────────────────────────────────────────────
@@ -27,6 +28,7 @@ function buildChartsToolByName(
     ['get_sin_sal', 'sin_sal'],
     ['get_twelve_un_seong', 'twelve_un_seong'],
     ['get_hap_chung', 'hap_chung'],
+    ['get_dae_un', 'dae_un'],
   ]
   for (const [tool, key] of map) {
     const payload = charts[key]
@@ -107,9 +109,11 @@ function YearFlowSection({
 
 function DaeUnSection({
   daeUn,
+  daeUnChart,
   t,
 }: {
   daeUn: ReportDetail['dae_un_analysis']
+  daeUnChart?: Record<string, unknown>
   t: ReturnType<typeof useTranslations>
 }) {
   return (
@@ -117,6 +121,9 @@ function DaeUnSection({
       <h2 className="text-[17px] font-extrabold">
         <span className="text-orange">{t('page.daeUnTitle')}</span>
       </h2>
+
+      {/* 대운 전체 타임라인 — 현재 대운 강조 */}
+      {daeUnChart && <ToolCard tool="get_dae_un" payload={daeUnChart} />}
 
       <div className="flex flex-col gap-2">
         {/* 현재 대운 — 오렌지 강조 */}
@@ -191,7 +198,11 @@ export default function ReportView({
         overview={
           <>
             <YearFlowSection yearFlow={report.year_flow} t={t} />
-            <DaeUnSection daeUn={report.dae_un_analysis} t={t} />
+            <DaeUnSection
+              daeUn={report.dae_un_analysis}
+              daeUnChart={chartsToolByName['get_dae_un']}
+              t={t}
+            />
           </>
         }
         tabs={report.tabs}
