@@ -75,7 +75,7 @@ export default function Home() {
   const router = useRouter()
   const { user, status } = useAuth()
   const { data: profiles } = useProfiles()
-  const gated = (href: '/report/new') => () =>
+  const gated = (href: '/report/new' | '/compatibility/new') => () =>
     router.push(status === 'authed' ? href : '/auth/login')
 
   // 대표 만세력 → 없으면 이메일 로컬파트 폴백
@@ -149,6 +149,7 @@ export default function Home() {
           iconColor="#FFFFFF"
           title="한 번 물어보기"
           desc="질문 하나, 사주 기반 답변 하나"
+          onPress={() => router.push('/question')}
         />
         <FeatureCard
           d={ICON_PATHS.heart}
@@ -156,6 +157,7 @@ export default function Home() {
           iconColor="#FFFFFF"
           title="궁합 리포트"
           desc="두 사람의 케미를 사주로 분석"
+          onPress={gated('/compatibility/new')}
         />
       </View>
     </Screen>
