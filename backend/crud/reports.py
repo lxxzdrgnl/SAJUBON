@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import SajuReport, ReportShare
@@ -56,10 +56,10 @@ async def insert_report(
 
 
 async def list_reports(db: AsyncSession, user_id: int, limit: int = 50) -> list[SajuReport]:
-    """user의 리포트 목록 (최신순)."""
+    """user의 리포트 목록 (최신순, 소프트 삭제 제외)."""
     result = await db.execute(
         select(SajuReport)
-        .where(SajuReport.user_id == user_id)
+        .where(SajuReport.user_id == user_id, SajuReport.deleted_at.is_(None))
         .order_by(SajuReport.created_at.desc())
         .limit(limit)
     )
@@ -67,15 +67,17 @@ async def list_reports(db: AsyncSession, user_id: int, limit: int = 50) -> list[
 
 
 async def get_report(db: AsyncSession, report_id: int) -> SajuReport | None:
-    """리포트 단건 (소유권 검사는 Service)."""
-    result = await db.execute(select(SajuReport).where(SajuReport.id == report_id))
+    """리포트 단건 (소유권 검사는 Service, 소프트 삭제 제외)."""
+    result = await db.execute(
+        select(SajuReport).where(SajuReport.id == report_id, SajuReport.deleted_at.is_(None))
+    )
     return result.scalar_one_or_none()
 
 
 async def delete_report(db: AsyncSession, report_id: int, user_id: int) -> None:
-    """본인 소유 리포트를 삭제한다 (단발 쓰기 — 내부 commit).
+    """본인 소유 리포트를 소프트 삭제한다 (단발 쓰기 — 내부 commit).
 
-    없으면 404, 타인 소유면 403.
+    없으면 404, 타인 소유면 403. ReportShare는 그대로 보존 (공유 경로가 자동 404).
     """
     result = await db.execute(select(SajuReport).where(SajuReport.id == report_id))
     row = result.scalar_one_or_none()
@@ -89,8 +91,7 @@ async def delete_report(db: AsyncSession, report_id: int, user_id: int) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="해당 리포트에 접근할 권한이 없습니다.",
         )
-    await db.execute(delete(ReportShare).where(ReportShare.report_id == report_id))
-    await db.delete(row)
+    row.deleted_at = datetime.now(timezone.utc)
     await db.commit()
 
 

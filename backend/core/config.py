@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     gen_worker_max_jobs: int = 8
     gen_job_stale_minutes: int = 10
     gen_job_retention_days: int = 3
+    content_retention_days: int = 30
     # ── Expo 푸시 (선택) ──
     expo_access_token: str | None = None
 

@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from core.config import settings
 from crud import generation_jobs as jobs_crud
+from crud import maintenance as maintenance_crud
 from services.generation_runner import run_compatibility_job, run_saju_report_job
 
 QUEUE_NAME = "sajuguri:jobs"
@@ -37,6 +38,13 @@ async def sweep_stale_jobs(ctx) -> None:
         await db.commit()
 
 
+async def purge_deleted_content(ctx) -> None:
+    sm = ctx["sessionmaker"]
+    async with sm() as db:
+        await maintenance_crud.purge_deleted_content(db, settings.content_retention_days)
+        await db.commit()
+
+
 async def on_startup(ctx) -> None:
     engine = create_async_engine(
         settings.database_url,
@@ -55,7 +63,10 @@ async def on_shutdown(ctx) -> None:
 
 class WorkerSettings:
     functions = [generate_saju_report, generate_compatibility]
-    cron_jobs = [cron(sweep_stale_jobs, minute=set(range(0, 60, 10)))]
+    cron_jobs = [
+        cron(sweep_stale_jobs, minute=set(range(0, 60, 10))),
+        cron(purge_deleted_content, hour={4}, minute={0}),
+    ]
     on_startup = on_startup
     on_shutdown = on_shutdown
     max_jobs = settings.gen_worker_max_jobs

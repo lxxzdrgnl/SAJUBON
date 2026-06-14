@@ -82,6 +82,7 @@ class Consultation(Base):
     charts:      Mapped[dict | None]    = mapped_column(JSONB, nullable=True, default=None)
     share_token: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), unique=True, nullable=True, default=None)
     created_at:  Mapped[datetime]       = mapped_column(DateTime(timezone=True), default=_utcnow)
+    deleted_at:  Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
 
 
 class ChatSession(Base):
@@ -133,6 +134,7 @@ class SajuReport(Base):
     year_flow:        Mapped[dict]       = mapped_column(JSONB, nullable=False)
     dae_un_analysis:  Mapped[dict]       = mapped_column(JSONB, nullable=False)
     created_at:       Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
+    deleted_at:       Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
 
 
 class ReportShare(Base):
@@ -168,6 +170,7 @@ class CompatibilityReport(Base):
     synastry:         Mapped[dict]       = mapped_column(JSONB, nullable=False)
     tabs:             Mapped[list]       = mapped_column(JSONB, nullable=False)
     created_at:       Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
+    deleted_at:       Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
 
 
 class CompatibilityShare(Base):
@@ -205,6 +208,7 @@ class DailyFortuneRecord(Base):
     payload:      Mapped[dict]       = mapped_column(JSONB, nullable=False)
     share_token:  Mapped[str | None] = mapped_column(String(16), unique=True, index=True, nullable=True, default=None)
     created_at:   Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
+    deleted_at:   Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
 
 
 class GenerationJob(Base):

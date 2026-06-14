@@ -19,6 +19,7 @@ from schemas.compatibility import (
     CompatibilityShareResponse,
 )
 from schemas.jobs import JobCreatedResponse
+from crud import compatibility as compat_crud
 from services import compatibility as compatibility_service
 
 router = APIRouter(prefix="/api/compatibility", tags=["궁합 리포트"])
@@ -95,3 +96,12 @@ async def share_report(
     db: AsyncSession = Depends(get_db),
 ) -> CompatibilityShareResponse:
     return await compatibility_service.share_report(db, report_id, user.id, body.mask_birth)
+
+
+@router.delete("/{report_id}", status_code=status.HTTP_204_NO_CONTENT, summary="궁합 리포트 삭제 (소유자)")
+async def delete_report(
+    report_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    await compat_crud.delete_report(db, report_id, user.id)

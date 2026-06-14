@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date as _date
+from datetime import date as _date, datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -57,10 +57,10 @@ async def insert(
 async def list_for_user(
     db: AsyncSession, user_id: int, limit: int = 50
 ) -> list[DailyFortuneRecord]:
-    """user의 운세 기록 목록 (최신순)."""
+    """user의 운세 기록 목록 (최신순, 소프트 삭제 제외)."""
     result = await db.execute(
         select(DailyFortuneRecord)
-        .where(DailyFortuneRecord.user_id == user_id)
+        .where(DailyFortuneRecord.user_id == user_id, DailyFortuneRecord.deleted_at.is_(None))
         .order_by(DailyFortuneRecord.created_at.desc())
         .limit(limit)
     )
@@ -68,9 +68,12 @@ async def list_for_user(
 
 
 async def get_by_id(db: AsyncSession, record_id: int) -> DailyFortuneRecord | None:
-    """기록 단건 (소유권 검사는 Service)."""
+    """기록 단건 (소유권 검사는 Service, 소프트 삭제 제외)."""
     result = await db.execute(
-        select(DailyFortuneRecord).where(DailyFortuneRecord.id == record_id)
+        select(DailyFortuneRecord).where(
+            DailyFortuneRecord.id == record_id,
+            DailyFortuneRecord.deleted_at.is_(None),
+        )
     )
     return result.scalar_one_or_none()
 
@@ -78,9 +81,12 @@ async def get_by_id(db: AsyncSession, record_id: int) -> DailyFortuneRecord | No
 async def get_by_share_token(
     db: AsyncSession, token: str
 ) -> DailyFortuneRecord | None:
-    """공유 토큰으로 저장본 조회 (공개 — 소유권 검사 없음)."""
+    """공유 토큰으로 저장본 조회 (공개 — 소유권 검사 없음, 소프트 삭제 제외)."""
     result = await db.execute(
-        select(DailyFortuneRecord).where(DailyFortuneRecord.share_token == token)
+        select(DailyFortuneRecord).where(
+            DailyFortuneRecord.share_token == token,
+            DailyFortuneRecord.deleted_at.is_(None),
+        )
     )
     return result.scalar_one_or_none()
 
@@ -113,7 +119,7 @@ async def insert_share_snapshot(
 
 
 async def delete_record(db: AsyncSession, record_id: int, user_id: int) -> None:
-    """본인 소유 운세 기록을 삭제한다 (단발 쓰기 — 내부 commit).
+    """본인 소유 운세 기록을 소프트 삭제한다 (단발 쓰기 — 내부 commit).
 
     없으면 404, 타인 소유면 403.
     """
@@ -131,5 +137,5 @@ async def delete_record(db: AsyncSession, record_id: int, user_id: int) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="해당 운세 기록에 접근할 권한이 없습니다.",
         )
-    await db.delete(row)
+    row.deleted_at = datetime.now(timezone.utc)
     await db.commit()

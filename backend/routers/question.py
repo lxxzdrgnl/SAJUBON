@@ -111,9 +111,7 @@ async def delete_consultation(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> None:
-    row = await consult_crud.get_consultation_or_404(db, consultation_id, user.id)
-    await db.delete(row)
-    await db.commit()
+    await consult_crud.soft_delete(db, consultation_id, user.id)
 
 
 @router.get(
