@@ -19,7 +19,28 @@ import ToolCard from './ToolCard'
 import AttachSheet from './AttachSheet'
 import InlinePartnerCard from './InlinePartnerCard'
 import CompatibilityReportCTA from './CompatibilityReportCTA'
+import ChatNavCTA from './ChatNavCTA'
 import Markdown from '@/components/ui/Markdown'
+
+// 사주 풀 리포트로 안내할 사주분석 툴 집합
+const REPORT_TOOLS = new Set([
+  'get_palja',
+  'get_wuxing_balance',
+  'get_strength',
+  'get_ten_gods',
+  'get_sin_sal',
+  'get_twelve_un_seong',
+  'get_hap_chung',
+])
+
+// 운세 페이지로 안내할 운세 툴 집합
+const FORTUNE_TOOLS = new Set([
+  'get_daily_fortune',
+  'get_yeon_un',
+  'get_il_jin',
+  'get_dae_un',
+  'get_wol_un',
+])
 
 // ── 내부 메시지 타입 (ChatMessage 확장) ─────────────────────────────────────
 
@@ -303,6 +324,34 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
     }
   }
 
+  // 마지막 사주분석 툴 / 운세 툴 블록 위치 계산 (각 CTA 단일 렌더용).
+  // lastCheckCompatIdx와 동일하게 messages를 스캔해 마지막 매칭 블록 위치를 기록한다.
+  let lastReportToolIdx: { mi: number; bi: number } | null = null
+  let lastFortuneToolIdx: { mi: number; bi: number } | null = null
+  for (let mi = 0; mi < messages.length; mi++) {
+    const msg = messages[mi]
+    for (let bi = 0; bi < msg.blocks.length; bi++) {
+      const blk = msg.blocks[bi]
+      if (typeof blk === 'string' || blk.kind !== 'tool_result') continue
+      if (REPORT_TOOLS.has(blk.tool)) lastReportToolIdx = { mi, bi }
+      else if (FORTUNE_TOOLS.has(blk.tool)) lastFortuneToolIdx = { mi, bi }
+    }
+  }
+
+  // 같은 블록 위치에 두 개의 CTA가 겹치지 않도록 우선순위 적용: compat > report > fortune.
+  const sameBlock = (
+    a: { mi: number; bi: number } | null,
+    b: { mi: number; bi: number } | null,
+  ) => !!a && !!b && a.mi === b.mi && a.bi === b.bi
+  if (sameBlock(lastReportToolIdx, lastCheckCompatIdx)) lastReportToolIdx = null
+  if (sameBlock(lastFortuneToolIdx, lastCheckCompatIdx) || sameBlock(lastFortuneToolIdx, lastReportToolIdx)) {
+    lastFortuneToolIdx = null
+  }
+  // 한 메시지에 사주분석 툴과 운세 툴이 모두 있으면(드묾) 풀 리포트 CTA만 노출한다.
+  if (lastReportToolIdx && lastFortuneToolIdx && lastReportToolIdx.mi === lastFortuneToolIdx.mi) {
+    lastFortuneToolIdx = null
+  }
+
   return (
     <div className="flex flex-col" style={{ height: 'calc(100dvh - 116px)' }}>
       {/* 헤더 */}
@@ -399,11 +448,27 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                 }
                 if (block.kind === 'tool_result') {
                   const isLastCompat = lastCheckCompatIdx?.mi === i && lastCheckCompatIdx?.bi === bi
+                  const isLastReport = lastReportToolIdx?.mi === i && lastReportToolIdx?.bi === bi
+                  const isLastFortune = lastFortuneToolIdx?.mi === i && lastFortuneToolIdx?.bi === bi
                   return (
                     <div key={bi} className="flex flex-col gap-2 w-full min-w-0">
                       <ToolCard tool={block.tool} payload={block.payload} />
                       {isLastCompat && (
                         <CompatibilityReportCTA sessionId={sessionId} />
+                      )}
+                      {isLastReport && (
+                        <ChatNavCTA
+                          title={t('reportCta.title')}
+                          buttonLabel={t('reportCta.button')}
+                          href="/report/new"
+                        />
+                      )}
+                      {isLastFortune && (
+                        <ChatNavCTA
+                          title={t('fortuneCta.title')}
+                          buttonLabel={t('fortuneCta.button')}
+                          href="/fortune"
+                        />
                       )}
                     </div>
                   )

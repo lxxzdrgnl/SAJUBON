@@ -482,6 +482,14 @@
       "action": "View Compatibility Report",
       "error": "Failed to generate the report. Please try again."
     },
+    "reportCta": {
+      "title": "Want a deeper saju analysis?",
+      "button": "See the full Saju report"
+    },
+    "fortuneCta": {
+      "title": "Curious about today's fortune?",
+      "button": "See today's fortune"
+    },
     "error": {
       "load": "Could not load chat history",
       "send": "Send failed. Please try again."
