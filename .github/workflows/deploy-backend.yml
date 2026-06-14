@@ -45,3 +45,12 @@ jobs:
             docker inspect -f '{{.State.Running}}' sajuguri-backend | grep -q 'true' \
               && echo '✅ Backend deployed' \
               || (echo '❌ Backend failed to start' && exit 1)
+
+            # 비동기 생성 워커 — backend와 같은 이미지(servers-sajuguri-backend) 재사용.
+            docker rm -f sajuguri-worker 2>/dev/null || true
+            docker compose up -d sajuguri-worker
+            sleep 3
+            docker logs sajuguri-worker --tail=5
+            docker inspect -f '{{.State.Running}}' sajuguri-worker | grep -q 'true' \
+              && echo '✅ Worker deployed' \
+              || (echo '❌ Worker failed to start' && exit 1)
