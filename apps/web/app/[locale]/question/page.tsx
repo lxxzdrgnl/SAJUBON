@@ -16,6 +16,7 @@ import MascotTinted from '@/components/ui/MascotTinted'
 import MansePickerSheet, { type MansePick } from '@/components/manse/MansePickerSheet'
 import ToolCard from '@/components/chat/ToolCard'
 import Markdown from '@/components/ui/Markdown'
+import ShareModal from '@/components/ui/ShareModal'
 
 // ── 메인 페이지 ──────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ export default function QuestionPage() {
   const [result, setResult] = useState<{ id: number; headline: string; content: string; category: string; charts?: ToolChartItem[]; more?: ToolChartItem[] } | null>(null)
   const [openMore, setOpenMore] = useState<Set<number>>(new Set())
   const [sharing, setSharing] = useState(false)
-  const [shareMsg, setShareMsg] = useState('')
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
 
   // 프로필 목록 — 클라이언트에서 로드 (SSR 없음, 게스트 허용 페이지)
   const [profiles, setProfiles] = useState<ProfileResponse[]>([])
@@ -101,17 +102,11 @@ export default function QuestionPage() {
   async function handleShare() {
     if (!result || sharing) return
     setSharing(true)
-    setShareMsg('')
     try {
       const { share_url } = await shareConsultation(api, result.id)
-      if (navigator.share) {
-        await navigator.share({ title: result.headline, url: share_url })
-      } else {
-        await navigator.clipboard.writeText(share_url)
-        setShareMsg(t('shareCopied'))
-      }
+      setShareUrl(share_url)
     } catch {
-      setShareMsg(t('shareFailed'))
+      // silent fail
     } finally {
       setSharing(false)
     }
@@ -193,16 +188,20 @@ export default function QuestionPage() {
           >
             {sharing ? t('sharing') : t('share')}
           </button>
-          {shareMsg && (
-            <p className="text-center text-[12px] font-bold text-text-sub">{shareMsg}</p>
-          )}
           <button
             className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
-            onClick={() => { setResult(null); setQuestion(''); setOpenMore(new Set()); setShareMsg('') }}
+            onClick={() => { setResult(null); setQuestion(''); setOpenMore(new Set()); setShareUrl(null) }}
           >
             {t('askAgain')}
           </button>
         </div>
+
+        <ShareModal
+          open={shareUrl !== null}
+          url={shareUrl ?? ''}
+          title={t('share')}
+          onClose={() => setShareUrl(null)}
+        />
       </main>
     )
   }
