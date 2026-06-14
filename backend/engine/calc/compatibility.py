@@ -92,6 +92,15 @@ def _ten_gods_score(saju1: dict, saju2: dict) -> int:
     return _TEN_GOD_HARMONY.get(rel, 60)
 
 
+def _feelgood(x: int) -> int:
+    """원점수를 기분 좋은 범위로 상향평준화한다 (단조 증가 → 순위 보존, 평균 ~85).
+
+    궁합 점수는 소비자 경험상 너무 박하면 안 된다. raw 64 → 85로 매핑되며
+    잘 맞는 쌍은 90+, 안 맞는 쌍도 ~70대로 깔린다. 상대 비교는 그대로 유지.
+    """
+    return round(min(100, max(0, 59 + x * 0.40)))
+
+
 def check_compatibility(saju1: dict, saju2: dict) -> dict:
     """
     궁합 점수 계산.
@@ -107,8 +116,9 @@ def check_compatibility(saju1: dict, saju2: dict) -> dict:
     br, conflicts = _branch_relation_score(saju1, saju2)
     tg = _ten_gods_score(saju1, saju2)
 
-    # 가중 평균 (40 : 25 : 20 : 15)
-    total = int(dp * 0.40 + eh * 0.25 + br * 0.20 + tg * 0.15)
+    # 가중 평균 (40 : 25 : 20 : 15) 후 상향평준화
+    raw_total = int(dp * 0.40 + eh * 0.25 + br * 0.20 + tg * 0.15)
+    total = _feelgood(raw_total)
 
     # 양방향 보완 오행
     weak1 = saju1.get("weak_elements", [])
@@ -125,10 +135,10 @@ def check_compatibility(saju1: dict, saju2: dict) -> dict:
 
     return {
         "total_score": total,
-        "day_pillar_score": dp,
-        "element_harmony_score": eh,
-        "branch_relation_score": br,
-        "ten_gods_score": tg,
+        "day_pillar_score": _feelgood(dp),
+        "element_harmony_score": _feelgood(eh),
+        "branch_relation_score": _feelgood(br),
+        "ten_gods_score": _feelgood(tg),
         "conflict_branches": conflicts,
         "complement_elements": complement,
         "complement_a_to_b": complement_a_to_b,
