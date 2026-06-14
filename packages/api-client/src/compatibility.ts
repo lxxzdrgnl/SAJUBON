@@ -39,6 +39,11 @@ export function getCompatibilityReport(
   return api.get<CompatibilityReportDetail>(`/api/compatibility/${id}`)
 }
 
+/** DELETE /api/compatibility/{id} — 궁합 리포트 삭제 (소유자). 204 */
+export function deleteCompatibilityReport(api: ApiClient, id: number): Promise<void> {
+  return api.delete(`/api/compatibility/${id}`)
+}
+
 /** POST /api/compatibility/{id}/share — 공유 토큰 발급 (소유자). */
 export function shareCompatibilityReport(
   api: ApiClient,

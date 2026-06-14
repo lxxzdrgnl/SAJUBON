@@ -12,6 +12,7 @@ import {
   deleteReport,
   deleteDailyRecord,
   deleteConsultation,
+  deleteCompatibilityReport,
 } from '@sajuguri/api-client'
 
 /**
@@ -130,6 +131,10 @@ const compatibilityType: RecordType<CompatibilityReportSummary> = {
   renderCard: (item, t) => <CompatibilityCard r={item.payload} t={t} />,
   // 두 사람이라 프로필 그룹핑 부적합 — 단순 목록.
   empty: { message: (t) => t('emptyCompatibility'), ctaHref: '/compatibility/new', ctaLabel: (t) => t('goCompatibility') },
+  remove: {
+    fn: deleteCompatibilityReport,
+    label: (item) => `${item.payload.person_a_name ?? ''} ❤ ${item.payload.person_b_name ?? ''}`,
+  },
 }
 
 /** 등록 배열 — 표시 순서이기도 하다. */

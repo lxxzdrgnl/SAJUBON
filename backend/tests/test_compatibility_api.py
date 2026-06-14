@@ -301,6 +301,25 @@ async def test_from_session_enqueues_payload(db_user, chat_session, _cleanup, te
     assert job.payload.get("session_id") == str(chat_session)
 
 
+async def test_delete_owner(test_sessionmaker, db_user, _cleanup):
+    """소유자는 궁합 리포트를 삭제할 수 있고, 이후 조회 시 404."""
+    report = await _insert_report(test_sessionmaker, db_user)
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        r = await c.delete(f"/api/compatibility/{report.id}")
+        assert r.status_code == 204, r.text
+        g = await c.get(f"/api/compatibility/{report.id}")
+    assert g.status_code == 404
+
+
+async def test_delete_requires_auth(test_sessionmaker, db_user, _cleanup):
+    """비로그인 삭제는 401."""
+    report = await _insert_report(test_sessionmaker, db_user)
+    async with _client() as c:
+        r = await c.delete(f"/api/compatibility/{report.id}")
+    assert r.status_code == 401
+
+
 async def test_from_session_not_found_404(db_user, override_db):
     """존재하지 않거나 소유하지 않은 세션 → 즉시 404 (job 생성 안 함)."""
     token = create_access_token(db_user.id)
