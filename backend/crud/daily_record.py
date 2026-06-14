@@ -24,6 +24,7 @@ async def get_by_key(
             DailyFortuneRecord.user_id == user_id,
             DailyFortuneRecord.birth_hash == birth_hash,
             DailyFortuneRecord.date == date,
+            DailyFortuneRecord.deleted_at.is_(None),
         )
     )
     return result.scalar_one_or_none()
