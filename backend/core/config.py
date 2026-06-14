@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     # Web URL (신규 Next.js — OAuth 완료 후 httpOnly 쿠키 + 리다이렉트)
     web_url: str = "http://localhost:3001"
 
+    # Native 딥링크 콜백 (React Native 앱 — OAuth 완료 후 URL 프래그먼트로 토큰 전달)
+    native_auth_redirect: str = "sajuguri://auth/callback"
+
     # 쿠키 보안 플래그 — prod(HTTPS)에서 COOKIE_SECURE=true
     cookie_secure: bool = False
 
