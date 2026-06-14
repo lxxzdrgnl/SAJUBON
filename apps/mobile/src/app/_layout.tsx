@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StatusBar } from 'expo-status-bar'
 import { Stack } from 'expo-router'
+import { AuthProvider } from '@/lib/auth/AuthContext'
 
 export default function RootLayout() {
   // QueryClient는 마운트당 1회만 생성 (리렌더 시 캐시 유지)
@@ -15,10 +16,13 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFBF2' } }}>
-            <Stack.Screen name="(tabs)" />
-          </Stack>
+          <AuthProvider>
+            <StatusBar style="dark" />
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFBF2' } }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="auth/login" options={{ presentation: 'modal' }} />
+            </Stack>
+          </AuthProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
