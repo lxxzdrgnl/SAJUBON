@@ -73,8 +73,10 @@ function FeatureCard({
 
 export default function Home() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, status } = useAuth()
   const { data: profiles } = useProfiles()
+  const gated = (href: '/report/new') => () =>
+    router.push(status === 'authed' ? href : '/auth/login')
 
   // 대표 만세력 → 없으면 이메일 로컬파트 폴백
   const rep = profiles?.find((p) => p.is_representative) ?? profiles?.[0]
@@ -95,22 +97,24 @@ export default function Home() {
         </View>
       </View>
 
-      {/* 운세 배너 */}
-      <BrutalShadow radius={radii.card}>
-        <View
-          className="flex-row items-center gap-3 rounded-2xl border-2 border-ink p-4"
-          style={{ backgroundColor: bannerColor(repStem) }}
-        >
-          <View className="h-11 w-11 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
-            <MascotTinted stem={repStem} size={40} />
+      {/* 운세 배너 → 오늘의 운세 스토리 */}
+      <Pressable onPress={() => router.push('/fortune')}>
+        <BrutalShadow radius={radii.card}>
+          <View
+            className="flex-row items-center gap-3 rounded-2xl border-2 border-ink p-4"
+            style={{ backgroundColor: bannerColor(repStem) }}
+          >
+            <View className="h-11 w-11 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
+              <MascotTinted stem={repStem} size={40} />
+            </View>
+            <View className="min-w-0 flex-1">
+              <Text className="text-lg font-black text-ink">오늘의 운세</Text>
+              <Text className="text-xs font-semibold text-ink">{fortuneSub}</Text>
+            </View>
+            <Chevron />
           </View>
-          <View className="min-w-0 flex-1">
-            <Text className="text-lg font-black text-ink">오늘의 운세</Text>
-            <Text className="text-xs font-semibold text-ink">{fortuneSub}</Text>
-          </View>
-          <Chevron />
-        </View>
-      </BrutalShadow>
+        </BrutalShadow>
+      </Pressable>
 
       <Text className="mb-3 mt-5 text-[15px] font-extrabold text-ink">무엇을 볼까요?</Text>
       <View className="gap-3">
@@ -129,6 +133,7 @@ export default function Home() {
           title="사주 풀리포트"
           badge="AI"
           desc="내 사주를 깊이 있게 풀어주는 리포트"
+          onPress={gated('/report/new')}
         />
         <FeatureCard
           d={ICON_PATHS.chat}
