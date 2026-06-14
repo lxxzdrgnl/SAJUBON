@@ -20,8 +20,9 @@
 - 기능별 큐 분리 / 우선순위 레인 (단일 큐가 OpenAI rate limit 총량 제어에 유리. 스타베이션 실제 발생 시 그때 분리)
 - 크론 비트(스윕 제외) / 워커 오토스케일 / arq result backend 적극 활용(상태 진실은 Postgres)
 - 전용 Redis 컨테이너 (기존 공유 redis 재사용)
-- 특정 푸시 벤더 SDK 백엔드 통합 (provider-agnostic 토대만; 발송 구현은 앱 나올 때)
 - 챗(이미 SSE), 한줄 상담·오늘의 운세(충분히 빠르면 동기 유지) — 이번 대상 아님
+
+**푸시 목표선:** 백엔드 발송 코드(Expo Push API 호출)를 **실제 구현 + 유닛 테스트(Expo API 모킹)**까지 한다. 즉 "토큰만 있으면 동작"하는 publish-ready 상태. **제외되는 건 순수 앱 단계뿐** — RN 앱 구현, EAS dev build 실기기 end-to-end 검증, 스토어 등록($25). 출시 원하면 백엔드 손 안 대고 바로 전환 가능.
 
 ## 3. 아키텍처
 
@@ -88,12 +89,12 @@ GET /api/jobs/{job_id}  → { status, job_type, result_id?, error? }   # 두 기
 - `services/compatibility.py` — `create_report`, `create_from_session`를 **job 생성 + enqueue('generate_compatibility')**로 변경. (from-session은 payload에 session_id 저장.)
 - `services/jobs.py` (신규) — `get_job(job_id, user_id)` 조회 + 공통 enqueue 헬퍼. "활성 job 1개" 규칙(이미 pending/running이면 그 job 반환).
 - `services/generation_runner.py` (신규) — 워커가 호출: `run_saju_report_job(job_id)`, `run_compatibility_job(job_id)`. 별도 세션으로 상태 전이 + 기존 파이프라인 호출 + insert + notify.
-- `services/notifications.py` (신규) — `async def notify_generation_done(db, job)`: device_tokens 조회 → 없으면 no-op. **발송 자리만**(`# TODO(app): Expo Push API POST https://exp.host/--/api/v2/push/send`, 응답의 DeviceNotRegistered 토큰 삭제). 백엔드는 FCM/APNs 직접 안 건드림 — Expo가 중계.
+- `services/notifications.py` (신규) — `async def notify_generation_done(db, job)`: device_tokens 조회 → 없으면 조용히 return. 토큰 있으면 **Expo Push API로 실제 발송**(`POST https://exp.host/--/api/v2/push/send`, httpx, 메시지에 deep-link 데이터 `{type, result_id}` 포함). 응답에서 `DeviceNotRegistered` 티켓의 토큰은 삭제(회전). 백엔드는 FCM/APNs 직접 안 건드림 — Expo가 중계. `EXPO_ACCESS_TOKEN`(선택) 있으면 헤더에 첨부.
 - `worker.py` (신규) — arq `WorkerSettings`(functions=[두 함수], redis_settings(db=2), queue_name `sajuguri:jobs`, max_jobs=8, job_timeout=180, on_startup/shutdown 엔진 준비) + stale 스윕 cron.
 - `routers/reports.py` / `routers/compatibility.py` — 생성 엔드포인트를 202 `{job_id}` 반환으로 변경.
 - `routers/jobs.py` (신규) — `GET /api/jobs/{job_id}`.
 - `routers/devices.py` (신규) — `POST /api/devices` 토큰 등록(로그인). 앱이 나중에 호출.
-- `core/config.py` — `redis_url`, `gen_worker_max_jobs`(8), `gen_job_stale_minutes`(10).
+- `core/config.py` — `redis_url`, `gen_worker_max_jobs`(8), `gen_job_stale_minutes`(10), `expo_access_token`(선택, 기본 None).
 - 앱 시작 시 arq redis 풀 생성(`app.state.arq`)해 라우터에서 enqueue.
 
 ## 6. API 계약 (packages/api-client)
@@ -142,12 +143,12 @@ GET /api/jobs/{job_id}  → { status, job_type, result_id?, error? }   # 두 기
 - service: create_report·create_compatibility가 job 생성+enqueue(arq 모킹); run_*_job 성공/실패 경로(파이프라인 모킹) — 각 타입.
 - 활성 job 1개 규칙: 두 번째 POST가 기존 job_id 반환.
 - 라우터: 생성 POST 202 형태; `GET /api/jobs/{id}` 소유자/비소유자(403); job_type 반환 확인.
-- notifications: 토큰 없을 때 no-op.
+- notifications: 토큰 없을 때 발송 skip; 토큰 있을 때 Expo API 호출(httpx 모킹) 페이로드 검증; `DeviceNotRegistered` 응답 시 토큰 삭제.
 - 프론트: useGenerationJob done/failed·타입별 경로 분기.
 
 ## 12. 미해결 / 확인 필요
 
 1. ~~Redis 비밀번호~~ — **해소: 비번 없음**. `REDIS_URL=redis://redis:6379/2`.
 2. **OpenAI tier TPM/RPM** — `max_jobs=8` 확정(사용자 승인), tier 확인되면 조정.
-3. **푸시 — Expo 확정.** 백엔드는 ExpoPushToken 저장 + Expo Push API 호출만(FCM/APNs 직접 안 건드림). 앱 단계 메모: iOS는 Apple 개발자 계정($99/년)+APNs, Android는 EAS에 FCM 자격증명 1회 등록 필요(코드 작업 아님, Expo가 전송 중계).
+3. **푸시 — Expo 확정, publish-ready까지 구현.** 백엔드 = ExpoPushToken 저장 + Expo Push API 실제 발송(유닛 테스트 포함). **남는 앱 단계**(이번 범위 밖): RN 앱, EAS dev build 실기기 테스트, 스토어 출시($25 구글 플레이 등록 1회; iOS는 별도 Apple $99/년+APNs, Android는 EAS에 FCM 키 1회 등록 — 둘 다 코드 아님). 출시 시 백엔드 수정 불요.
 4. **`~/servers/docker-compose.yml`에 worker 서비스 추가** — 레포 밖이라 배포 시 SSH로 추가(승인 시).
