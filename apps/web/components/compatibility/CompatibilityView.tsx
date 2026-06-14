@@ -57,6 +57,13 @@ export default function CompatibilityView({
   const nameA = detail.person_a.name ?? t('scoreOverview.personA')
   const nameB = detail.person_b.name ?? t('scoreOverview.personB')
 
+  // 맨 위 한 줄 요약 — 종합 케미 탭의 결론형 헤드라인을 히어로로 끌어올린다.
+  const tabsList = detail.tabs as ReportTab[]
+  const summaryLine =
+    tabsList.find((tab) => tab.category === '종합 케미')?.headline ??
+    tabsList[0]?.headline ??
+    ''
+
   function handleShare() {
     if (shareUrl) return
     share(() =>
@@ -73,6 +80,9 @@ export default function CompatibilityView({
       <TabbedReport
         overview={
           <>
+            {summaryLine && (
+              <p className="text-[20px] font-extrabold leading-snug text-ink">{summaryLine}</p>
+            )}
             <ScoreOverview score={detail.score} nameA={nameA} nameB={nameB} />
             <ElementFlowDiagram synastry={detail.synastry} nameA={nameA} nameB={nameB} />
           </>
