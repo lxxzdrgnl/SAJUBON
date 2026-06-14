@@ -10,7 +10,9 @@ from core.config import settings
 from core.exceptions import (
     CompatibilityReportNotFoundException,
     ForbiddenException,
+    ValidationException,
 )
+from crud import chat as chat_crud
 from crud import compatibility as compat_crud
 from db.models import CompatibilityReport
 from schemas.compatibility import (
@@ -122,6 +124,15 @@ async def create_from_session(
 ) -> int:
     """챗 세션 기반 궁합 생성 job 등록 → job_id."""
     from services import jobs as jobs_service
+
+    # enqueue 전에 세션 소유권·상대 사주 첨부를 검증해 빠른 실패(404/400)로 응답한다.
+    # (워커도 동일 검증을 하지만, 무효 요청에 job·큐 슬롯·활성-job 락을 낭비하지 않도록 앞당긴다.)
+    session = await chat_crud.get_session_or_404(db, session_id, user_id)
+    if not session.partner_info:
+        raise ValidationException(
+            "세션에 상대 사주가 첨부되어 있지 않습니다. 먼저 상대를 첨부하세요.",
+            {"session_id": str(session_id)},
+        )
 
     payload = {
         "mode": "session",

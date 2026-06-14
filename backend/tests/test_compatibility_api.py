@@ -299,3 +299,30 @@ async def test_from_session_enqueues_payload(db_user, chat_session, _cleanup, te
     assert job is not None
     assert job.payload.get("mode") == "session"
     assert job.payload.get("session_id") == str(chat_session)
+
+
+async def test_from_session_not_found_404(db_user, override_db):
+    """존재하지 않거나 소유하지 않은 세션 → 즉시 404 (job 생성 안 함)."""
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        r = await c.post(f"/api/compatibility/from-session/{uuid.uuid4()}")
+    assert r.status_code == 404, r.text
+
+
+async def test_from_session_no_partner_400(db_user, _cleanup, test_sessionmaker):
+    """상대 사주 미첨부 세션 → 즉시 400 (job 생성 안 함)."""
+    sid = uuid.uuid4()
+    birth_info = {
+        "birth_date": "1990-03-15", "birth_time": "14:30", "gender": "male",
+        "calendar": "solar", "is_leap_month": False, "name": "이용재",
+    }
+    async with test_sessionmaker() as s:
+        s.add(ChatSession(id=sid, user_id=db_user.id, birth_info=birth_info, partner_info=None))
+        await s.commit()
+    token = create_access_token(db_user.id)
+    async with _client(token) as c:
+        r = await c.post(f"/api/compatibility/from-session/{sid}")
+    assert r.status_code == 400, r.text
+    async with test_sessionmaker() as s:
+        await s.execute(delete(ChatSession).where(ChatSession.id == sid))
+        await s.commit()
