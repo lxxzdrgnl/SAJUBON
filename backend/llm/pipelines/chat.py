@@ -73,7 +73,11 @@ async def agent_node(state: ChatState) -> dict:
     차트 tool을 안 불러서, 차트가 핵심인 채팅은 OpenAI로 고정. tool 판단·답변
     품질을 위해 nano보다 mini로.
     """
-    llm = get_llm(provider="openai", model="gpt-4.1-mini").bind_tools(CHAT_TOOLS)
+    # parallel_tool_calls=False — 차트 tool을 한 턴에 몰아 호출하지 않고 하나씩 부르게 해,
+    # 차트 사이에 설명 단락이 끼어 [차트]+해설 인터리브로 스트리밍되게 한다.
+    llm = get_llm(provider="openai", model="gpt-4.1-mini").bind_tools(
+        CHAT_TOOLS, parallel_tool_calls=False
+    )
     language = state.get("language", "ko")
     system = build_chat_system_prompt(state["saju_summary"], language=language)
     messages = [SystemMessage(content=system)] + list(state["messages"])
