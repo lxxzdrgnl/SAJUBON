@@ -126,9 +126,10 @@ GET /api/reports/jobs/{job_id}
 ## 9. 배포 / 인프라
 
 - **기존 `redis` 컨테이너(redis:7-alpine, `servers_blueming-net`) 재사용.** `sajuguri-backend`는 같은 네트워크에서 `redis:6379` 도달 확인됨(172.19.0.11).
-- **격리**: 전용 redis DB 인덱스(예: `database=2`) + arq queue_name `sajuguri:reports` + 키 prefix로 블로그/블루밍과 충돌 방지.
+- **redis 설정 (확인됨)**: `command: redis-server --appendonly yes` — **패스워드 없음**(내부망 전용), **AOF 영속화 ON**(재시작에 큐 보존), eviction 정책 기본 `noeviction`(키 자동 삭제 없음 → job 유실 위험 없음), 메모리 256M.
+- **격리**: 전용 redis DB 인덱스 `database=2` + arq queue_name `sajuguri:reports` + 키 prefix로 블로그/블루밍과 충돌 방지.
 - **워커 서비스 추가**: `~/servers/docker-compose.yml`(레포 밖)에 `sajuguri-worker` — 백엔드와 **같은 이미지**, command `arq worker.WorkerSettings`, 같은 env·네트워크. 배포 시 SSH로 추가/기동.
-- **env**: `backend.env` + `BACKEND_ENV` 시크릿에 `REDIS_URL=redis://:<pw>@redis:6379/2` 추가. (비번 있으면 사용자 제공.)
+- **env**: `backend.env` + `BACKEND_ENV` 시크릿에 `REDIS_URL=redis://redis:6379/2` 추가 (비번 없음).
 - CI(deploy-backend.yml)는 backend 이미지 재빌드 후 backend·worker 둘 다 `up -d` 필요.
 
 ## 10. 에러 / 엣지 케이스
@@ -150,6 +151,6 @@ GET /api/reports/jobs/{job_id}
 
 ## 12. 미해결 / 확인 필요
 
-1. **Redis 비밀번호** — 있으면 사용자 제공(차단되어 못 읽음).
-2. **OpenAI 계정 tier TPM/RPM** — `max_jobs` 최종값 결정용. 우선 8로 보수적 시작.
+1. ~~Redis 비밀번호~~ — **해소: 비번 없음**(`redis-server --appendonly yes`, 패스워드리스 내부망). `REDIS_URL=redis://redis:6379/2`.
+2. **OpenAI 계정 tier TPM/RPM** — `max_jobs` 최종값 결정용. **`max_jobs=8` 확정**(사용자 승인), tier 확인되면 조정.
 3. **`~/servers/docker-compose.yml`에 worker 서비스 추가** — 레포 밖이라 배포 시 SSH로 직접 추가(또는 사용자 편집).
