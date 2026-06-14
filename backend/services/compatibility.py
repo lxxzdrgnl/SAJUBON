@@ -15,6 +15,10 @@ from core.exceptions import (
 from crud import chat as chat_crud
 from crud import compatibility as compat_crud
 from db.models import CompatibilityReport
+from engine.handlers.calculate_saju import handle_calculate_saju
+from llm.tools.chart_payloads import (
+    payload_palja, payload_wuxing_balance, payload_ten_gods, payload_strength,
+)
 from schemas.compatibility import (
     BirthInput,
     CompatibilityReportDetail,
@@ -23,6 +27,12 @@ from schemas.compatibility import (
     CompatibilityScore,
     CompatibilityShareResponse,
     CompatibilitySynastry,
+)
+
+# handle_calculate_saju가 받는 kwargs (birth_input에 섞인 name 등은 제외)
+_SAJU_CALC_KEYS = (
+    "birth_date", "birth_time", "gender", "calendar", "is_leap_month",
+    "birth_longitude", "birth_utc_offset",
 )
 
 
@@ -46,6 +56,41 @@ def _synastry_to_dict(synastry: dict) -> dict:
 
 def _name(birth_input: dict) -> str | None:
     return birth_input.get("name")
+
+
+def _build_compat_charts(
+    person_a: dict, person_b: dict, score: dict, synastry: dict
+) -> dict | None:
+    """두 사람 birth_input으로 원국을 재계산해 궁합용 인라인 차트 payload를 조립 (best-effort).
+
+    계산 실패 시 None을 반환해 리포트 본문(탭)은 깨지지 않게 한다.
+    """
+    try:
+        kwargs_a = {k: person_a[k] for k in _SAJU_CALC_KEYS if k in person_a}
+        kwargs_b = {k: person_b[k] for k in _SAJU_CALC_KEYS if k in person_b}
+        saju_a = handle_calculate_saju(**kwargs_a)
+        saju_b = handle_calculate_saju(**kwargs_b)
+
+        # clash_pairs: synastry 우선, 없으면 score의 conflict_branches 폴백
+        clash_pairs = synastry.get("clash_pairs") or score.get("conflict_branches", [])
+
+        return {
+            "compat_palja_a":     payload_palja(saju_a),
+            "compat_palja_b":     payload_palja(saju_b),
+            "compat_wuxing_a":    payload_wuxing_balance(saju_a),
+            "compat_wuxing_b":    payload_wuxing_balance(saju_b),
+            "compat_ten_gods_a":  payload_ten_gods(saju_a),
+            "compat_ten_gods_b":  payload_ten_gods(saju_b),
+            "compat_strength_a":  payload_strength(saju_a),
+            "compat_strength_b":  payload_strength(saju_b),
+            "compat_branches": {
+                "clash_pairs": clash_pairs,
+                "name_a": _name(person_a),
+                "name_b": _name(person_b),
+            },
+        }
+    except Exception:
+        return None
 
 
 def _to_summary(report: CompatibilityReport) -> CompatibilityReportSummary:
@@ -86,6 +131,7 @@ def _to_detail(
         request_topics=report.request_topics,
         language=report.language,
         created_at=report.created_at.isoformat(),
+        charts=_build_compat_charts(report.person_a, report.person_b, report.score, report.synastry),
     )
 
 

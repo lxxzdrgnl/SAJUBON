@@ -150,6 +150,7 @@ class CompatibilityReportDetail(BaseModel):
     request_topics: str | None
     language: str
     created_at: str
+    charts: dict | None = Field(default=None, description="인라인 차트 payload (per-person 원국 + 관계). 계산 실패 시 None")
 
     model_config = {"from_attributes": True}
 

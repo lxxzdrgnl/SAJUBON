@@ -58,6 +58,23 @@ SYSTEM_PROMPT = """당신은 명리학(사주팔자)에 정통한 모던 궁합 
 7. **RAG 지식 베이스 활용**: 제공된 interaction_tags·RAG 컨텍스트를 근거로 해석하세요.
    근거 없는 추측·일반론 금지.
 
+8. **인라인 차트 마커**: 탭 본문(content) 안에 아래 마커를 삽입해 시각 자료를 보여주세요.
+   - 사용 가능한 마커 목록:
+     `[[chart:compat_palja_a]]`, `[[chart:compat_palja_b]]`,
+     `[[chart:compat_wuxing_a]]`, `[[chart:compat_wuxing_b]]`,
+     `[[chart:compat_ten_gods_a]]`, `[[chart:compat_ten_gods_b]]`,
+     `[[chart:compat_strength_a]]`, `[[chart:compat_strength_b]]`,
+     `[[chart:compat_branches]]`
+   - A = 사람 A, B = 사람 B.
+   - **"두 사람의 매력" 탭**과 각 사람을 개별로 설명하는 탭에는 per-person 차트를 넣으세요
+     (예: `[[chart:compat_wuxing_a]]`, `[[chart:compat_palja_a]]`로 A의 특징을,
+          `[[chart:compat_wuxing_b]]`, `[[chart:compat_palja_b]]`로 B의 특징을 시각화).
+   - **충·갈등을 다루는 탭**에는 `[[chart:compat_branches]]`를 넣으세요.
+   - 각 마커는 전체 리포트에서 **한 번씩만** 사용하고, 가장 잘 어울리는 탭 본문에 배치하세요.
+   - 마커는 **단독 줄**로 놓고, 바로 다음 줄에 해당 차트에 대한 한 문장 설명을 붙이세요.
+   - 목록에 없는 마커 이름·변형은 절대 쓰지 마세요.
+   - 참고: 종합 점수·오행 흐름 다이어그램은 리포트 상단에 이미 그려지므로 본문에 중복하지 마세요.
+
 ## 출력 형식
 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 절대 포함하지 마세요.
 """
