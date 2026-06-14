@@ -25,16 +25,33 @@ expo-secure-store, expo-auth-session/web-browser, expo-notifications, use-intl, 
 | Backend: native OAuth branch | ✅ | `fc1c233` |
 | 0 — Scaffold & design system | ✅ | `f13a2d2` |
 | 1 — Auth (Bearer + Google OAuth) | ✅ | `c42b601` |
-| 2 — Home profile integration + MansePicker | ⬜ | |
-| 3 — Manse (input → calc → result) | 🟡 | (subagent) |
-| 4 — Profiles & My records | ⬜ | |
-| 5 — Report (async job + tabbed report) | ⬜ | |
-| 6 — Question (one-off Q&A) | ⬜ | |
-| 7 — Chat (SSE streaming) | ⬜ | |
-| 8 — Compatibility | ⬜ | |
-| 9 — Daily fortune story | ⬜ | |
-| 10 — Push notifications | ⬜ | |
-| 11 — i18n sweep + store-readiness | ⬜ | |
+| 2 — Home profile integration | ✅ | `a94a091` |
+| 3 — Manse (input → calc → result) | ✅ | `15b097c` |
+| 4 — Profiles & My records | ✅ | `2f0acf1` |
+| 5 — Report (async job + tabbed report) | ✅ | `8ed4244` |
+| 6 — Question (one-off Q&A) | ✅ | `2e6ea68` |
+| 7 — Chat (SSE streaming) | ✅ | `c2c71cc` |
+| 8 — Compatibility | ✅ | `c91dc01` |
+| 9 — Daily fortune story | ✅ | `e168f89` |
+| 10 — Push notifications | ✅ | `227a86b` |
+| 11 — i18n sweep + store-readiness | ⬜ deferred | |
+
+**All phases validated:** `tsc --noEmit` clean, `expo export` bundles 1977 modules, `expo-doctor` 21/21.
+Validation is build-level only — on-device visual/interaction QA, real Google OAuth, and push delivery
+require the user's iPhone + an EAS dev build.
+
+## Deferred / follow-up (documented cuts, not blockers for testing)
+- **MansePicker bottom sheet** — each entry screen (manse/report/question/compatibility) does its own
+  profile-pick / birth-form inline; a shared bottom-sheet picker is a nice-to-have refactor.
+- **Inline charts in report/compat/chat** — `[[chart:]]` markers are stripped cleanly (no raw tokens);
+  the ~12-tool react-native-svg chart system is the main remaining feature. Manse already has its own
+  charts (WuxingBar/StrengthSection/TenGodsRow/DaeUnRow) to draw from.
+- **Chat partner attach** (`request_partner`/`attachPartner`) — event handled but no inline UI yet.
+- **Phase 11 i18n** — UI is Korean-only (matches the user's strong ko preference); `use-intl` string
+  externalization deferred. Fonts: web already uses system gothic for ganji (`font-serif`→sans), so no
+  CJK font bundling needed to match. Store assets (icon/splash) use Expo defaults — generate from the
+  mascot before submission.
+- **BirthInputForm extraction** — currently `@/components/manse/BirthInputForm`, reused across phases by import; fine as-is.
 
 ---
 
