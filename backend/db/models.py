@@ -3,7 +3,7 @@
 from __future__ import annotations
 import uuid
 from datetime import date, time, datetime, timezone
-from sqlalchemy import String, DateTime, Date, Time, Integer, Boolean, Numeric, ForeignKey, Text, UniqueConstraint
+from sqlalchemy import String, DateTime, Date, Time, Integer, Boolean, Numeric, ForeignKey, Text, UniqueConstraint, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -205,3 +205,46 @@ class DailyFortuneRecord(Base):
     payload:      Mapped[dict]       = mapped_column(JSONB, nullable=False)
     share_token:  Mapped[str | None] = mapped_column(String(16), unique=True, index=True, nullable=True, default=None)
     created_at:   Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class GenerationJob(Base):
+    """비동기 생성 작업 — 사주/궁합 리포트의 백그라운드 처리 상태."""
+
+    __tablename__ = "generation_jobs"
+
+    id:         Mapped[int]        = mapped_column(Integer, primary_key=True)
+    user_id:    Mapped[int]        = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    job_type:   Mapped[str]        = mapped_column(String(30), nullable=False)   # saju_report | compatibility
+    status:     Mapped[str]        = mapped_column(String(10), nullable=False, default="pending")
+    payload:    Mapped[dict]       = mapped_column(JSONB, nullable=False)
+    result_id:  Mapped[int | None] = mapped_column(Integer, nullable=True)
+    error:      Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime]   = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime]   = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    __table_args__ = (
+        Index("ix_generation_jobs_user_status", "user_id", "status"),
+        Index("ix_generation_jobs_status_created", "status", "created_at"),
+    )
+
+
+class DeviceToken(Base):
+    """Expo 푸시 토큰 — 앱이 등록, 완료 알림 발송 대상."""
+
+    __tablename__ = "device_tokens"
+
+    id:         Mapped[int]      = mapped_column(Integer, primary_key=True)
+    user_id:    Mapped[int]      = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    platform:   Mapped[str]      = mapped_column(String(10), nullable=False)   # ios | android
+    token:      Mapped[str]      = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "token", name="uq_device_tokens_user_token"),
+    )
