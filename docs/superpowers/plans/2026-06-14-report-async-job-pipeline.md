@@ -472,6 +472,39 @@ async def sweep_stale(db: AsyncSession, stale_minutes: int) -> list[int]:
             .values(status="failed", error="stale: worker timeout", updated_at=datetime.now(timezone.utc))
         )
     return ids
+
+
+async def delete_old_jobs(db: AsyncSession, retention_days: int) -> int:
+    """완료/실패 후 retention_days 지난 job 행 삭제. 삭제 건수 반환."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=retention_days)
+    result = await db.execute(
+        delete(GenerationJob).where(
+            GenerationJob.status.in_(("done", "failed")),
+            GenerationJob.updated_at < cutoff,
+        )
+    )
+    return result.rowcount or 0
+```
+
+> `delete`도 import: 파일 상단 `from sqlalchemy import select, update` → `from sqlalchemy import delete, select, update`.
+
+테스트(`test_generation_jobs_crud.py`)에 추가:
+```python
+@pytest.mark.asyncio
+async def test_delete_old_jobs(test_sessionmaker, db_user):
+    from datetime import datetime, timedelta, timezone
+    async with test_sessionmaker() as db:
+        job = await jobs_crud.create_job(db, user_id=db_user.id, job_type="saju_report", payload={})
+        job.status = "done"
+        job.updated_at = datetime.now(timezone.utc) - timedelta(days=30)
+        await db.commit()
+        jid = job.id
+    async with test_sessionmaker() as db:
+        n = await jobs_crud.delete_old_jobs(db, retention_days=14)
+        await db.commit()
+        assert n >= 1
+    async with test_sessionmaker() as db:
+        assert await jobs_crud.get_job(db, jid) is None
 ```
 
 - [ ] **Step 4: 테스트 통과 확인**
@@ -723,6 +756,7 @@ Create `backend/services/jobs.py`:
 """비동기 job 서비스 — 생성+enqueue(활성 1개 규칙) + 상태 조회."""
 from __future__ import annotations
 
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import ForbiddenException, ReportNotFoundException
@@ -749,7 +783,14 @@ async def create_job_and_enqueue(
 
     job = await jobs_crud.create_job(db, user_id=user_id, job_type=job_type, payload=payload)
     await db.flush()
-    await arq.enqueue_job(enqueue_fn, job.id)
+    try:
+        await arq.enqueue_job(enqueue_fn, job.id)
+    except Exception as e:  # noqa: BLE001 — redis 다운 등 enqueue 실패
+        # commit 전이라 job 행은 롤백된다(유령 pending 방지). 503으로 변환.
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="생성 대기열에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
+        ) from e
     return job.id
 
 
@@ -1229,8 +1270,16 @@ git commit -m "feat: add generation runner for saju and compatibility jobs"
 ## Task 8: arq 워커 (worker.py) + 스윕 cron
 
 **Files:**
+- Modify: `backend/core/config.py` (retention 설정 추가)
 - Create: `backend/worker.py`
 - Test: `backend/tests/test_worker_tasks.py` (Create)
+
+- [ ] **Step 0: config에 보존 기간 추가**
+
+`backend/core/config.py`의 `class Settings`에서 `gen_job_stale_minutes: int = 10` 줄 아래에 추가:
+```python
+    gen_job_retention_days: int = 14
+```
 
 - [ ] **Step 1: 실패하는 워커 태스크 테스트 작성**
 
@@ -1320,6 +1369,7 @@ async def sweep_stale_jobs(ctx) -> None:
     sm = ctx["sessionmaker"]
     async with sm() as db:
         await jobs_crud.sweep_stale(db, settings.gen_job_stale_minutes)
+        await jobs_crud.delete_old_jobs(db, settings.gen_job_retention_days)
         await db.commit()
 
 
@@ -2120,9 +2170,11 @@ ssh home-server 'grep -q REDIS_URL ~/servers/sajuguri/backend.env || echo "REDIS
 - [ ] **Step 3: 마이그레이션 적용 + 기동 (서버)**
 
 ```bash
-ssh home-server 'cd ~/servers && docker compose exec sajuguri-backend alembic upgrade head && docker compose up -d sajuguri-worker'
+# 백엔드 재기동 시 main.py의 create_all이 generation_jobs/device_tokens를 이미 생성한다.
+# 따라서 alembic은 upgrade가 아니라 stamp로 버전만 맞춘다(upgrade 시 DuplicateTable).
+ssh home-server 'cd ~/servers && docker compose exec sajuguri-backend alembic stamp head && docker compose up -d sajuguri-worker'
 ```
-> backend 컨테이너에서 alembic이 도는지 확인(없으면 backend 재빌드/배포 파이프라인이 처리). worker 로그 확인: `docker compose logs --tail 30 sajuguri-worker` → arq가 redis 연결·큐 리슨 로그.
+> `alembic upgrade head`는 create_all이 이미 만든 테이블 때문에 DuplicateTable로 실패한다(로컬에서 확인됨). 신규 테이블은 create_all이 만들고 alembic은 `stamp`로 reconcile만. worker 로그 확인: `docker compose logs --tail 30 sajuguri-worker` → arq가 redis 연결·큐 리슨 로그.
 
 - [ ] **Step 4: BACKEND_ENV 시크릿 동기화 + CI worker 기동**
 
