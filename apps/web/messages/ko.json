@@ -487,7 +487,9 @@
         "compat_ten_gods_b": "B · 십성 분포",
         "compat_strength_a": "A · 강약·용신",
         "compat_strength_b": "B · 강약·용신",
-        "compat_branches": "지지 충(衝) 관계"
+        "compat_branches": "지지 합·충 관계",
+        "compat_day_relation": "두 일간의 관계",
+        "compat_yongsin": "용신 보완"
       },
       "fields": {
         "dayMaster": "일간",

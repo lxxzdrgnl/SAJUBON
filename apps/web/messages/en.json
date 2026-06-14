@@ -524,7 +524,9 @@
         "compat_ten_gods_b": "B · Ten Gods",
         "compat_strength_a": "A · Strength & Yongsin",
         "compat_strength_b": "B · Strength & Yongsin",
-        "compat_branches": "Branch Clashes"
+        "compat_branches": "Branch Harmony & Clashes",
+        "compat_day_relation": "Day-Master Bond",
+        "compat_yongsin": "Yongsin Complement"
       },
       "fields": {
         "dayMaster": "Day Master",

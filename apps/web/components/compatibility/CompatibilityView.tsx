@@ -32,6 +32,8 @@ function buildCompatChartsToolByName(
     'compat_ten_gods_a', 'compat_ten_gods_b',
     'compat_strength_a', 'compat_strength_b',
     'compat_branches',
+    'compat_day_relation',
+    'compat_yongsin',
   ]
   for (const tool of tools) {
     const payload = charts[tool]

@@ -432,21 +432,136 @@ function TwelveUnSeongMini({ payload, t }: { payload: Record<string, unknown>; t
   )
 }
 
-/** 궁합 지지 충(衝) 쌍 카드 */
+/** 궁합 지지 합(合)·충(衝) 쌍 카드 */
 function CompatBranchesCard({ payload }: { payload: Record<string, unknown> }) {
-  const clash = (payload.clash_pairs ?? []) as string[]
+  type HapPair = { pair: [string, string]; element: string }
+  const clashRaw = (payload.clash_pairs ?? []) as Array<string | [string, string]>
+  const hapPairs = (payload.hap_pairs ?? []) as HapPair[]
   const nameA = (payload.name_a as string) || 'A'
   const nameB = (payload.name_b as string) || 'B'
+
+  // clash_pairs 는 string 또는 [string, string] 형태 모두 허용
+  const clashLabels = clashRaw.map((p) => (Array.isArray(p) ? p.join('-') : p))
+
+  const bothEmpty = clashLabels.length === 0 && hapPairs.length === 0
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <p className="text-[11px] font-bold text-text-sub">{nameA} ↔ {nameB} 지지 충(衝)</p>
-      {clash.length === 0 ? (
-        <p className="text-[13px] text-ink">두 사람 사이에 두드러진 충(衝)이 없어요 — 큰 마찰 요인이 적은 편이에요.</p>
+    <div className="flex flex-col gap-2">
+      <p className="text-[11px] font-bold text-text-sub">{nameA} ↔ {nameB} 지지 합·충</p>
+      {bothEmpty ? (
+        <p className="text-[13px] text-ink">두드러진 합·충이 없어 잔잔한 관계예요.</p>
       ) : (
-        <div className="flex flex-wrap gap-1.5">
-          {clash.map((p, i) => (
-            <span key={i} className="rounded-lg border-2 border-ink bg-surface px-2 py-1 font-serif text-[13px] font-bold text-ink">{p}</span>
-          ))}
+        <>
+          {hapPairs.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-teal-deep">끌어당기는 합(合)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {hapPairs.map((h, i) => (
+                  <span key={i} className="rounded-lg border-2 border-teal bg-surface px-2 py-1 font-serif text-[13px] font-bold text-teal">
+                    {h.pair[0]}-{h.pair[1]} 합 → {h.element}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {clashLabels.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-orange">충(衝)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {clashLabels.map((p, i) => (
+                  <span key={i} className="rounded-lg border-2 border-ink bg-surface px-2 py-1 font-serif text-[13px] font-bold text-ink">{p}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+/** 두 일간(天干) 관계 카드 */
+function DayRelationCard({ payload }: { payload: Record<string, unknown> }) {
+  const nameA = (payload.name_a as string) || 'A'
+  const nameB = (payload.name_b as string) || 'B'
+  const stemA = payload.stem_a as string | undefined
+  const stemB = payload.stem_b as string | undefined
+  const stemHap = payload.stem_hap as string | null
+  const synergy = payload.element_synergy as string | null
+  const tgAB = payload.ten_god_a_to_b as string | undefined
+  const tgBA = payload.ten_god_b_to_a as string | undefined
+  const synergyText: Record<string, string> = {
+    '상생': '상생 — 서로의 기운을 살려주는 사이',
+    '상극': '상극 — 자극과 긴장이 공존',
+    '동기': '동기 — 같은 결의 기운',
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-center gap-3">
+        <span className="font-serif text-2xl font-extrabold text-ink">{stemA}</span>
+        <span className="text-[12px] font-bold text-text-sub">{nameA}</span>
+        <span className="font-extrabold text-orange">↔</span>
+        <span className="font-serif text-2xl font-extrabold text-ink">{stemB}</span>
+        <span className="text-[12px] font-bold text-text-sub">{nameB}</span>
+      </div>
+      {stemHap && (
+        <span className="self-center rounded-full border-2 border-ink bg-yellow px-2.5 py-0.5 text-[11px] font-extrabold">천간합 → {stemHap}</span>
+      )}
+      {synergy && <p className="text-center text-[13px] font-bold text-ink">{synergyText[synergy] ?? synergy}</p>}
+      <div className="mt-1 flex flex-col gap-1 text-[12px] text-ink">
+        {tgAB && <p><span className="font-bold">{nameA}</span> → {nameB}: <span className="font-extrabold text-teal">{tgAB}</span></p>}
+        {tgBA && <p><span className="font-bold">{nameB}</span> → {nameA}: <span className="font-extrabold text-teal">{tgBA}</span></p>}
+      </div>
+    </div>
+  )
+}
+
+/** 용신 보완 카드 */
+function YongsinComplementCard({ payload }: { payload: Record<string, unknown> }) {
+  const nameA = (payload.name_a as string) || 'A'
+  const nameB = (payload.name_b as string) || 'B'
+  const yongA = payload.yong_a as string | null
+  const yongB = payload.yong_b as string | null
+  const yongsinHelp = payload.yongsin_help as 'a_helps_b' | 'b_helps_a' | 'mutual' | null
+  const compAB = (payload.complement_a_to_b ?? []) as string[]
+  const compBA = (payload.complement_b_to_a ?? []) as string[]
+
+  const helpText =
+    yongsinHelp === 'mutual'
+      ? '서로의 용신을 채워주는 쌍방 보완'
+      : yongsinHelp === 'a_helps_b'
+        ? `${nameA}가 ${nameB}의 기운을 채워줌`
+        : yongsinHelp === 'b_helps_a'
+          ? `${nameB}가 ${nameA}의 기운을 채워줌`
+          : '용신 보완은 약한 편'
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-center text-[13px] font-bold text-ink">{helpText}</p>
+      {(yongA || yongB) && (
+        <div className="flex gap-3 text-[12px] text-ink">
+          {yongA && <p><span className="font-bold">{nameA}</span> 용신: <span className="font-extrabold text-teal">{yongA}</span></p>}
+          {yongB && <p><span className="font-bold">{nameB}</span> 용신: <span className="font-extrabold text-teal">{yongB}</span></p>}
+        </div>
+      )}
+      {compAB.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <p className="text-[10px] font-extrabold uppercase tracking-widest text-text-sub">{nameA} → {nameB}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {compAB.map((el, i) => (
+              <span key={i} className="rounded-lg border-[1.5px] border-ink bg-surface px-2 py-0.5 font-serif text-[12px] font-bold text-ink">{el}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {compBA.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <p className="text-[10px] font-extrabold uppercase tracking-widest text-text-sub">{nameB} → {nameA}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {compBA.map((el, i) => (
+              <span key={i} className="rounded-lg border-[1.5px] border-ink bg-surface px-2 py-0.5 font-serif text-[12px] font-bold text-ink">{el}</span>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -566,6 +681,10 @@ function renderContent(tool: string, payload: Record<string, unknown>, t: Return
       return <StrengthMini payload={payload} t={t} />
     case 'compat_branches':
       return <CompatBranchesCard payload={payload} />
+    case 'compat_day_relation':
+      return <DayRelationCard payload={payload} />
+    case 'compat_yongsin':
+      return <YongsinComplementCard payload={payload} />
     default:
       return null
   }
