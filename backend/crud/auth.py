@@ -15,7 +15,8 @@ async def get_or_create_user(
 ) -> User:
     """이메일로 유저를 조회하고 없으면 생성한다. commit은 호출자 책임.
 
-    name(구글 프로필 닉네임)은 생성 시 저장하고, 기존 유저가 비어 있으면 채운다.
+    name(구글 프로필 닉네임)은 생성 시 저장하고, 기존 유저는 로그인할 때마다
+    최신 구글 닉네임으로 동기화한다(닉네임이 바뀌면 반영).
     """
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
@@ -24,8 +25,8 @@ async def get_or_create_user(
         db.add(user)
         await db.flush()
         await db.refresh(user)
-    elif name and not user.name:
-        # 이전에 이름 없이 가입한 유저 — 구글 닉네임으로 보강
+    elif name and user.name != name:
+        # 로그인 때마다 최신 구글 닉네임으로 동기화 (변경 반영 + 과거 미저장분 보강)
         user.name = name
         await db.flush()
     return user
