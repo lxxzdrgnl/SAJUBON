@@ -18,15 +18,13 @@ function sinSalPrefix(s: SinSal): string {
 
 export function DetailAccordion({ data }: { data: SajuCalcResponse }) {
   const slots = pillarSlots(data)
-  // Only show slots with a pillar
-  const activeSlots = slots.filter((s) => s.pillar !== null)
 
   return (
-    <Accordion title="12운성 · 신살 · 지장간">
+    <Accordion title="12운성 · 신살 · 지장간 상세">
       {/* Header row */}
       <View style={{ flexDirection: 'row', borderBottomWidth: 2, borderBottomColor: '#1A1A1A', paddingBottom: 6, marginBottom: 2 }}>
         <View style={{ width: 48 }} />
-        {activeSlots.map((s) => (
+        {slots.map((s) => (
           <View key={s.loc} style={{ flex: 1, alignItems: 'center' }}>
             <Text style={{
               fontSize: 11, fontWeight: '800',
@@ -43,7 +41,7 @@ export function DetailAccordion({ data }: { data: SajuCalcResponse }) {
         <View style={{ width: 48, justifyContent: 'flex-start' }}>
           <Text style={{ fontSize: 11, fontWeight: '800', color: '#8A8270' }}>12운성</Text>
         </View>
-        {activeSlots.map((s) => (
+        {slots.map((s) => (
           <View key={s.loc} style={{ flex: 1, alignItems: 'center' }}>
             <Text style={{ fontSize: 13, fontWeight: '800', color: s.pillar ? ohaengColor(s.pillar.branch_element) : '#8A8270' }}>
               {s.pillar ? s.pillar.twelve_wun : '—'}
@@ -57,7 +55,7 @@ export function DetailAccordion({ data }: { data: SajuCalcResponse }) {
         <View style={{ width: 48, justifyContent: 'flex-start' }}>
           <Text style={{ fontSize: 11, fontWeight: '800', color: '#8A8270' }}>지장간</Text>
         </View>
-        {activeSlots.map((s) => (
+        {slots.map((s) => (
           <View key={s.loc} style={{ flex: 1, alignItems: 'center' }}>
             <Text style={{ fontSize: 11, fontWeight: '700', color: '#1A1A1A', letterSpacing: 1 }}>
               {s.pillar ? jiJangGanText(data.ji_jang_gan, s.loc) || '—' : '—'}
@@ -71,7 +69,7 @@ export function DetailAccordion({ data }: { data: SajuCalcResponse }) {
         <View style={{ width: 48, justifyContent: 'flex-start' }}>
           <Text style={{ fontSize: 11, fontWeight: '800', color: '#8A8270' }}>신살</Text>
         </View>
-        {activeSlots.map((s) => {
+        {slots.map((s) => {
           const sals = s.pillar ? sinSalsForPillar(data.sin_sals, s.loc) : []
           return (
             <View key={s.loc} style={{ flex: 1, alignItems: 'center', gap: 4 }}>

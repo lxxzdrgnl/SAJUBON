@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, Pressable, Share, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Text, View } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { calcSaju, createProfile, type Pillar } from '@sajuguri/api-client'
@@ -6,7 +6,9 @@ import { useState, useEffect } from 'react'
 import { enrichRecentInputDayStem } from '@sajuguri/core'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { rnStorage } from '@/lib/storage'
+import { useShare } from '@/lib/useShare'
 import { Screen } from '@/components/ui/Screen'
+import { Button } from '@/components/ui/Button'
 import { IljuHero } from '@/components/manse/IljuHero'
 import { PillarCard } from '@/components/manse/PillarCard'
 import { TagChips } from '@/components/manse/TagChips'
@@ -29,6 +31,7 @@ export default function ManseResultScreen() {
   const dataParam = Array.isArray(rawParams.data) ? rawParams.data[0] : rawParams.data
   const birthInput = JSON.parse(dataParam ?? '{}') as ManseBirthInput
   const [saving, setSaving] = useState(false)
+  const { sharing, share } = useShare()
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['saju', dataParam],
@@ -70,12 +73,11 @@ export default function ManseResultScreen() {
   ]
 
   async function handleShare() {
-    try {
-      await Share.share({
-        title: '내 만세력',
-        message: `${birthInput.name ? birthInput.name + '의 ' : ''}만세력 — ${birthInput.birth_date}`,
-      })
-    } catch {}
+    await share(() =>
+      Promise.resolve(
+        `${birthInput.name ? birthInput.name + '의 ' : ''}만세력 — ${birthInput.birth_date}`,
+      ),
+    )
   }
 
   async function handleSave() {
@@ -103,15 +105,6 @@ export default function ManseResultScreen() {
 
   return (
     <Screen>
-      {/* 뒤로 가기 */}
-      <Pressable
-        onPress={() => router.back()}
-        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}
-      >
-        <Text style={{ fontSize: 22, color: '#1A1A1A', marginRight: 4 }}>←</Text>
-        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1A1A1A' }}>만세력 입력</Text>
-      </Pressable>
-
       {isLoading && (
         <View style={{ alignItems: 'center', paddingVertical: 60 }}>
           <ActivityIndicator size="large" color="#1A1A1A" />
@@ -131,16 +124,6 @@ export default function ManseResultScreen() {
 
       {data && (
         <View style={{ gap: 16 }}>
-          {/* 메타 정보 */}
-          <View style={{ gap: 2 }}>
-            {birthInput.name ? (
-              <Text style={{ fontSize: 20, fontWeight: '900', color: '#1A1A1A' }}>{birthInput.name}</Text>
-            ) : null}
-            <Text style={{ fontSize: 13, color: '#8A8270', fontWeight: '600' }}>
-              {data.meta.birth_date} {data.meta.birth_time ?? '시간 미상'} · {data.meta.gender === 'male' ? '남성' : '여성'} · {data.meta.calendar === 'solar' ? '양력' : '음력'}
-            </Text>
-          </View>
-
           {/* 일주 히어로 */}
           <IljuHero dayPillar={data.day_pillar} label="내 일주" />
 
@@ -156,9 +139,9 @@ export default function ManseResultScreen() {
                 pillar ? (
                   <PillarCard key={label} pillar={pillar} kind="stem" label={label} isDay={isDay} />
                 ) : (
-                  <View key={label} style={{ flex: 1, borderRadius: 11, borderWidth: 2, borderColor: '#E0D9CE', paddingVertical: 8, paddingHorizontal: 4, alignItems: 'center', backgroundColor: '#F5F2EC' }}>
-                    <Text style={{ fontSize: 10, color: '#C0B8A8', fontWeight: '700' }}>{label}</Text>
-                    <Text style={{ fontSize: 20, color: '#C0B8A8', marginTop: 4 }}>—</Text>
+                  <View key={label} style={{ flex: 1, borderRadius: 11, borderWidth: 2, borderColor: '#1A1A1A', borderStyle: 'dashed', paddingVertical: 8, paddingHorizontal: 4, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 10, color: '#8A8270', fontWeight: '700' }}>{label}</Text>
+                    <Text style={{ fontSize: 20, color: '#8A8270', marginTop: 4 }}>—</Text>
                   </View>
                 )
               )}
@@ -169,8 +152,8 @@ export default function ManseResultScreen() {
                 pillar ? (
                   <PillarCard key={`${label}-branch`} pillar={pillar} kind="branch" isDay={isDay} />
                 ) : (
-                  <View key={`${label}-branch`} style={{ flex: 1, borderRadius: 11, borderWidth: 2, borderColor: '#E0D9CE', paddingVertical: 8, paddingHorizontal: 4, alignItems: 'center', backgroundColor: '#F5F2EC' }}>
-                    <Text style={{ fontSize: 20, color: '#C0B8A8', marginTop: 4 }}>—</Text>
+                  <View key={`${label}-branch`} style={{ flex: 1, borderRadius: 11, borderWidth: 2, borderColor: '#1A1A1A', borderStyle: 'dashed', paddingVertical: 12, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, color: '#8A8270' }}>—</Text>
                   </View>
                 )
               )}
@@ -204,55 +187,38 @@ export default function ManseResultScreen() {
           {/* 일진 달력 */}
           <IlJinCalendar />
 
-          {/* CTAs */}
+          {/* CTAs — 웹 result/page.tsx 순서와 동일 */}
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-            <Pressable
-              onPress={() => router.push({ pathname: '/report/new', params: { data: dataParam } })}
-              style={{
-                flex: 1, borderRadius: 12, borderWidth: 2, borderColor: '#1A1A1A',
-                backgroundColor: '#FF6B00', paddingVertical: 12, alignItems: 'center',
-                shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
-              }}
-            >
-              <Text style={{ fontSize: 14, fontWeight: '800', color: '#FFFFFF' }}>AI 리포트 생성</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => router.push('/chat' as any)}
-              style={{
-                flex: 1, borderRadius: 12, borderWidth: 2, borderColor: '#00C2B8',
-                backgroundColor: '#E0FAF8', paddingVertical: 12, alignItems: 'center',
-                shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
-              }}
-            >
-              <Text style={{ fontSize: 14, fontWeight: '800', color: '#00665F' }}>상담하기</Text>
-            </Pressable>
+            <View style={{ flex: 1 }}>
+              <Button
+                label="AI 리포트 생성"
+                variant="strong"
+                onPress={() => router.push({ pathname: '/report/new', params: { data: dataParam } })}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                label="상담하기"
+                variant="secondary"
+                onPress={() => router.push('/chat' as any)}
+              />
+            </View>
           </View>
 
-          {/* 공유 */}
-          <Pressable
+          <Button
+            label={sharing ? '공유 중...' : '공유하기'}
+            variant="ghost"
             onPress={handleShare}
-            style={{
-              borderRadius: 12, borderWidth: 2, borderColor: '#1A1A1A',
-              backgroundColor: '#FAFAF7', paddingVertical: 12, alignItems: 'center',
-              shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
-            }}
-          >
-            <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }}>공유하기</Text>
-          </Pressable>
+            disabled={sharing}
+          />
 
-          {/* 저장 (로그인 시) */}
           {status === 'authed' && (
-            <Pressable
-              onPress={saving ? undefined : handleSave}
-              style={{
-                borderRadius: 12, borderWidth: 2, borderColor: '#1A1A1A',
-                backgroundColor: '#FFDE21', paddingVertical: 12, alignItems: 'center',
-                shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
-                opacity: saving ? 0.5 : 1,
-              }}
-            >
-              <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }}>{saving ? '저장 중...' : '이 만세력 저장'}</Text>
-            </Pressable>
+            <Button
+              label={saving ? '저장 중...' : '이 만세력 저장'}
+              variant="primary"
+              onPress={handleSave}
+              disabled={saving}
+            />
           )}
         </View>
       )}
