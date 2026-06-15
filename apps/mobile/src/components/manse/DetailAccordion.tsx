@@ -1,63 +1,100 @@
-import { useState } from 'react'
-import { Pressable, View, Text } from 'react-native'
-import { BrutalCard } from '@/components/ui/BrutalCard'
-import type { SajuCalcResponse } from '@sajuguri/api-client'
+import { View, Text } from 'react-native'
+import { Accordion } from '@/components/ui/Accordion'
+import { ohaengColor } from '@/lib/manse/ohaeng'
+import { pillarSlots, sinSalsForPillar, jiJangGanText } from '@/lib/manse/pillars'
+import type { SajuCalcResponse, SinSal } from '@sajuguri/api-client'
 
-const PILLAR_LABELS: [keyof Pick<SajuCalcResponse, 'year_pillar' | 'month_pillar' | 'day_pillar' | 'hour_pillar'>, string][] = [
-  ['year_pillar', '년주'],
-  ['month_pillar', '월주'],
-  ['day_pillar', '일주'],
-  ['hour_pillar', '시주'],
-]
+function sinSalVariant(s: SinSal): { bg: string; text: string } {
+  if (s.type === 'lucky') return { bg: '#E0FAF8', text: '#00665F' }
+  if (s.type === 'unlucky' || s.type === 'warning') return { bg: '#FFEDE0', text: '#B34800' }
+  return { bg: '#FAFAF7', text: '#8A8270' }
+}
+
+function sinSalPrefix(s: SinSal): string {
+  if (s.type === 'lucky') return '+'
+  if (s.type === 'unlucky' || s.type === 'warning') return '-'
+  return '·'
+}
 
 export function DetailAccordion({ data }: { data: SajuCalcResponse }) {
-  const [open, setOpen] = useState(false)
+  const slots = pillarSlots(data)
+  // Only show slots with a pillar
+  const activeSlots = slots.filter((s) => s.pillar !== null)
 
   return (
-    <BrutalCard>
-      <Pressable
-        onPress={() => setOpen((v) => !v)}
-        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-      >
-        <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A' }}>12운성 · 신살 · 지장간</Text>
-        <Text style={{ fontSize: 13, color: '#8A8270', fontWeight: '700' }}>{open ? '접기 ▲' : '펼치기 ▼'}</Text>
-      </Pressable>
+    <Accordion title="12운성 · 신살 · 지장간">
+      {/* Header row */}
+      <View style={{ flexDirection: 'row', borderBottomWidth: 2, borderBottomColor: '#1A1A1A', paddingBottom: 6, marginBottom: 2 }}>
+        <View style={{ width: 48 }} />
+        {activeSlots.map((s) => (
+          <View key={s.loc} style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{
+              fontSize: 11, fontWeight: '800',
+              color: s.loc === 'day' ? '#FF6B00' : '#8A8270',
+            }}>
+              {s.colLabel}{s.loc === 'day' ? ' ★' : ''}
+            </Text>
+          </View>
+        ))}
+      </View>
 
-      {open && (
-        <View style={{ marginTop: 12, gap: 12 }}>
-          {PILLAR_LABELS.map(([key, label]) => {
-            const pillar = data[key]
-            if (!pillar) return null
-            return (
-              <View key={label}>
-                <Text style={{ fontSize: 13, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 }}>{label} — {pillar.ganji_name}</Text>
-                <View style={{ gap: 4 }}>
-                  {(pillar as { twelve_wun?: string }).twelve_wun && (
-                    <View style={{ flexDirection: 'row', gap: 6 }}>
-                      <Text style={{ fontSize: 11, color: '#8A8270', fontWeight: '700', width: 56 }}>12운성</Text>
-                      <Text style={{ fontSize: 11, color: '#1A1A1A', fontWeight: '600' }}>{(pillar as { twelve_wun?: string }).twelve_wun}</Text>
-                    </View>
-                  )}
-                  {(pillar as { naeum_eum?: string }).naeum_eum && (
-                    <View style={{ flexDirection: 'row', gap: 6 }}>
-                      <Text style={{ fontSize: 11, color: '#8A8270', fontWeight: '700', width: 56 }}>납음</Text>
-                      <Text style={{ fontSize: 11, color: '#1A1A1A', fontWeight: '600' }}>{(pillar as { naeum_eum?: string }).naeum_eum}</Text>
-                    </View>
-                  )}
-                  {data.ji_jang_gan[pillar.branch] && (
-                    <View style={{ flexDirection: 'row', gap: 6 }}>
-                      <Text style={{ fontSize: 11, color: '#8A8270', fontWeight: '700', width: 56 }}>지장간</Text>
-                      <Text style={{ fontSize: 11, color: '#1A1A1A', fontWeight: '600' }}>
-                        {data.ji_jang_gan[pillar.branch].join(' · ')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            )
-          })}
+      {/* 12운성 row */}
+      <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E0D9CE', paddingVertical: 8 }}>
+        <View style={{ width: 48, justifyContent: 'flex-start' }}>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#8A8270' }}>12운성</Text>
         </View>
-      )}
-    </BrutalCard>
+        {activeSlots.map((s) => (
+          <View key={s.loc} style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: s.pillar ? ohaengColor(s.pillar.branch_element) : '#8A8270' }}>
+              {s.pillar ? s.pillar.twelve_wun : '—'}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* 지장간 row */}
+      <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E0D9CE', paddingVertical: 8 }}>
+        <View style={{ width: 48, justifyContent: 'flex-start' }}>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#8A8270' }}>지장간</Text>
+        </View>
+        {activeSlots.map((s) => (
+          <View key={s.loc} style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: '#1A1A1A', letterSpacing: 1 }}>
+              {s.pillar ? jiJangGanText(data.ji_jang_gan, s.loc) || '—' : '—'}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* 신살 row */}
+      <View style={{ flexDirection: 'row', paddingTop: 8 }}>
+        <View style={{ width: 48, justifyContent: 'flex-start' }}>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#8A8270' }}>신살</Text>
+        </View>
+        {activeSlots.map((s) => {
+          const sals = s.pillar ? sinSalsForPillar(data.sin_sals, s.loc) : []
+          return (
+            <View key={s.loc} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+              {sals.length > 0 ? sals.map((sal) => {
+                const vs = sinSalVariant(sal)
+                return (
+                  <View key={sal.name} style={{
+                    borderRadius: 8, borderWidth: 1.5, borderColor: '#1A1A1A',
+                    backgroundColor: vs.bg, paddingHorizontal: 4, paddingVertical: 1,
+                    shadowColor: '#1A1A1A', shadowOffset: { width: 1.5, height: 1.5 }, shadowOpacity: 1, shadowRadius: 0,
+                  }}>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: vs.text }}>
+                      {sinSalPrefix(sal)}{sal.name}
+                    </Text>
+                  </View>
+                )
+              }) : (
+                <Text style={{ fontSize: 11, color: '#8A8270' }}>—</Text>
+              )}
+            </View>
+          )
+        })}
+      </View>
+    </Accordion>
   )
 }

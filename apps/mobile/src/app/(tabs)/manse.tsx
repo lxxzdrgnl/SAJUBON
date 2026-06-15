@@ -4,9 +4,9 @@
  * - 로그인 시: 저장된 만세력 목록 (SavedManse)
  * - 최근 본 만세력 목록 (RecentManse, AsyncStorage)
  */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Alert, Pressable, Text, View } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { setRepresentative, deleteProfile, type ProfileResponse } from '@sajuguri/api-client'
 import { loadRecentInputs, removeRecentInput, type RecentBirthInput } from '@sajuguri/core'
 import { Screen } from '@/components/ui/Screen'
@@ -412,9 +412,12 @@ function RecentManseSection({ savedKeys }: { savedKeys: Set<string> }) {
     setItems(loaded)
   }, [])
 
-  useEffect(() => {
-    load()
-  }, [load])
+  // 화면에 돌아올 때마다 최근 목록 새로고침 (만세 본 뒤 복귀 시 반영)
+  useFocusEffect(
+    useCallback(() => {
+      load()
+    }, [load]),
+  )
 
   if (items === null) return null
 

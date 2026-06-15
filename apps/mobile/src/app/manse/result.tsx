@@ -2,8 +2,10 @@ import { ActivityIndicator, Alert, Pressable, Share, Text, View } from 'react-na
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { calcSaju, createProfile, type Pillar } from '@sajuguri/api-client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { enrichRecentInputDayStem } from '@sajuguri/core'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { rnStorage } from '@/lib/storage'
 import { Screen } from '@/components/ui/Screen'
 import { IljuHero } from '@/components/manse/IljuHero'
 import { PillarCard } from '@/components/manse/PillarCard'
@@ -44,6 +46,21 @@ export default function ManseResultScreen() {
       }),
     enabled: !!dataParam,
   })
+
+  // day_stem 보강 — 최근 본 만세력 너구리 아바타 색 동기화 (web RecentEnricher 대응)
+  useEffect(() => {
+    if (!data || !birthInput.birth_date || !birthInput.gender) return
+    void enrichRecentInputDayStem(
+      rnStorage,
+      {
+        birth_date: birthInput.birth_date,
+        birth_time: birthInput.birth_time,
+        gender: birthInput.gender,
+        calendar: birthInput.calendar ?? 'solar',
+      },
+      data.day_pillar.stem,
+    )
+  }, [data, birthInput.birth_date, birthInput.birth_time, birthInput.gender, birthInput.calendar])
 
   const pillars: { pillar: Pillar | null; label: string; isDay: boolean }[] = [
     { pillar: data?.hour_pillar ?? null, label: '생시', isDay: false },
