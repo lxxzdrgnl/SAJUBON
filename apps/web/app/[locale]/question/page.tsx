@@ -114,7 +114,7 @@ export default function QuestionPage() {
       <main className="flex flex-col gap-5">
         <h1 className="text-lg font-black">{t('title')}</h1>
 
-        <div className="rounded-2xl border-2 border-[#4DA8E8] bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+        <div className="rounded-2xl border-2 border-teal bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
           <p className="mb-3 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
             {t('resultLabel')}
           </p>
@@ -213,14 +213,14 @@ export default function QuestionPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="question" className="text-[13px] font-extrabold">
-              {t('questionLabel')}
+              {t('questionLabel', { name: selectedLabel })}
             </label>
             <textarea
               id="question"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder={t('questionPlaceholder')}
-              className="w-full resize-none rounded-xl border-2 border-ink bg-surface px-4 py-3 text-sm leading-relaxed outline-none shadow-[4px_4px_0_#1A1A1A]"
+              className="w-full resize-none rounded-xl border-2 border-black bg-surface px-4 py-3 text-sm leading-relaxed outline-none shadow-[4px_4px_0_#1A1A1A]"
               rows={3}
               minLength={10}
               maxLength={200}
