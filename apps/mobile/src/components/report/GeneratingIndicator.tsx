@@ -1,18 +1,42 @@
-import { ActivityIndicator, Text, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Animated, Text, View } from 'react-native'
+import { MascotTinted } from '@/components/ui/MascotTinted'
 
-const MESSAGES = [
-  '사주를 분석하는 중이에요...',
-  '운명의 흐름을 읽고 있어요...',
-  '천간과 지지를 해석하는 중...',
-  '리포트를 작성하고 있어요...',
+// Exported so callers can pass domain-specific phrase arrays
+export const REPORT_LOADING_PHRASES = [
+  '사주를 읽고 있어요...',
+  '천간과 지지를 살피는 중이에요...',
+  '대운의 흐름을 분석하고 있어요...',
+  '오행의 균형을 파악하는 중이에요...',
+  '당신만의 해설을 작성하고 있어요...',
+  '거의 다 됐어요, 조금만 기다려 주세요...',
 ]
 
-/**
- * 사주 리포트 생성 중 로딩 인디케이터.
- * 한국어 안내 문구 + 스피너 표시.
- */
-export function GeneratingIndicator({ message }: { message?: string }) {
-  const displayMessage = message ?? MESSAGES[0]
+export const COMPAT_LOADING_PHRASES = [
+  '두 사람의 사주를 읽고 있어요...',
+  '천간합화와 오행 흐름을 살피는 중이에요...',
+  '지지의 충과 합을 분석하고 있어요...',
+  '두 분만을 위한 케미 해설을 작성하고 있어요...',
+  '거의 다 됐어요, 조금만 기다려 주세요...',
+]
+
+interface GeneratingIndicatorProps {
+  phrases?: string[]
+  note?: string
+}
+
+export function GeneratingIndicator({
+  phrases = REPORT_LOADING_PHRASES,
+  note = 'AI가 사주를 분석 중이에요. 보통 30~60초 정도 걸려요.',
+}: GeneratingIndicatorProps) {
+  const [idx, setIdx] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIdx((i) => (i + 1) % phrases.length)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [phrases])
 
   return (
     <View
@@ -23,55 +47,61 @@ export function GeneratingIndicator({ message }: { message?: string }) {
         gap: 20,
       }}
     >
-      {/* 스피너 */}
-      <View
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 36,
-          borderWidth: 2,
-          borderColor: '#1A1A1A',
-          backgroundColor: '#FFF4E3',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <ActivityIndicator size="large" color="#FF6B00" />
-      </View>
+      <BounceView>
+        <MascotTinted size={72} />
+      </BounceView>
 
-      {/* 메인 메시지 */}
-      <View style={{ alignItems: 'center', gap: 6 }}>
+      <View style={{ alignItems: 'center', gap: 8 }}>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: '800',
             color: '#1A1A1A',
             textAlign: 'center',
+            lineHeight: 22,
           }}
         >
-          {displayMessage}
+          {phrases[idx]}
         </Text>
         <Text
           style={{
-            fontSize: 12,
-            fontWeight: '600',
+            fontSize: 13,
             color: '#8A8270',
             textAlign: 'center',
           }}
         >
-          AI가 당신의 사주를 꼼꼼히 분석하고 있어요
-        </Text>
-        <Text
-          style={{
-            fontSize: 11,
-            color: '#C0B8A8',
-            textAlign: 'center',
-            marginTop: 4,
-          }}
-        >
-          최대 1~2분 소요될 수 있어요
+          {note}
         </Text>
       </View>
     </View>
+  )
+}
+
+// ── Simple bounce animation ──────────────────────────────────────────────────
+
+function BounceView({ children }: { children: React.ReactNode }) {
+  const translateY = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(translateY, {
+          toValue: -12,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start()
+  }, [translateY])
+
+  return (
+    <Animated.View style={{ transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
   )
 }

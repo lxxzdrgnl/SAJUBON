@@ -27,6 +27,7 @@ import { Screen } from '@/components/ui/Screen'
 import { Button } from '@/components/ui/Button'
 import { TabbedReport } from '@/components/report/TabbedReport'
 import { CompatScoreHeader } from '@/components/compat/CompatScoreHeader'
+import { ElementFlowDiagram } from '@/components/compat/ElementFlowDiagram'
 
 // CompatibilityTab과 ReportTab은 구조 동일 — 캐스팅 헬퍼
 function toReportTab(tab: CompatibilityTab): ReportTab {
@@ -152,8 +153,8 @@ export default function CompatibilityDetailScreen() {
   }
 
   // ── 데이터 준비 ───────────────────────────────────────────────────────────
-  const nameA = report.person_a.name ?? '사람 A'
-  const nameB = report.person_b.name ?? '사람 B'
+  const nameA = report.person_a.name ?? 'A'
+  const nameB = report.person_b.name ?? 'B'
 
   // 종합 케미 탭 헤드라인을 히어로 한 줄 요약으로 사용
   const summaryLine =
@@ -174,14 +175,42 @@ export default function CompatibilityDetailScreen() {
         <Text style={{ fontSize: 14, fontWeight: '700', color: '#1A1A1A' }}>궁합 리포트</Text>
       </Pressable>
 
-      {/* 날짜 */}
-      <Text style={{ fontSize: 11, color: '#C0B8A8', marginBottom: 16 }}>
-        {new Date(report.created_at).toLocaleDateString('ko-KR', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </Text>
+      {/* 두 사람 요약 헤더 */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderWidth: 2,
+          borderColor: '#1A1A1A',
+          borderRadius: 16,
+          backgroundColor: '#FAFAF7',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          marginBottom: 16,
+          shadowColor: '#1A1A1A',
+          shadowOffset: { width: 4, height: 4 },
+          shadowOpacity: 1,
+          shadowRadius: 0,
+        }}
+      >
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ fontSize: 14, fontWeight: '900', color: '#1A1A1A' }} numberOfLines={1}>
+            {nameA}
+          </Text>
+          {report.person_a.birth_date ? (
+            <Text style={{ fontSize: 12, color: '#8A8270' }}>{report.person_a.birth_date}</Text>
+          ) : null}
+        </View>
+        <Text style={{ fontSize: 20, fontWeight: '900', color: '#FF6B00', marginHorizontal: 8 }}>♥</Text>
+        <View style={{ flex: 1, alignItems: 'flex-end', minWidth: 0 }}>
+          <Text style={{ fontSize: 14, fontWeight: '900', color: '#1A1A1A' }} numberOfLines={1}>
+            {nameB}
+          </Text>
+          {report.person_b.birth_date ? (
+            <Text style={{ fontSize: 12, color: '#8A8270' }}>{report.person_b.birth_date}</Text>
+          ) : null}
+        </View>
+      </View>
 
       {/* 리포트 본문 */}
       <TabbedReport
@@ -195,9 +224,19 @@ export default function CompatibilityDetailScreen() {
               synastry={report.synastry}
               summaryLine={summaryLine}
             />
+            <ElementFlowDiagram
+              synastry={report.synastry}
+              nameA={nameA}
+              nameB={nameB}
+            />
           </View>
         }
       />
+
+      {/* 안내 텍스트 */}
+      <Text style={{ fontSize: 13, color: '#8A8270', textAlign: 'center', paddingBottom: 8, marginTop: 8 }}>
+        각 제목을 클릭하면 해설이 펼쳐져요.
+      </Text>
 
       {/* 액션 버튼 */}
       <View style={{ marginTop: 24, gap: 10 }}>

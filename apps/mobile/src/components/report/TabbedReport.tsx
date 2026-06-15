@@ -100,7 +100,7 @@ function TabAccordion({ tab }: { tab: ReportTab }) {
                 }}
               >
                 <Text style={{ fontSize: 11, fontWeight: '800', color: '#FF6B00', marginBottom: 4 }}>
-                  조언
+                  현실 조언
                 </Text>
                 <Markdown>{para}</Markdown>
               </View>

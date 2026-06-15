@@ -1,20 +1,24 @@
 /**
  * /compatibility/new — 궁합 리포트 생성 폼.
- * 두 사람 슬롯(프로필 선택 또는 직접 입력) → job 제출 → 폴링 → 완료 시 [id]로 이동.
+ * 두 사람 슬롯(MansePickerSheet) → job 제출 → 폴링 → 완료 시 [id]로 이동.
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Pressable, Text, TextInput, View } from 'react-native'
 import { useRouter } from 'expo-router'
+import * as Localization from 'expo-localization'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useProfiles } from '@/lib/queries'
 import { useJob } from '@/lib/jobs'
 import { Screen } from '@/components/ui/Screen'
 import { Button } from '@/components/ui/Button'
-import { GeneratingIndicator } from '@/components/report/GeneratingIndicator'
+import { BrutalCard } from '@/components/ui/BrutalCard'
+import { GeneratingIndicator, COMPAT_LOADING_PHRASES } from '@/components/report/GeneratingIndicator'
 import { PersonSlot } from '@/components/compat/PersonSlot'
 import { createCompatibilityJob } from '@sajuguri/api-client'
 import type { BirthInput } from '@sajuguri/api-client'
+
+const LOCALE = Localization.getLocales()[0]?.languageCode === 'ko' ? 'ko' : 'en'
 
 export default function CompatibilityNewScreen() {
   const router = useRouter()
@@ -23,6 +27,7 @@ export default function CompatibilityNewScreen() {
 
   const [personA, setPersonA] = useState<BirthInput | null>(null)
   const [personB, setPersonB] = useState<BirthInput | null>(null)
+  const [topics, setTopics] = useState('')
   const [jobId, setJobId] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -44,7 +49,7 @@ export default function CompatibilityNewScreen() {
     return (
       <Screen scroll={false}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: 14, color: '#8A8270', fontWeight: '600' }}>불러오는 중...</Text>
+          <Text style={{ fontSize: 14, color: '#8A8270', fontWeight: '600' }}>확인 중...</Text>
         </View>
       </Screen>
     )
@@ -54,14 +59,14 @@ export default function CompatibilityNewScreen() {
   if (status !== 'authed') {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 24 }}>
           <Text style={{ fontSize: 18, fontWeight: '900', color: '#1A1A1A', textAlign: 'center' }}>
-            로그인이 필요합니다
+            로그인이 필요해요
           </Text>
           <Text style={{ fontSize: 14, color: '#8A8270', textAlign: 'center', lineHeight: 20 }}>
-            궁합 리포트는 로그인 후 이용하실 수 있어요.
+            궁합 리포트는 저장·공유를 위해 로그인 후 이용할 수 있어요.
           </Text>
-          <Button label="로그인하기" onPress={() => login()} variant="primary" />
+          <Button label="구글로 시작하기" onPress={() => login()} variant="primary" />
         </View>
       </Screen>
     )
@@ -69,15 +74,11 @@ export default function CompatibilityNewScreen() {
 
   // ── 생성 중 화면 ───────────────────────────────────────────────────────────
   if (jobId !== null && jobStatus !== 'failed' && !isTimeout) {
-    const loadingMessages: Record<string, string> = {
-      pending: '대기 중이에요...',
-      running: '궁합을 분석하는 중이에요...',
-      done: '리포트를 불러오는 중이에요...',
-    }
     return (
       <Screen scroll={false}>
         <GeneratingIndicator
-          message={jobStatus ? (loadingMessages[jobStatus] ?? '궁합을 분석하는 중이에요...') : '궁합을 분석하는 중이에요...'}
+          phrases={COMPAT_LOADING_PHRASES}
+          note="AI가 두 사주를 분석 중이에요. 보통 30~60초 정도 걸려요."
         />
       </Screen>
     )
@@ -123,12 +124,16 @@ export default function CompatibilityNewScreen() {
       const { job_id } = await createCompatibilityJob(api, {
         person_a: personA,
         person_b: personB,
-        language: 'ko',
+        ...(topics.trim() ? { request_topics: topics.trim() } : {}),
+        language: LOCALE,
       })
       navigatedRef.current = false
       setJobId(job_id)
-    } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : '오류가 발생했어요. 다시 시도해주세요.')
+    } catch (e: unknown) {
+      const httpStatus = (e as { status?: number })?.status
+      if (httpStatus === 401) setSubmitError('로그인이 필요해요. 다시 로그인해 주세요.')
+      else if (httpStatus === 429) setSubmitError('요청이 너무 많아요. 잠시 후 다시 시도해 주세요.')
+      else setSubmitError('리포트 생성에 실패했어요. 다시 시도해 주세요.')
     } finally {
       setSubmitting(false)
     }
@@ -147,47 +152,60 @@ export default function CompatibilityNewScreen() {
       </Pressable>
 
       <Text style={{ fontSize: 22, fontWeight: '900', color: '#1A1A1A', marginBottom: 4 }}>
-        궁합 리포트 생성
+        궁합 리포트
       </Text>
-      <Text style={{ fontSize: 13, color: '#8A8270', marginBottom: 24, fontWeight: '600' }}>
-        두 사람의 사주로 AI가 궁합을 분석해드려요
+      <Text style={{ fontSize: 13, color: '#8A8270', marginBottom: 24, fontWeight: '600', lineHeight: 20 }}>
+        두 사람의 사주로 연애·관계 케미를 결론형 리포트로 분석해 드려요.
       </Text>
 
-      {/* 사람 A 슬롯 */}
-      <View style={{ marginBottom: 16 }}>
-        <PersonSlot
-          label="첫 번째 사람"
-          profiles={profiles}
-          onChange={setPersonA}
-        />
-      </View>
-
-      {/* 구분선 */}
-      <View style={{ alignItems: 'center', marginBottom: 16 }}>
-        <View
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            borderWidth: 2,
-            borderColor: '#FF6B00',
-            backgroundColor: '#FFF4E3',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: '900', color: '#FF6B00' }}>♥</Text>
+      {/* 두 슬롯 나란히 */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+        <View style={{ flex: 1 }}>
+          <PersonSlot
+            label="나 (첫 번째 사람)"
+            profiles={profiles}
+            onChange={setPersonA}
+            sheetTitle="첫 번째 사람 선택"
+          />
+        </View>
+        <Text style={{ fontSize: 36, color: '#FF6B00', fontWeight: '900', alignSelf: 'center' }}>♥</Text>
+        <View style={{ flex: 1 }}>
+          <PersonSlot
+            label="상대방 (두 번째 사람)"
+            profiles={profiles}
+            onChange={setPersonB}
+            sheetTitle="두 번째 사람 선택"
+          />
         </View>
       </View>
 
-      {/* 사람 B 슬롯 */}
-      <View style={{ marginBottom: 24 }}>
-        <PersonSlot
-          label="두 번째 사람"
-          profiles={profiles}
-          onChange={setPersonB}
+      {/* 추가 주제 */}
+      <BrutalCard intensity="soft" style={{ marginBottom: 20 }}>
+        <Text style={{ fontSize: 13, fontWeight: '800', color: '#1A1A1A', marginBottom: 6 }}>
+          더 알고 싶은 주제 (선택)
+        </Text>
+        <TextInput
+          value={topics}
+          onChangeText={setTopics}
+          placeholder="예: 결혼 시기, 다툼이 잦은 이유"
+          placeholderTextColor="#C0B8A8"
+          style={{
+            borderWidth: 2,
+            borderColor: '#1A1A1A',
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            fontSize: 14,
+            fontWeight: '600',
+            color: '#1A1A1A',
+            backgroundColor: '#FAFAF7',
+          }}
+          maxLength={100}
         />
-      </View>
+        <Text style={{ fontSize: 12, color: '#C0B8A8', marginTop: 4 }}>
+          쉼표로 여러 주제를 적으면 각각 별도 탭으로 분석해요.
+        </Text>
+      </BrutalCard>
 
       {/* 오류 메시지 */}
       {submitError && (
@@ -198,17 +216,11 @@ export default function CompatibilityNewScreen() {
 
       {/* 제출 버튼 */}
       <Button
-        label={submitting ? '궁합 분석 중...' : '궁합 리포트 생성하기'}
+        label={submitting ? '궁합 분석 중...' : '궁합 보기'}
         onPress={handleSubmit}
         variant="strong"
         disabled={submitting || !canSubmit}
       />
-
-      {!canSubmit && (
-        <Text style={{ fontSize: 11, color: '#C0B8A8', textAlign: 'center', marginTop: 8 }}>
-          두 사람의 정보를 모두 입력하면 분석을 시작해요
-        </Text>
-      )}
     </Screen>
   )
 }

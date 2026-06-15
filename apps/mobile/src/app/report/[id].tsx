@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/Button'
 import { BrutalCard } from '@/components/ui/BrutalCard'
 import { TabbedReport } from '@/components/report/TabbedReport'
 import { Markdown } from '@/components/markdown/Markdown'
+import { MascotTinted } from '@/components/ui/MascotTinted'
+import { ChartPlaceholder } from '@/components/report/ChartPlaceholder'
 
 // ── 올해의 흐름 섹션 ──────────────────────────────────────────────────────────
 
@@ -71,7 +73,7 @@ function YearFlowSection({ yearFlow }: { yearFlow: ReportDetail['year_flow'] }) 
         >
           <Text style={{ flex: 0.5, fontSize: 11, fontWeight: '800', color: '#1A1A1A' }}>월</Text>
           <Text style={{ flex: 1, fontSize: 11, fontWeight: '800', color: '#1A1A1A' }}>키워드</Text>
-          <Text style={{ flex: 2, fontSize: 11, fontWeight: '800', color: '#1A1A1A' }}>한마디</Text>
+          <Text style={{ flex: 2, fontSize: 11, fontWeight: '800', color: '#1A1A1A' }}>한 줄 메모</Text>
         </View>
 
         {visible.map((m, idx) => (
@@ -108,7 +110,7 @@ function YearFlowSection({ yearFlow }: { yearFlow: ReportDetail['year_flow'] }) 
             }}
           >
             <Text style={{ fontSize: 13, fontWeight: '700', color: '#1A1A1A' }}>
-              더 보기 ({months.length - 4}개)
+              나머지 보기 ({months.length - 4})
             </Text>
           </Pressable>
         )}
@@ -122,7 +124,9 @@ function YearFlowSection({ yearFlow }: { yearFlow: ReportDetail['year_flow'] }) 
 function DaeUnSection({ daeUn }: { daeUn: ReportDetail['dae_un_analysis'] }) {
   return (
     <View style={{ gap: 10 }}>
-      <Text style={{ fontSize: 17, fontWeight: '900', color: '#FF6B00' }}>대운 분석</Text>
+      <Text style={{ fontSize: 17, fontWeight: '900', color: '#FF6B00' }}>대운 비교</Text>
+
+      <ChartPlaceholder tool="get_dae_un" />
 
       {/* 현재 대운 */}
       <BrutalCard
@@ -162,7 +166,7 @@ function DaeUnSection({ daeUn }: { daeUn: ReportDetail['dae_un_analysis'] }) {
       {/* 주의사항 */}
       <BrutalCard intensity="soft">
         <Text style={{ fontSize: 11, fontWeight: '800', color: '#FF6B00', marginBottom: 4 }}>
-          주의사항
+          주의점
         </Text>
         <Text style={{ fontSize: 14, color: '#1A1A1A', lineHeight: 20 }}>
           {daeUn.caution}
@@ -302,24 +306,53 @@ export default function ReportDetailScreen() {
         <Text style={{ fontSize: 14, fontWeight: '700', color: '#1A1A1A' }}>내 리포트</Text>
       </Pressable>
 
-      {/* 헤더 정보 */}
-      <View style={{ marginBottom: 24, gap: 4 }}>
-        <Text style={{ fontSize: 22, fontWeight: '900', color: '#1A1A1A' }}>
-          {report.profile_name || bi.name || '사주 리포트'}
-        </Text>
-        <Text style={{ fontSize: 13, color: '#8A8270', fontWeight: '600' }}>
-          {bi.birth_date}{bi.birth_time ? ` ${bi.birth_time}` : ' 시간 미상'} ·{' '}
-          {bi.gender === 'male' ? '남성' : '여성'}
-        </Text>
-        <Text style={{ fontSize: 13, color: '#FF6B00', fontWeight: '700', lineHeight: 19 }}>
-          {report.first_headline}
-        </Text>
-        <Text style={{ fontSize: 11, color: '#C0B8A8', marginTop: 2 }}>
-          {new Date(report.created_at).toLocaleDateString('ko-KR', {
-            year: 'numeric', month: 'long', day: 'numeric',
-          })}
+      {/* 원국 한 줄 요약 — 마스코트 아바타 포함 */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          borderWidth: 2,
+          borderColor: '#1A1A1A',
+          borderRadius: 16,
+          backgroundColor: '#FAFAF7',
+          padding: 12,
+          marginBottom: 16,
+          shadowColor: '#1A1A1A',
+          shadowOffset: { width: 4, height: 4 },
+          shadowOpacity: 1,
+          shadowRadius: 0,
+        }}
+      >
+        <View
+          style={{
+            width: 44,
+            height: 44,
+            borderWidth: 2,
+            borderColor: '#1A1A1A',
+            borderRadius: 12,
+            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#FAFAF7',
+          }}
+        >
+          <MascotTinted size={40} />
+        </View>
+        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1A1A1A', flex: 1 }}>
+          {[report.profile_name || bi.name, bi.birth_date, bi.gender === 'male' ? '남성' : '여성']
+            .filter(Boolean)
+            .join(' · ')}
         </Text>
       </View>
+      <Text style={{ fontSize: 13, color: '#FF6B00', fontWeight: '700', lineHeight: 19, marginBottom: 4 }}>
+        {report.first_headline}
+      </Text>
+      <Text style={{ fontSize: 11, color: '#C0B8A8', marginBottom: 24 }}>
+        {new Date(report.created_at).toLocaleDateString('ko-KR', {
+          year: 'numeric', month: 'long', day: 'numeric',
+        })}
+      </Text>
 
       {/* 리포트 본문 */}
       <TabbedReport
@@ -331,6 +364,31 @@ export default function ReportDetailScreen() {
           </View>
         }
       />
+
+      {/* 다시 생성 CTA */}
+      <Pressable
+        onPress={() => router.push('/report/new' as never)}
+        style={{
+          borderWidth: 2,
+          borderColor: '#1A1A1A',
+          borderRadius: 12,
+          paddingVertical: 12,
+          alignItems: 'center',
+          backgroundColor: '#FAFAF7',
+          shadowColor: '#1A1A1A',
+          shadowOffset: { width: 4, height: 4 },
+          shadowOpacity: 1,
+          shadowRadius: 0,
+          marginTop: 16,
+        }}
+      >
+        <Text style={{ fontSize: 14, fontWeight: '900', color: '#1A1A1A' }}>다시 생성</Text>
+      </Pressable>
+
+      {/* 안내 텍스트 */}
+      <Text style={{ fontSize: 13, color: '#8A8270', textAlign: 'center', paddingBottom: 8, marginTop: 8 }}>
+        각 제목을 클릭하면 해설이 펼쳐져요
+      </Text>
 
       {/* 액션 버튼 */}
       <View style={{ marginTop: 24, gap: 10 }}>
