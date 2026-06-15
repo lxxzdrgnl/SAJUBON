@@ -9,10 +9,14 @@
  * 이모지 없음, 텍스트 전부 한국어.
  */
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, ScrollView, Pressable, Animated, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, Pressable, Animated, ActivityIndicator, Alert } from 'react-native'
+import Constants from 'expo-constants'
 import * as MediaLibrary from 'expo-media-library'
 import * as Sharing from 'expo-sharing'
 import ViewShot, { type ViewShotRef } from 'react-native-view-shot'
+
+// react-native-view-shot은 네이티브 모듈 — Expo Go엔 없다. 개발 빌드에서만 캡처가 동작한다.
+const IS_EXPO_GO = Constants.executionEnvironment === 'storeClient'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import { MascotTinted } from '@/components/ui/MascotTinted'
 import { type CardPalette } from '@/lib/story'
@@ -76,6 +80,14 @@ export function SummaryCard({ story, onClose, palette }: Props) {
 
   /** ViewShot 캡처 → 공유 */
   async function handleSaveImage() {
+    // Expo Go엔 view-shot 네이티브 모듈이 없어 캡처가 불가 — 안내만 하고 종료.
+    if (IS_EXPO_GO) {
+      Alert.alert(
+        '이미지 저장',
+        'Expo Go에서는 이미지 저장이 지원되지 않아요. 앱(개발 빌드)에서 사용할 수 있어요.',
+      )
+      return
+    }
     setSaving(true)
     try {
       // 미디어 라이브러리 권한 (이미지 저장용)
