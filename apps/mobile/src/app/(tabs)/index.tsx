@@ -104,11 +104,36 @@ export default function Home() {
   const fortuneSub = name ? pickGreeting(name, hourKST) : '너의 하루는?'
 
   const [stop1, stop2] = bannerStops(repStem)
-  const [manseSheetOpen, setManseSheetOpen] = useState(false)
+  // 단일 사주 진입(만세력·운세·한줄상담·리포트) 전부 같은 시트로 통일 — 선택 후 목적지만 다름.
+  type Target = 'manse' | 'fortune' | 'question' | 'report'
+  const [sheetTarget, setSheetTarget] = useState<Target | null>(null)
 
-  // 만세력 선택 → 결과 페이지로 그 정보 전달 (웹 ManseEntryButton 흐름)
-  const onMansePick = (pick: MansePick) => {
-    setManseSheetOpen(false)
+  // 로그인 필요한 진입은 시트 열기 전에 게이트
+  const openSheet = (target: Target, needsAuth: boolean) => {
+    if (needsAuth && status !== 'authed') {
+      router.push('/auth/login')
+      return
+    }
+    setSheetTarget(target)
+  }
+
+  const SHEET_TITLE: Record<Target, string> = {
+    manse: '누구의 만세력을 볼까요?',
+    fortune: '누구의 운세를 볼까요?',
+    question: '누구의 사주로 물어볼까요?',
+    report: '누구의 리포트를 만들까요?',
+  }
+  const DEST: Record<Target, '/fortune' | '/question' | '/report/new' | '/manse/result'> = {
+    manse: '/manse/result',
+    fortune: '/fortune',
+    question: '/question',
+    report: '/report/new',
+  }
+
+  const onPick = (pick: MansePick) => {
+    const target = sheetTarget
+    setSheetTarget(null)
+    if (!target) return
     const input = {
       name: pick.name,
       birth_date: pick.birth_date,
@@ -118,7 +143,7 @@ export default function Home() {
       is_leap_month: pick.is_leap_month,
       ...(pick.birth_longitude != null ? { birth_longitude: pick.birth_longitude } : {}),
     }
-    router.push({ pathname: '/manse/result', params: { data: JSON.stringify(input) } })
+    router.push({ pathname: DEST[target], params: { data: JSON.stringify(input) } })
   }
 
   return (
@@ -133,8 +158,8 @@ export default function Home() {
         </View>
       </View>
 
-      {/* 운세 배너 — SVG LinearGradient 배경 */}
-      <Pressable onPress={() => router.push('/fortune')}>
+      {/* 운세 배너 → 만세력 선택 모달 → 선택 시 운세로 (웹 FortuneBanner 흐름) */}
+      <Pressable onPress={() => setSheetTarget('fortune')}>
         <BrutalShadow radius={radii.card}>
           <View
             className="flex-row items-center gap-3 rounded-2xl border-2 border-ink p-4"
@@ -164,7 +189,7 @@ export default function Home() {
           iconColor={colors.ink}
           title="만세력 보기"
           desc="내 사주 원국을 한눈에"
-          onPress={() => setManseSheetOpen(true)}
+          onPress={() => openSheet('manse', false)}
         />
         <FeatureCard
           d={ICON_PATHS.doc}
@@ -173,7 +198,7 @@ export default function Home() {
           title="내 사주 풀리포트"
           badge="10탭"
           desc="결론만 말해주는 AI 해설"
-          onPress={gated('/report/new')}
+          onPress={() => openSheet('report', true)}
         />
         <FeatureCard
           d={ICON_PATHS.chat}
@@ -189,7 +214,7 @@ export default function Home() {
           iconColor="#FFFFFF"
           title="한줄 상담"
           desc="로그인 없이 한 질문 맛보기"
-          onPress={() => router.push('/question')}
+          onPress={() => openSheet('question', false)}
         />
         <FeatureCard
           d={ICON_PATHS.heart}
@@ -202,11 +227,11 @@ export default function Home() {
       </View>
 
       <MansePickerSheet
-        open={manseSheetOpen}
-        onClose={() => setManseSheetOpen(false)}
+        open={sheetTarget !== null}
+        onClose={() => setSheetTarget(null)}
         profiles={profiles ?? []}
-        title="누구의 만세력을 볼까요?"
-        onPick={onMansePick}
+        title={sheetTarget ? SHEET_TITLE[sheetTarget] : ''}
+        onPick={onPick}
       />
     </Screen>
   )

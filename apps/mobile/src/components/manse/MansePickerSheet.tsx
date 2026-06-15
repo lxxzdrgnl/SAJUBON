@@ -9,8 +9,9 @@
  *
  * 문자열: ko.json `mansePicker` 키에서 정확히 가져옴.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
+  Animated,
   Modal,
   Pressable,
   ScrollView,
@@ -72,15 +73,19 @@ export function MansePickerSheet({
   const { api } = useAuth()
   const [recentInputs, setRecentInputs] = useState<RecentBirthInput[]>([])
   const [showForm, setShowForm] = useState(false)
+  // 백드롭 페이드 + 시트 슬라이드 (animationType=slide는 회색 백드롭까지 통째로 올려서 직접 제어)
+  const anim = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
     if (open) {
       setShowForm(false)
+      anim.setValue(0)
+      Animated.timing(anim, { toValue: 1, duration: 260, useNativeDriver: true }).start()
       if (includeRecent) {
         loadRecentInputs(rnStorage).then(setRecentInputs)
       }
     }
-  }, [open, includeRecent])
+  }, [open, includeRecent, anim])
 
   // 저장 프로필과 중복되는 최근 입력 숨김 (birth_date|birth_time|gender 기준)
   const savedKeys = new Set(
@@ -153,17 +158,16 @@ export function MansePickerSheet({
     <Modal
       visible={open}
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={onClose}
     >
-      {/* 백드롭 */}
-      <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(26,26,26,0.4)' }}
-        onPress={onClose}
-      />
+      {/* 백드롭 — 페이드만 (슬라이드 X) */}
+      <Animated.View style={{ flex: 1, backgroundColor: 'rgba(26,26,26,0.4)', opacity: anim }}>
+        <Pressable style={{ flex: 1 }} onPress={onClose} />
+      </Animated.View>
 
-      {/* 바텀시트 */}
-      <View
+      {/* 바텀시트 — 아래에서 위로 슬라이드 */}
+      <Animated.View
         style={{
           borderTopLeftRadius: radii.sheet,
           borderTopRightRadius: radii.sheet,
@@ -176,6 +180,7 @@ export function MansePickerSheet({
           shadowRadius: 0,
           elevation: 8,
           maxHeight: '80%',
+          transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }],
         }}
       >
         {/* 드래그 핸들 */}
@@ -425,7 +430,7 @@ export function MansePickerSheet({
             </>
           )}
         </ScrollView>
-      </View>
+      </Animated.View>
     </Modal>
   )
 }

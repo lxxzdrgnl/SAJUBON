@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { View, Text, Pressable, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { createDailyStory } from '@sajuguri/api-client'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import type { SajuCalcRequest } from '@sajuguri/api-client'
@@ -59,6 +59,9 @@ export default function FortunePage() {
   const { api, status } = useAuth()
   const insets = useSafeAreaInsets()
   const { data: profiles, isLoading: profilesLoading } = useProfiles()
+  // 홈 모달에서 만세력 선택 후 넘어온 data — 있으면 그걸로 바로 생성 (피커 스킵)
+  const params = useLocalSearchParams<{ data?: string }>()
+  const dataParam = Array.isArray(params.data) ? params.data[0] : params.data
 
   const [story, setStory] = useState<DailyStoryResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -89,11 +92,22 @@ export default function FortunePage() {
     }
   }, [api])
 
-  // 대표 프로필 자동 로드
+  // 진입 시: data 파라미터가 있으면 그걸로 바로 생성, 없으면 대표 프로필/피커
   useEffect(() => {
-    // 아직 프로필 로딩 중이거나 이미 스토리가 있으면 스킵
-    if (profilesLoading || story) return
+    if (story || loading) return
 
+    // 1) 홈 모달에서 넘어온 만세력 data 우선
+    if (dataParam) {
+      try {
+        fetchStory(JSON.parse(dataParam) as SajuCalcRequest)
+      } catch {
+        setShowForm(true)
+      }
+      return
+    }
+
+    // 2) data 없을 때 (직접 진입 등) — 프로필/피커 폴백
+    if (profilesLoading) return
     if (status === 'authed' && profiles) {
       const rep = profiles.find((p) => p.is_representative) ?? profiles[0]
       if (rep) {

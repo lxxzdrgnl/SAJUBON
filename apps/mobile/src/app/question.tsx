@@ -15,7 +15,7 @@ import {
   TextInput,
   View,
 } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import {
   askQuestion,
   shareConsultation,
@@ -143,16 +143,26 @@ export default function QuestionScreen() {
   const queryClient = useQueryClient()
 
   const { data: profiles } = useProfiles()
+  // 홈 모달에서 넘어온 만세력 data — 있으면 그걸로 선택 상태 시작 (피커 스킵)
+  const params = useLocalSearchParams<{ data?: string }>()
+  const dataParam = Array.isArray(params.data) ? params.data[0] : params.data
 
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [selectedPick, setSelectedPick] = useState<MansePick | null>(null)
+  const [selectedPick, setSelectedPick] = useState<MansePick | null>(() => {
+    if (!dataParam) return null
+    try {
+      return JSON.parse(dataParam) as MansePick
+    } catch {
+      return null
+    }
+  })
   const [question, setQuestion] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<ConsultationResponse | null>(null)
   const [sharing, setSharing] = useState(false)
 
-  // 진입 시 만세력 미선택이면 시트 자동 오픈 (웹과 동일)
+  // 진입 시 만세력 미선택이면 시트 자동 오픈 (data로 이미 선택됐으면 안 열림)
   useEffect(() => {
     if (!selectedPick) {
       setSheetOpen(true)

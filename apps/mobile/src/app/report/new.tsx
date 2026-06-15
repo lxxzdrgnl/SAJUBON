@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Pressable, Text, TextInput, View } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as Localization from 'expo-localization'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useProfiles } from '@/lib/queries'
@@ -18,9 +18,19 @@ export default function ReportNewScreen() {
   const router = useRouter()
   const { api, status, login } = useAuth()
   const { data: profiles } = useProfiles()
+  // 홈 모달에서 넘어온 만세력 data — 있으면 그걸로 시작 (피커 스킵)
+  const params = useLocalSearchParams<{ data?: string }>()
+  const dataParam = Array.isArray(params.data) ? params.data[0] : params.data
 
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [pickedBirth, setPickedBirth] = useState<MansePick | null>(null)
+  const [pickedBirth, setPickedBirth] = useState<MansePick | null>(() => {
+    if (!dataParam) return null
+    try {
+      return JSON.parse(dataParam) as MansePick
+    } catch {
+      return null
+    }
+  })
   const [requestTopics, setRequestTopics] = useState('')
   const [jobId, setJobId] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
