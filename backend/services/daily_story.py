@@ -106,21 +106,32 @@ async def create_story(
         return story
 
     # 로그인 → 저장 (record_id 채움, 단일 commit)
-    record = await record_crud.insert(
-        db,
-        user_id=user_id,
-        birth_hash=birth_hash,
-        date=parsed_date,
-        profile_name=profile_name,
-        keyword=story.keyword,
-        payload=story.model_dump(),
-    )
-    story.record_id = record.id
-    # payload에도 record_id 반영 후 갱신
-    record.payload = story.model_dump()
-    await db.commit()
-    await db.refresh(record)
-    return DailyStoryResponse(**record.payload)
+    try:
+        record = await record_crud.insert(
+            db,
+            user_id=user_id,
+            birth_hash=birth_hash,
+            date=parsed_date,
+            profile_name=profile_name,
+            keyword=story.keyword,
+            payload=story.model_dump(),
+        )
+        story.record_id = record.id
+        # payload에도 record_id 반영 후 갱신
+        record.payload = story.model_dump()
+        await db.commit()
+        await db.refresh(record)
+        return DailyStoryResponse(**record.payload)
+    except IntegrityError:
+        # 동시 요청(더블 서브밋)으로 같은 (user, birth_hash, date)가 먼저 저장됨 →
+        # 롤백 후 기존 기록을 반환해 멱등하게 처리한다. (한 요청만 실패로 떨어지던 버그 방지)
+        await db.rollback()
+        existing = await record_crud.get_by_key(
+            db, user_id=user_id, birth_hash=birth_hash, date=parsed_date
+        )
+        if existing is not None:
+            return DailyStoryResponse(**existing.payload)
+        raise
 
 
 async def list_records(db: AsyncSession, user_id: int) -> list[DailyRecordSummary]:
