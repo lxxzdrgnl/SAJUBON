@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { Pressable, Text, View } from 'react-native'
 import { useRouter } from 'expo-router'
+import { MansePickerSheet, type MansePick } from '@/components/manse/MansePickerSheet'
 import Svg, { Path } from 'react-native-svg'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Screen } from '@/components/ui/Screen'
@@ -102,6 +104,22 @@ export default function Home() {
   const fortuneSub = name ? pickGreeting(name, hourKST) : '너의 하루는?'
 
   const [stop1, stop2] = bannerStops(repStem)
+  const [manseSheetOpen, setManseSheetOpen] = useState(false)
+
+  // 만세력 선택 → 결과 페이지로 그 정보 전달 (웹 ManseEntryButton 흐름)
+  const onMansePick = (pick: MansePick) => {
+    setManseSheetOpen(false)
+    const input = {
+      name: pick.name,
+      birth_date: pick.birth_date,
+      birth_time: pick.birth_time,
+      gender: pick.gender,
+      calendar: pick.calendar,
+      is_leap_month: pick.is_leap_month,
+      ...(pick.birth_longitude != null ? { birth_longitude: pick.birth_longitude } : {}),
+    }
+    router.push({ pathname: '/manse/result', params: { data: JSON.stringify(input) } })
+  }
 
   return (
     <Screen>
@@ -146,7 +164,7 @@ export default function Home() {
           iconColor={colors.ink}
           title="만세력 보기"
           desc="내 사주 원국을 한눈에"
-          onPress={() => router.push('/manse')}
+          onPress={() => setManseSheetOpen(true)}
         />
         <FeatureCard
           d={ICON_PATHS.doc}
@@ -182,6 +200,14 @@ export default function Home() {
           onPress={gated('/compatibility/new')}
         />
       </View>
+
+      <MansePickerSheet
+        open={manseSheetOpen}
+        onClose={() => setManseSheetOpen(false)}
+        profiles={profiles ?? []}
+        title="누구의 만세력을 볼까요?"
+        onPick={onMansePick}
+      />
     </Screen>
   )
 }

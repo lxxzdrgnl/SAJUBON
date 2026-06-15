@@ -104,7 +104,7 @@ export function MansePickerSheet({
       day_stem: p.day_stem,
       ...(p.longitude != null ? { birth_longitude: p.longitude } : {}),
     })
-    onClose()
+    // 닫기/진행은 호출부(onPick)가 결정 — 시트가 임의로 onClose를 호출하지 않는다.
   }
 
   function pickFromRecent(r: RecentBirthInput) {
@@ -118,7 +118,7 @@ export function MansePickerSheet({
       day_stem: r.day_stem,
       ...(r.birth_longitude != null ? { birth_longitude: r.birth_longitude } : {}),
     })
-    onClose()
+    // 닫기/진행은 호출부(onPick)가 결정 — 시트가 임의로 onClose를 호출하지 않는다.
   }
 
   async function pickFromForm(input: ManseBirthInput) {
@@ -146,7 +146,7 @@ export function MansePickerSheet({
       day_stem: dayStem,
       ...(input.birth_longitude != null ? { birth_longitude: input.birth_longitude } : {}),
     })
-    onClose()
+    // 닫기/진행은 호출부(onPick)가 결정 — 시트가 임의로 onClose를 호출하지 않는다.
   }
 
   return (

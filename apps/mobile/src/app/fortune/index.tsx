@@ -109,8 +109,9 @@ export default function FortunePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, profiles, profilesLoading])
 
-  // MansePickerSheet 픽
+  // MansePickerSheet 픽 — 시트 닫고 그 정보로 스토리 생성 (뒤로가기 아님)
   const handlePick = useCallback(async (pick: MansePick) => {
+    setShowForm(false)
     await fetchStory(mansePickToCalcRequest(pick))
   }, [fetchStory])
 

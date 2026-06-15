@@ -170,6 +170,7 @@ export default function QuestionScreen() {
 
   function handlePick(pick: MansePick) {
     setSelectedPick(pick)
+    setSheetOpen(false)
   }
 
   // 질문 제출
