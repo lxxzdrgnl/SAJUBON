@@ -53,8 +53,11 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
   const params = useSearchParams()
 
   const shareMode = initialStory != null
-  const [story, setStory] = useState<DailyStoryResponse | null>(initialStory ?? null)
-  const [loading, setLoading] = useState(!initialStory)
+  // 공유 모드여도 첫 페인트는 story=null(크림 로딩)으로 시작한다. iOS Safari가 첫 페인트
+  // 색으로 상하 크롬을 동결하므로, 첫 프레임을 크림으로 칠해야 생성 페이지처럼 상하단이
+  // 흰색이 된다(카드색 동결 방지). story는 첫 페인트 직후 effect에서 주입.
+  const [story, setStory] = useState<DailyStoryResponse | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [cardIndex, setCardIndex] = useState(0)
   // 전환 방향 — 카드 슬라이드 인 방향 결정 (next=오른쪽에서, prev=왼쪽에서)
@@ -94,6 +97,16 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
     },
     [goPrev, goNext],
   )
+
+  // 공유 모드: SSR로 받은 story를 첫 페인트 직후 주입 (위 주석 참고 — 크림 첫 페인트 유지용).
+  useEffect(() => {
+    if (initialStory) {
+      setStory(initialStory)
+      setCardIndex(0)
+      setLoading(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // 데이터 로드 — 공유 모드(initialStory 주입)면 fetch 스킵
   useEffect(() => {
