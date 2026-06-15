@@ -305,7 +305,7 @@ export function StoryCard({ card, dayGanji, profileName, palette, rank }: Props)
 
       {/* ── overall ── */}
       {card.kind === 'overall' && (
-        <View style={{ flex: 1, justifyContent: 'center', gap: 20 }}>
+        <View style={{ flex: 1, justifyContent: 'center', gap: 20, paddingBottom: 24 }}>
           {/* 주의 오버레이 */}
           {isLowScore && (
             <Animated.View
@@ -404,7 +404,7 @@ export function StoryCard({ card, dayGanji, profileName, palette, rank }: Props)
           </RNAnimated.View>
 
           <RNAnimated.View style={fadeUp(2)}>
-            <Text style={{ fontSize: 17, color: inkSoft, lineHeight: 26 }}>
+            <Text style={{ fontSize: 15, color: inkSoft, lineHeight: 22 }}>
               {card.body}
             </Text>
           </RNAnimated.View>
@@ -488,7 +488,7 @@ export function StoryCard({ card, dayGanji, profileName, palette, rank }: Props)
           </RNAnimated.View>
 
           <RNAnimated.View style={fadeUp(2)}>
-            <Text style={{ fontSize: 17, color: inkSoft, lineHeight: 26 }}>
+            <Text style={{ fontSize: 15, color: inkSoft, lineHeight: 22 }}>
               {card.body}
             </Text>
           </RNAnimated.View>
@@ -524,7 +524,7 @@ export function StoryCard({ card, dayGanji, profileName, palette, rank }: Props)
           </RNAnimated.View>
 
           <RNAnimated.View style={fadeUp(swatches.length > 0 ? 2 : 1)}>
-            <Text style={{ fontSize: 17, color: inkSoft, lineHeight: 26 }}>
+            <Text style={{ fontSize: 15, color: inkSoft, lineHeight: 22 }}>
               {card.body}
             </Text>
           </RNAnimated.View>
