@@ -231,14 +231,13 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
     }
   }, [])
 
-  // 현재 카드 색(solid base)을 body/html 배경 + theme-color 메타에 반영 — 카드 전환마다.
-  // 참고: iOS Safari 탭 모드는 theme-color를 첫 1회만 반영(동적 갱신 무시)한다.
-  // PWA standalone(홈 화면 추가)에선 카드마다 정상 반영된다.
+  // 현재 카드 색(solid base)을 body/html 배경에 반영(오버스크롤·전환용).
+  // theme-color(상하 크롬)는 카드 색으로 덮지 않고 앱 기본 크림으로 둔다 —
+  // 생성·공유 모두 상하단을 흰색으로 통일(요청). iOS Safari가 theme-color 동적 갱신을
+  // 무시해 카드마다 어긋나던 문제도 같이 해소된다.
   useEffect(() => {
     document.body.style.setProperty('background', palette.base, 'important')
     document.documentElement.style.setProperty('background', palette.base, 'important')
-    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    if (meta) meta.setAttribute('content', palette.base)
   }, [palette.base])
 
   return (

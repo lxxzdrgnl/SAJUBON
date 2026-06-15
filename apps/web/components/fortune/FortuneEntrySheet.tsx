@@ -19,11 +19,17 @@ import { manseNavQuery, profileToManseSource } from '@/lib/manse/query'
 import MascotTinted from '@/components/ui/MascotTinted'
 import BirthInputForm, { type ManseBirthInput } from '@/components/manse/BirthInputForm'
 
-/** 오늘 이미 본 birthKey 셋 — localStorage에서 로드. */
+/** 오늘 이미 본 birthKey 셋 — localStorage에서 로드.
+ *  날짜 키는 저장부(FortuneStoryPage)와 동일하게 로컬 날짜 기준이어야 한다.
+ *  (UTC toISOString을 쓰면 KST 자정~오전9시에 저장(로컬)과 키가 어긋나 뱃지가 안 맞는다.) */
+function todayLocal(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function loadSeenTodayKeys(): Set<string> {
   if (typeof window === 'undefined') return new Set()
-  const today = new Date().toISOString().slice(0, 10)
-  const raw = window.localStorage.getItem(`sajuguri.fortune.seen.${today}`)
+  const raw = window.localStorage.getItem(`sajuguri.fortune.seen.${todayLocal()}`)
   if (!raw) return new Set()
   try { return new Set(JSON.parse(raw) as string[]) } catch { return new Set() }
 }
