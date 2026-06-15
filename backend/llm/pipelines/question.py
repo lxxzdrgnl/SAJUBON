@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import logging
+import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
@@ -43,6 +44,61 @@ _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="question-pipel
 
 # 시기 분석이 유의미한 카테고리
 _TIMING_CATEGORIES = {"love", "career", "money"}
+
+# content에 박힌 [[chart:툴이름]] 마커
+_CHART_MARKER_RE = re.compile(r"\[\[chart:([a-z_]+)\]\]")
+
+
+def _charts_from_markers(content: str, saju: dict) -> list[dict]:
+    """writer가 content에 박은 [[chart:...]] 마커를 추출해 payload를 빌드한다(리포트와 동일).
+    가벼운 질문이라 마커가 없으면 빈 리스트. 최대 2개."""
+    today = datetime.now()
+    builders = {
+        "get_wuxing_balance":  lambda: payload_wuxing_balance(saju),
+        "get_ten_gods":        lambda: payload_ten_gods(saju),
+        "get_sin_sal":         lambda: payload_sin_sal(saju),
+        "get_palja":           lambda: payload_palja(saju),
+        "get_strength":        lambda: payload_strength(saju),
+        "get_twelve_un_seong": lambda: payload_twelve_un_seong(saju),
+        "get_dae_un":          lambda: payload_dae_un(saju),
+        "get_wol_un":          lambda: payload_wol_un(saju, today.year),
+        "get_yeon_un":         lambda: payload_yeon_un(saju, today.year, 5),
+        "get_il_jin":          lambda: payload_il_jin(today.year, today.month),
+    }
+    out: list[dict] = []
+    seen: set[str] = set()
+    for m in _CHART_MARKER_RE.finditer(content or ""):
+        tool = m.group(1)
+        if tool in seen or tool not in builders:
+            continue
+        seen.add(tool)
+        try:
+            out.append({"tool": tool, "payload": builders[tool]()})
+        except Exception:
+            logger.warning("chart payload 생성 실패: %s", tool, exc_info=True)
+        if len(out) >= 2:
+            break
+    return out
+
+
+def _fallback_chart_tool(question: str, category: str) -> str | None:
+    """LLM이 차트를 안 넣었을 때, 질문 유형으로 보장할 차트 1개를 정한다.
+    가벼운/일상 질문(general + 키워드 없음)은 None → 차트 없음 유지."""
+    q = question
+    if "운세" in q and any(k in q for k in ("오늘", "하루", "일진")):
+        return "get_il_jin"
+    if any(k in q for k in ("이번 달", "이달", "월운")):
+        return "get_wol_un"
+    if any(k in q for k in ("올해", "연운", "세운")):
+        return "get_yeon_un"
+    if any(k in q for k in ("대운", "평생", "인생 흐름", "앞으로의 흐름")):
+        return "get_dae_un"
+    return {
+        "money":  "get_wuxing_balance",
+        "love":   "get_wol_un",
+        "career": "get_ten_gods",
+        "health": "get_strength",
+    }.get(category)
 
 
 # ─── 카테고리 → 차트 매핑 ─────────────────────────────────────────────────────
@@ -280,15 +336,17 @@ async def run_question_consultation(
     )
     output = await generate_consultation(saju, rag_ctx, effective_question, category, llm_provider, language)
 
-    # 4. 차트 선별 — 카테고리 규칙, LLM 미사용
-    # MEDICAL은 의료 민감 — 차트 없음
-    if is_medical:
-        charts, more = [], []
-    else:
-        charts_raw, more_raw = _build_charts_for_category(category, saju)
-        charts = charts_raw
-        more   = more_raw
-    logger.info("차트 선별 완료: charts=%d more=%d (category=%s)", len(charts), len(more), category)
+    # 4. 차트 — writer가 content에 박은 [[chart:...]] 마커를 추출해 payload 빌드(리포트와 동일).
+    # MEDICAL은 차트 없음. LLM이 차트를 빠뜨렸어도 질문이 명백히 차트가 필요한 유형이면
+    # 폴백 차트 마커를 content 앞에 주입해 보장한다(가벼운 질문은 폴백 None → 차트 없음 유지).
+    charts = [] if is_medical else _charts_from_markers(output.content, saju)
+    if not is_medical and not charts:
+        fb = _fallback_chart_tool(question, category)
+        if fb:
+            output.content = f"[[chart:{fb}]]\n\n{output.content}"
+            charts = _charts_from_markers(output.content, saju)
+    more: list[dict] = []
+    logger.info("차트 선별 완료: charts=%d (마커 기반, category=%s)", len(charts), category)
 
     return {
         "headline": output.headline,
