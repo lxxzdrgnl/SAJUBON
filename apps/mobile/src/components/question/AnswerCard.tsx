@@ -16,6 +16,7 @@ export function AnswerCard({ result, sharing, onShare, onAskAgain }: Props) {
     <View style={{ gap: 12 }}>
       {/* 헤드라인 + 본문 카드 */}
       <BrutalCard intensity="full">
+        {/* ko.json question.resultLabel */}
         <Text
           style={{
             fontSize: 11,
@@ -26,7 +27,7 @@ export function AnswerCard({ result, sharing, onShare, onAskAgain }: Props) {
             marginBottom: 8,
           }}
         >
-          AI 사주 상담 결과
+          AI 상담 결과
         </Text>
 
         {/* 헤드라인 */}
@@ -80,8 +81,9 @@ export function AnswerCard({ result, sharing, onShare, onAskAgain }: Props) {
               transform: pressed ? [{ translateX: 1 }, { translateY: 1 }] : [],
             })}
           >
+            {/* ko.json question.share / question.sharing */}
             <Text style={{ fontSize: 14, fontWeight: '800', color: '#FFFFFF' }}>
-              {sharing ? '공유 중...' : '공유하기'}
+              {sharing ? '링크 만드는 중...' : '공유하기'}
             </Text>
           </Pressable>
         )}
@@ -98,6 +100,7 @@ export function AnswerCard({ result, sharing, onShare, onAskAgain }: Props) {
               transform: pressed ? [{ translateX: 1 }, { translateY: 1 }] : [],
             })}
           >
+            {/* ko.json question.askAgain */}
             <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }}>
               다시 물어보기
             </Text>

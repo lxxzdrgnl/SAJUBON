@@ -98,6 +98,7 @@ export default function Home() {
       </View>
 
       {/* 운세 배너 → 오늘의 운세 스토리 */}
+      {/* ko.json home.fortuneBanner = "오늘의 운세", home.fortuneSub = "너의 하루는?" */}
       <Pressable onPress={() => router.push('/fortune')}>
         <BrutalShadow radius={radii.card}>
           <View
@@ -109,54 +110,62 @@ export default function Home() {
             </View>
             <View className="min-w-0 flex-1">
               <Text className="text-lg font-black text-ink">오늘의 운세</Text>
-              <Text className="text-xs font-semibold text-ink">{fortuneSub}</Text>
+              <Text className="text-xs font-semibold text-ink">
+                {name ? fortuneSub : '너의 하루는?'}
+              </Text>
             </View>
             <Chevron />
           </View>
         </BrutalShadow>
       </Pressable>
 
-      <Text className="mb-3 mt-5 text-[15px] font-extrabold text-ink">무엇을 볼까요?</Text>
+      {/* ko.json home.sectionTitle = "이런 건 어때?" */}
+      <Text className="mb-3 mt-5 text-[15px] font-extrabold text-ink">이런 건 어때?</Text>
       <View className="gap-3">
+        {/* ko.json home.cards.manse */}
         <FeatureCard
           d={ICON_PATHS.manse}
           bg="#7BD3C8"
           iconColor={colors.ink}
           title="만세력 보기"
-          desc="사주 원국과 대운·세운을 한눈에"
+          desc="내 사주 원국을 한눈에"
           onPress={() => router.push('/manse')}
         />
+        {/* ko.json home.cards.report */}
         <FeatureCard
           d={ICON_PATHS.doc}
           bg={colors.yellow}
           iconColor={colors.ink}
-          title="사주 풀리포트"
-          badge="AI"
-          desc="내 사주를 깊이 있게 풀어주는 리포트"
+          title="내 사주 풀리포트"
+          badge="10탭"
+          desc="결론만 말해주는 AI 해설"
           onPress={gated('/report/new')}
         />
+        {/* ko.json home.cards.chat */}
         <FeatureCard
           d={ICON_PATHS.chat}
           bg={colors.teal}
           iconColor="#FFFFFF"
-          title="AI 상담"
-          desc="궁금한 걸 자유롭게 물어보세요"
+          title="AI 사주 상담"
+          desc="묻고 답하며 깊이 보는 내 사주"
           onPress={() => router.push('/chat')}
         />
+        {/* ko.json home.cards.question */}
         <FeatureCard
           d={ICON_PATHS.bolt}
           bg={colors.amber}
           iconColor="#FFFFFF"
-          title="한 번 물어보기"
-          desc="질문 하나, 사주 기반 답변 하나"
+          title="한줄 상담"
+          desc="로그인 없이 한 질문 맛보기"
           onPress={() => router.push('/question')}
         />
+        {/* ko.json home.cards.compatibility */}
         <FeatureCard
           d={ICON_PATHS.heart}
           bg={colors.sky}
           iconColor="#FFFFFF"
           title="궁합 리포트"
-          desc="두 사람의 케미를 사주로 분석"
+          desc="두 사람 사주로 보는 케미"
           onPress={gated('/compatibility/new')}
         />
       </View>

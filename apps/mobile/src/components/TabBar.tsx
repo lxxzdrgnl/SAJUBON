@@ -21,11 +21,12 @@ const ICONS: Record<string, string> = {
   chat: 'M4 6 a3 3 0 0 1 3-3 h10 a3 3 0 0 1 3 3 v7 a3 3 0 0 1-3 3 H10 l-4.5 4 v-4 H7 a3 3 0 0 1-3-3 Z',
   my: 'M12 12 a4 4 0 1 0 0-8 a4 4 0 0 0 0 8 Z M4 21 c0-4 4-6 8-6 s8 2 8 6',
 }
+// ko.json `tab` — 정확히 매칭: 홈/만세력/상담/마이
 const LABELS: Record<string, string> = {
   index: '홈',
   manse: '만세력',
-  chat: '챗',
-  my: '내 정보',
+  chat: '상담',
+  my: '마이',
 }
 
 export function TabBar({ state, navigation }: TabBarProps) {
