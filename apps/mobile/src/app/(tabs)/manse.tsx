@@ -212,7 +212,7 @@ function SavedManseSection({ profiles }: { profiles: ProfileResponse[] }) {
   if (profiles.length === 0) {
     return (
       <Text className="py-4 text-center text-sm text-text-sub">
-        저장된 만세력이 없어요
+        저장된 만세력이 없어요. 분석 후 저장해보세요
       </Text>
     )
   }
@@ -502,7 +502,7 @@ export default function ManseScreen() {
           className="items-center justify-center rounded-2xl border-2 border-ink bg-yellow py-3.5"
           style={({ pressed }) => ({ transform: pressed ? [{ translateX: 1 }, { translateY: 1 }] : [] })}
         >
-          <Text style={{ fontSize: 15, fontWeight: '900', color: '#1A1A1A' }}>새 만세력</Text>
+          <Text style={{ fontSize: 15, fontWeight: '900', color: '#1A1A1A' }}>+ 새 만세력 보기</Text>
         </Pressable>
       </BrutalShadow>
 

@@ -1,69 +1,51 @@
 import { ScrollView, View, Text } from 'react-native'
-import { BrutalShadow } from '@/components/ui/BrutalShadow'
-import { ohaengColor, ohaengTintColor } from '@/lib/manse/ohaeng'
-import type { DaeUnEntry } from '@sajuguri/api-client'
+import { BrutalCard } from '@/components/ui/BrutalCard'
+import { GanjiColumn } from './GanjiColumn'
+import type { SajuCalcResponse } from '@sajuguri/api-client'
 
-interface Props {
-  daeUnList: DaeUnEntry[]
-  currentDaeUn: DaeUnEntry | null
-  daeUnStartAge: number
-}
+export function DaeUnRow({ data }: { data: SajuCalcResponse }) {
+  const list = (data.dae_un_list ?? []).slice(0, 10)
+  const currentAge = data.current_dae_un?.start_age
 
-export function DaeUnRow({ daeUnList, currentDaeUn, daeUnStartAge }: Props) {
   return (
-    <View>
-      <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 10 }}>대운 ({daeUnStartAge}세 시작)</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
-        {daeUnList.map((entry) => {
-          const isCurrent = currentDaeUn?.start_age === entry.start_age
-          const stemColor = ohaengColor(entry.stem_element)
-          const stemBg = ohaengTintColor(entry.stem_element)
-          const branchColor = ohaengColor(entry.branch_element)
-          const branchBg = ohaengTintColor(entry.branch_element)
-          const borderColor = isCurrent ? '#FF6B00' : '#1A1A1A'
-          const shadowColor = isCurrent ? '#FF6B00' : '#1A1A1A'
-
+    <BrutalCard>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A' }}>대운</Text>
+        <View style={{
+          borderRadius: 999, borderWidth: 2, borderColor: '#1A1A1A',
+          backgroundColor: '#FFDE21', paddingHorizontal: 8, paddingVertical: 2,
+        }}>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#1A1A1A' }}>{data.dae_un_start_age}세 시작</Text>
+        </View>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 4 }}>
+        {list.map((e) => {
+          const current = e.start_age === currentAge
           return (
-            <BrutalShadow key={entry.start_age} offset={2} radius={11} color={shadowColor}>
-              <View
-                style={{
-                  width: 72,
-                  borderRadius: 11,
-                  borderWidth: 2,
-                  borderColor,
-                  overflow: 'hidden',
-                  backgroundColor: '#FAFAF7',
-                }}
-              >
-                {/* 연령 */}
-                <View style={{ backgroundColor: isCurrent ? '#FF6B00' : '#1A1A1A', paddingVertical: 3 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#FFFFFF', textAlign: 'center' }}>
-                    {entry.start_age}~{entry.end_age}
-                  </Text>
-                </View>
-
-                {/* 천간 */}
-                <View style={{ backgroundColor: stemBg, paddingVertical: 8, alignItems: 'center' }}>
-                  <Text className="font-serif" style={{ fontSize: 22, fontWeight: '900', color: stemColor }}>{entry.stem}</Text>
-                  <Text style={{ fontSize: 9, color: stemColor, fontWeight: '700' }}>{entry.stem_element}</Text>
-                  {entry.stem_ten_god && (
-                    <Text style={{ fontSize: 9, color: '#8A8270', marginTop: 1 }}>{entry.stem_ten_god}</Text>
-                  )}
-                </View>
-
-                {/* 지지 */}
-                <View style={{ backgroundColor: branchBg, paddingVertical: 8, alignItems: 'center', borderTopWidth: 1, borderTopColor: borderColor }}>
-                  <Text className="font-serif" style={{ fontSize: 22, fontWeight: '900', color: branchColor }}>{entry.branch}</Text>
-                  <Text style={{ fontSize: 9, color: branchColor, fontWeight: '700' }}>{entry.branch_element}</Text>
-                  {entry.branch_ten_god && (
-                    <Text style={{ fontSize: 9, color: '#8A8270', marginTop: 1 }}>{entry.branch_ten_god}</Text>
-                  )}
-                </View>
-              </View>
-            </BrutalShadow>
+            <View
+              key={e.start_age}
+              style={current ? {
+                borderRadius: 12, borderWidth: 2, borderColor: '#FF6B00',
+                backgroundColor: '#FFF4E3', paddingHorizontal: 8, paddingVertical: 4,
+                shadowColor: '#FF6B00', shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0,
+              } : undefined}
+            >
+              <GanjiColumn
+                topLabel={`${e.start_age}세`}
+                stem={e.stem}
+                stemElement={e.stem_element}
+                branch={e.branch}
+                branchElement={e.branch_element}
+                stemTenGod={e.stem_ten_god}
+                branchTenGod={e.branch_ten_god}
+                twelveWun={e.twelve_wun}
+                highlight={current}
+                badge={current ? '현재' : undefined}
+              />
+            </View>
           )
         })}
       </ScrollView>
-    </View>
+    </BrutalCard>
   )
 }

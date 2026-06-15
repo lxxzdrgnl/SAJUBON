@@ -23,6 +23,7 @@ interface Props {
   onSubmit: (input: ManseBirthInput) => void | Promise<void>
   submitLabel?: string
   busy?: boolean
+  nameOptional?: boolean
 }
 
 // 날짜·시각 한 줄 입력바 안의 숫자 칸 (가운데 정렬, tabular)
@@ -101,9 +102,10 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <Text className="mb-1.5 text-xs font-extrabold text-ink">{children}</Text>
 }
 
-export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', busy = false }: Props) {
+export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', busy = false, nameOptional = false }: Props) {
   const { api } = useAuth()
 
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [year, setYear] = useState('')
   const [month, setMonth] = useState('')
@@ -146,7 +148,16 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
   const canSubmit = dateReady && timeReady && !busy
 
   const handleSubmit = useCallback(async () => {
-    if (!dateReady || !timeReady) return
+    setSubmitError(null)
+    if (!nameOptional && !name.trim()) { setSubmitError('이름을 입력해 주세요.'); return }
+    if (!year || !month || !day) { setSubmitError('생년월일을 입력해 주세요.'); return }
+    const yNum = parseInt(year, 10); const mNum = parseInt(month, 10); const dNum = parseInt(day, 10)
+    if (yNum < 1900 || yNum > 2100) { setSubmitError('연도는 1900년 ~ 2100년 사이여야 합니다.'); return }
+    if (mNum < 1 || mNum > 12) { setSubmitError('월은 1 ~ 12 사이여야 합니다.'); return }
+    const maxDay = new Date(yNum, mNum, 0).getDate()
+    if (dNum > maxDay) { setSubmitError(`${yNum}년 ${mNum}월은 ${maxDay}일까지 있습니다.`); return }
+    if (!timeUnknown && hour === '') { setSubmitError('시를 입력해 주세요.'); return }
+    if (!timeUnknown && minute === '') { setSubmitError('분을 입력해 주세요.'); return }
     const birth_date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
     const birth_time = timeUnknown ? null : `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`
     const input: ManseBirthInput = {
@@ -165,7 +176,7 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
         : {}),
     }
     await onSubmit(input)
-  }, [dateReady, timeReady, year, month, day, hour, minute, timeUnknown, name, gender, calendar, isLeap, city, onSubmit])
+  }, [dateReady, timeReady, year, month, day, hour, minute, timeUnknown, name, gender, calendar, isLeap, city, onSubmit, nameOptional])
 
   const sep = <Text className="text-text-sub">/</Text>
 
@@ -174,7 +185,7 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
       <View className="gap-4 rounded-2xl border-2 border-ink bg-surface p-4">
         {/* 이름 */}
         <View>
-          <FieldLabel>이름</FieldLabel>
+          <FieldLabel>{nameOptional ? '이름' : '이름 *'}</FieldLabel>
           <TextInput
             value={name}
             onChangeText={setName}
@@ -204,7 +215,7 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
               <TextInput
                 value={cityQuery}
                 onChangeText={setCityQuery}
-                placeholder="도시명 검색 (예: 서울, Tokyo)"
+                placeholder="도시명 검색 (예: 서울, 도쿄, 뉴욕)"
                 placeholderTextColor={colors.textSub}
                 className="text-sm text-ink"
                 style={{ paddingVertical: 10 }}
@@ -232,6 +243,9 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
                 )}
               </View>
             </BrutalShadow>
+          )}
+          {!city && !cityQuery && (
+            <Text style={{ fontSize: 11, color: '#8A8270', marginTop: 4 }}>미입력 시 서울 기준 적용</Text>
           )}
           <Text className="mt-1 text-[11px] text-text-sub">
             {city ? city.timezone : '출생지를 넣으면 진태양시로 더 정확해져요'}
@@ -298,6 +312,10 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
             ]}
           />
         </View>
+
+        {submitError && (
+          <Text style={{ color: '#FF6B00', fontSize: 12, fontWeight: '700', textAlign: 'center' }}>{submitError}</Text>
+        )}
 
         {/* 제출 — 웹과 동일 주황 */}
         <BrutalShadow radius={radii.button} style={{ opacity: canSubmit ? 1 : 0.4 }}>

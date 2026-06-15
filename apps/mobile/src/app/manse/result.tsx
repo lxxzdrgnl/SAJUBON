@@ -1,24 +1,32 @@
-import { ActivityIndicator, Pressable, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, Share, Text, View } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useQuery } from '@tanstack/react-query'
-import { calcSaju, type Pillar } from '@sajuguri/api-client'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { calcSaju, createProfile, type Pillar } from '@sajuguri/api-client'
+import { useState } from 'react'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { Screen } from '@/components/ui/Screen'
-import { Chip } from '@/components/ui/Chip'
 import { IljuHero } from '@/components/manse/IljuHero'
 import { PillarCard } from '@/components/manse/PillarCard'
+import { TagChips } from '@/components/manse/TagChips'
+import { HapChungPanel } from '@/components/manse/HapChungPanel'
+import { DetailAccordion } from '@/components/manse/DetailAccordion'
+import { WuxingFeatureTable } from '@/components/manse/WuxingFeatureTable'
 import { WuxingBar } from '@/components/manse/WuxingBar'
-import { StrengthSection } from '@/components/manse/StrengthSection'
 import { TenGodsRow } from '@/components/manse/TenGodsRow'
+import { StrengthSection } from '@/components/manse/StrengthSection'
 import { DaeUnRow } from '@/components/manse/DaeUnRow'
+import { YeonWolUn } from '@/components/manse/YeonWolUn'
+import { IlJinCalendar } from '@/components/manse/IlJinCalendar'
 import type { ManseBirthInput } from '@/components/manse/BirthInputForm'
 
 export default function ManseResultScreen() {
   const router = useRouter()
-  const { api } = useAuth()
+  const { api, status } = useAuth()
+  const queryClient = useQueryClient()
   const rawParams = useLocalSearchParams()
   const dataParam = Array.isArray(rawParams.data) ? rawParams.data[0] : rawParams.data
   const birthInput = JSON.parse(dataParam ?? '{}') as ManseBirthInput
+  const [saving, setSaving] = useState(false)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['saju', dataParam],
@@ -38,11 +46,43 @@ export default function ManseResultScreen() {
   })
 
   const pillars: { pillar: Pillar | null; label: string; isDay: boolean }[] = [
-    { pillar: data?.hour_pillar ?? null, label: '시주', isDay: false },
-    { pillar: data?.day_pillar ?? null, label: '일주', isDay: true },
-    { pillar: data?.month_pillar ?? null, label: '월주', isDay: false },
-    { pillar: data?.year_pillar ?? null, label: '년주', isDay: false },
+    { pillar: data?.hour_pillar ?? null, label: '생시', isDay: false },
+    { pillar: data?.day_pillar ?? null, label: '생일', isDay: true },
+    { pillar: data?.month_pillar ?? null, label: '생월', isDay: false },
+    { pillar: data?.year_pillar ?? null, label: '생년', isDay: false },
   ]
+
+  async function handleShare() {
+    try {
+      await Share.share({
+        title: '내 만세력',
+        message: `${birthInput.name ? birthInput.name + '의 ' : ''}만세력 — ${birthInput.birth_date}`,
+      })
+    } catch {}
+  }
+
+  async function handleSave() {
+    if (!data) return
+    setSaving(true)
+    try {
+      await createProfile(api, {
+        name: birthInput.name || '이름 없음',
+        birth_date: birthInput.birth_date,
+        birth_time: birthInput.birth_time,
+        calendar: birthInput.calendar,
+        gender: birthInput.gender,
+        is_leap_month: birthInput.is_leap_month,
+        city: birthInput.city ?? null,
+        longitude: birthInput.birth_longitude ?? null,
+      })
+      await queryClient.invalidateQueries({ queryKey: ['profiles'] })
+      Alert.alert('저장 완료', '만세력이 저장됐어요.')
+    } catch {
+      Alert.alert('저장 실패', '다시 시도해주세요.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <Screen>
@@ -67,13 +107,13 @@ export default function ManseResultScreen() {
       {error && (
         <View style={{ alignItems: 'center', paddingVertical: 60 }}>
           <Text style={{ fontSize: 15, fontWeight: '700', color: '#FF6B00' }}>
-            오류가 발생했습니다. 다시 시도해주세요.
+            계산에 실패했어요. 입력을 확인해주세요
           </Text>
         </View>
       )}
 
       {data && (
-        <View style={{ gap: 20 }}>
+        <View style={{ gap: 16 }}>
           {/* 메타 정보 */}
           <View style={{ gap: 2 }}>
             {birthInput.name ? (
@@ -82,17 +122,17 @@ export default function ManseResultScreen() {
             <Text style={{ fontSize: 13, color: '#8A8270', fontWeight: '600' }}>
               {data.meta.birth_date} {data.meta.birth_time ?? '시간 미상'} · {data.meta.gender === 'male' ? '남성' : '여성'} · {data.meta.calendar === 'solar' ? '양력' : '음력'}
             </Text>
-            {birthInput.city ? (
-              <Text style={{ fontSize: 12, color: '#8A8270' }}>📍 {birthInput.city}</Text>
-            ) : null}
           </View>
 
           {/* 일주 히어로 */}
-          <IljuHero dayPillar={data.day_pillar} />
+          <IljuHero dayPillar={data.day_pillar} label="내 일주" />
 
-          {/* 사주 원국 — 시/일/월/년 */}
+          {/* 태그 칩 */}
+          <TagChips data={data} />
+
+          {/* 사주팔자 */}
           <View>
-            <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 10 }}>사주 원국</Text>
+            <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 10 }}>사주팔자</Text>
             {/* 천간 행 */}
             <View style={{ flexDirection: 'row', gap: 6, marginBottom: 6 }}>
               {pillars.map(({ pillar, label, isDay }) =>
@@ -120,50 +160,82 @@ export default function ManseResultScreen() {
             </View>
           </View>
 
-          {/* 오행 분포 */}
-          <WuxingBar
-            wuxingCount={data.wuxing_count}
-            dominantElements={data.dominant_elements}
-            weakElements={data.weak_elements}
-          />
+          {/* 합충 분석 */}
+          <HapChungPanel data={data} />
 
-          {/* 일간 강약 / 용신 / 격국 */}
-          <StrengthSection
-            dayMasterStrength={data.day_master_strength}
-            yongSin={data.yong_sin}
-            gyeokGuk={data.gyeok_guk}
-          />
+          {/* 12운성·신살·지장간 상세 */}
+          <DetailAccordion data={data} />
 
-          {/* 십성 분포 */}
-          <TenGodsRow tenGodsDistribution={data.ten_gods_distribution} />
+          {/* 오행 특성 참고표 */}
+          <WuxingFeatureTable data={data} />
+
+          {/* 오행 밸런스 */}
+          <WuxingBar data={data} />
+
+          {/* 십성 구조 */}
+          <TenGodsRow data={data} />
+
+          {/* 일간 강약 · 용신 */}
+          <StrengthSection data={data} />
 
           {/* 대운 */}
-          <DaeUnRow
-            daeUnList={data.dae_un_list}
-            currentDaeUn={data.current_dae_un ?? null}
-            daeUnStartAge={data.dae_un_start_age}
-          />
+          <DaeUnRow data={data} />
 
-          {/* 신살 */}
-          {data.sin_sals.length > 0 && (
-            <View>
-              <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 10 }}>신살</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {data.sin_sals.map((ss) => (
-                  <Chip
-                    key={ss.name}
-                    label={ss.name}
-                    variant={
-                      ss.type === 'lucky'
-                        ? 'lucky'
-                        : ss.type === 'unlucky' || ss.type === 'warning'
-                          ? 'unlucky'
-                          : 'default'
-                    }
-                  />
-                ))}
-              </View>
-            </View>
+          {/* 연운 · 월운 */}
+          <YeonWolUn dayStem={data.day_pillar.stem} />
+
+          {/* 일진 달력 */}
+          <IlJinCalendar />
+
+          {/* CTAs */}
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+            <Pressable
+              onPress={() => router.push({ pathname: '/report/new', params: { data: dataParam } })}
+              style={{
+                flex: 1, borderRadius: 12, borderWidth: 2, borderColor: '#1A1A1A',
+                backgroundColor: '#FF6B00', paddingVertical: 12, alignItems: 'center',
+                shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#FFFFFF' }}>AI 리포트 생성</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/chat' as any)}
+              style={{
+                flex: 1, borderRadius: 12, borderWidth: 2, borderColor: '#00C2B8',
+                backgroundColor: '#E0FAF8', paddingVertical: 12, alignItems: 'center',
+                shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#00665F' }}>상담하기</Text>
+            </Pressable>
+          </View>
+
+          {/* 공유 */}
+          <Pressable
+            onPress={handleShare}
+            style={{
+              borderRadius: 12, borderWidth: 2, borderColor: '#1A1A1A',
+              backgroundColor: '#FAFAF7', paddingVertical: 12, alignItems: 'center',
+              shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
+            }}
+          >
+            <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }}>공유하기</Text>
+          </Pressable>
+
+          {/* 저장 (로그인 시) */}
+          {status === 'authed' && (
+            <Pressable
+              onPress={saving ? undefined : handleSave}
+              style={{
+                borderRadius: 12, borderWidth: 2, borderColor: '#1A1A1A',
+                backgroundColor: '#FFDE21', paddingVertical: 12, alignItems: 'center',
+                shadowColor: '#1A1A1A', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0,
+                opacity: saving ? 0.5 : 1,
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }}>{saving ? '저장 중...' : '이 만세력 저장'}</Text>
+            </Pressable>
           )}
         </View>
       )}
