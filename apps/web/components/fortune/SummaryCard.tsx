@@ -352,7 +352,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       {shareMode ? (
         <div className="mt-auto pt-3" style={rise(orderedKeys.length * 80 + 540)}>
           <a
-            href="/fortune"
+            href="/?fortune=1"
             className="flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[2px]"
             style={{ background: ink, color: base }}
             onClick={(e) => e.stopPropagation()}
