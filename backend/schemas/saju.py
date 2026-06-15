@@ -10,6 +10,11 @@ from pydantic import BaseModel, Field
 class SajuCalcRequest(BaseModel):
     """사주팔자 계산 요청."""
 
+    name: str | None = Field(
+        default=None,
+        description="만세력 이름 (표시·운세 profile_name 용. 사주 계산엔 사용하지 않음)",
+        examples=["이용재"],
+    )
     birth_date: str = Field(
         description="생년월일 (YYYY-MM-DD)",
         examples=["1990-03-15"],
