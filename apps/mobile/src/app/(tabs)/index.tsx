@@ -98,7 +98,7 @@ export default function Home() {
     router.push(status === 'authed' ? href : '/auth/login')
 
   const rep = profiles?.find((p) => p.is_representative) ?? profiles?.[0]
-  const name = rep?.name ?? (user?.email ? user.email.split('@')[0] : null)
+  const name = rep?.name ?? user?.name ?? (user?.email ? user.email.split('@')[0] : null)
   const repStem = rep?.day_stem ?? null
   const hourKST = (new Date().getUTCHours() + 9) % 24
   const fortuneSub = name ? pickGreeting(name, hourKST) : '너의 하루는?'

@@ -10,15 +10,24 @@ from core.security import create_access_token, generate_refresh_token, hash_toke
 from db.models import RefreshToken, User
 
 
-async def get_or_create_user(db: AsyncSession, email: str, social_id: str) -> User:
-    """이메일로 유저를 조회하고 없으면 생성한다. commit은 호출자 책임."""
+async def get_or_create_user(
+    db: AsyncSession, email: str, social_id: str, name: str | None = None
+) -> User:
+    """이메일로 유저를 조회하고 없으면 생성한다. commit은 호출자 책임.
+
+    name(구글 프로필 닉네임)은 생성 시 저장하고, 기존 유저가 비어 있으면 채운다.
+    """
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if not user:
-        user = User(email=email, provider="google", social_id=social_id, role="user")
+        user = User(email=email, name=name, provider="google", social_id=social_id, role="user")
         db.add(user)
         await db.flush()
         await db.refresh(user)
+    elif name and not user.name:
+        # 이전에 이름 없이 가입한 유저 — 구글 닉네임으로 보강
+        user.name = name
+        await db.flush()
     return user
 
 

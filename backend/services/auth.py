@@ -10,14 +10,16 @@ from core.security import hash_token
 from crud import auth as auth_crud
 
 
-async def social_login(db: AsyncSession, email: str, social_id: str) -> tuple[str, str]:
+async def social_login(
+    db: AsyncSession, email: str, social_id: str, name: str | None = None
+) -> tuple[str, str]:
     """
     소셜 로그인 — 유저 upsert + 토큰 쌍 발급을 단일 트랜잭션으로 처리한다.
 
     Returns:
         (access_token, refresh_token)
     """
-    user = await auth_crud.get_or_create_user(db, email, social_id)
+    user = await auth_crud.get_or_create_user(db, email, social_id, name)
     access_token, refresh_token = await auth_crud.create_token_pair(db, user)
     await db.commit()
     return access_token, refresh_token

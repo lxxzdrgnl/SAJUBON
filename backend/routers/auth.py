@@ -111,11 +111,12 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
     email = user_info.get("email")
     social_id = user_info.get("sub")
+    name = user_info.get("name")
     if not email:
         raise OAuthFailedException("이메일 정보가 없습니다.")
 
     try:
-        access_token, refresh_token = await social_login(db, email, social_id)
+        access_token, refresh_token = await social_login(db, email, social_id, name)
     except Exception as e:
         raise DatabaseException(str(e))
 
@@ -189,6 +190,7 @@ async def get_me(user: User = Depends(get_current_user)):
     return {
         "id": user.id,
         "email": user.email,
+        "name": user.name,
         "role": user.role,
         "provider": user.provider,
     }
