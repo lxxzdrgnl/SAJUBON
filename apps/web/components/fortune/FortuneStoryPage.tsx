@@ -22,7 +22,7 @@ import {
   slideDirection,
   cardPalette,
   paletteFromBase,
-  hashSeed,
+  storyColorSeed,
   scatterDots,
   hexToRgba,
   type SlideDirection,
@@ -193,14 +193,8 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
 
   // Wrapped 비비드 스킨 — 카드마다 색이 확 바뀐다. 시드(날짜+간지+이름)로 사람·날짜마다 셔플.
   // day_ganji는 날짜 공통이라 변별력이 없다 → 사람마다 다른 scores를 시드에 포함.
-  // scores를 시드에 넣되 키 순서에 무관하게(정렬) 직렬화한다. 공유본은 DB(JSONB)를
-  // 거치며 키 순서가 바뀌어 JSON.stringify가 달라지면 생성본과 색이 어긋나기 때문.
-  const scoresSeed = story
-    ? Object.keys(story.scores).sort().map((k) => `${k}:${story.scores[k]}`).join(',')
-    : ''
-  const colorSeed = story
-    ? hashSeed(`${story.date}|${story.profile_name ?? ''}|${scoresSeed}`)
-    : 0
+  // 색 시드 — 생성·공유가 동일하도록 공용 헬퍼 storyColorSeed 재사용 (키 순서 무관).
+  const colorSeed = story ? storyColorSeed(story) : 0
   // 로딩/폴백은 시드 셔플 POOL색(청록 가능)이 아니라 앱 중립 크림으로 고정한다.
   // iOS Safari는 첫 페인트 색으로 상하 크롬을 동결하므로, 로딩이 청록이면 카드가
   // 주황이어도 크롬이 청록으로 남는다. 첫 페인트를 SSR theme-color(크림)와 맞춘다.

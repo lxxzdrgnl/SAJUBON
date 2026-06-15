@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { serverApi } from '@/lib/api'
 import { getSharedFortune } from '@sajuguri/api-client'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
-import { cardPalette, hashSeed } from '@/lib/fortune/story'
+import { cardPalette, storyColorSeed } from '@/lib/fortune/story'
 import FortuneStoryPage from '@/components/fortune/FortuneStoryPage'
 
 export const dynamic = 'force-dynamic'
@@ -26,8 +26,7 @@ export async function generateViewport({
   }
   const first = story?.cards?.[0]
   if (!story || !first) return { themeColor: '#FFFBF2', viewportFit: 'cover' }
-  const scoresSeed = Object.keys(story.scores).sort().map((k) => `${k}:${story.scores[k]}`).join(',')
-  const seed = hashSeed(`${story.date}|${story.profile_name ?? ''}|${scoresSeed}`)
+  const seed = storyColorSeed(story)
   const pal = cardPalette(first.kind, (first as { category_key?: string }).category_key, seed)
   return { themeColor: pal.base, viewportFit: 'cover' }
 }

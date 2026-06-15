@@ -236,6 +236,24 @@ export function hashSeed(s: string): number {
   return Math.abs(h)
 }
 
+/**
+ * 운세 색 시드 — 날짜+이름+점수로 사람·날짜별 색을 결정론적으로 복원한다.
+ * scores는 키 순서에 무관하게(정렬) 직렬화 — 공유본은 DB(JSONB)를 거치며 키 순서가
+ * 바뀌므로, 정렬하지 않으면 생성본과 색이 어긋난다. 생성(FortuneStoryPage)·공유 페이지가
+ * 동일 시드를 쓰도록 이 헬퍼를 공유한다.
+ */
+export function storyColorSeed(story: {
+  date: string
+  profile_name?: string | null
+  scores: Record<string, number>
+}): number {
+  const scoresSeed = Object.keys(story.scores)
+    .sort()
+    .map((k) => `${k}:${story.scores[k]}`)
+    .join(',')
+  return hashSeed(`${story.date}|${story.profile_name ?? ''}|${scoresSeed}`)
+}
+
 /** 시드 기반 풀 셔플(Fisher–Yates, mulberry-LCG) — 회전이 아닌 진짜 순열이라 사람·날짜마다 배열이 달라진다. */
 function shuffledPool(seed: number): readonly string[] {
   const arr = [...POOL]
