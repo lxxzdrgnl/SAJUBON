@@ -81,6 +81,16 @@ async def create_story(
             db, user_id=user_id, birth_hash=birth_hash, date=parsed_date
         )
         if existing is not None:
+            # birth_hash는 이름을 제외하므로, 이름 없이 먼저 생성·캐시된 기록이 이후
+            # 이름을 넣은 요청에도 계속 익명으로 재사용된다. 이번 요청에 이름이 있고
+            # 기존 기록이 비어 있으면 이름을 보강한다.
+            if profile_name and not existing.profile_name:
+                existing.profile_name = profile_name
+                patched = dict(existing.payload)
+                patched["profile_name"] = profile_name
+                existing.payload = patched
+                await db.commit()
+                await db.refresh(existing)
             return DailyStoryResponse(**existing.payload)
 
     # 생성 (엔진 조립 + 리라이트)
