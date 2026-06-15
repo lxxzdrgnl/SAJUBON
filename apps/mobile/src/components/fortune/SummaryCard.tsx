@@ -18,8 +18,11 @@ import ViewShot from 'react-native-view-shot'
 // react-native-view-shot은 네이티브 모듈 — Expo Go엔 없다. 개발 빌드에서만 캡처가 동작한다.
 const IS_EXPO_GO = Constants.executionEnvironment === 'storeClient'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
+import { createFortuneShare } from '@sajuguri/api-client'
 import { MascotTinted } from '@/components/ui/MascotTinted'
 import { type CardPalette } from '@/lib/story'
+import { useAuth } from '@/lib/auth/AuthContext'
+import { useShare } from '@/lib/useShare'
 
 const BAR_LOW_THRESHOLD = 60
 
@@ -43,6 +46,8 @@ export function SummaryCard({ story, onClose, palette }: Props) {
   const viewShotRef = useRef<ViewShot>(null)
   const [saving, setSaving] = useState(false)
   const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions()
+  const { api } = useAuth()
+  const { sharing, share } = useShare()
 
   // 바 리빌 애니메이션
   const [revealed, setRevealed] = useState(false)
@@ -76,7 +81,7 @@ export function SummaryCard({ story, onClose, palette }: Props) {
       : undefined
   )
 
-  const summaryTitle = story.profile_name ? `${story.profile_name}의 하루 요약` : '오늘의 하루 요약'
+  const summaryTitle = story.profile_name ? `${story.profile_name}의 하루 요약` : '너의 하루 요약'
 
   /** ViewShot 캡처 → 공유 */
   async function handleSaveImage() {
@@ -113,6 +118,12 @@ export function SummaryCard({ story, onClose, palette }: Props) {
     }
   }
 
+  function handleShareLink() {
+    share(() =>
+      createFortuneShare(api, { story }).then((r) => r.share_url),
+    )
+  }
+
   return (
     <ScrollView
       style={{ flex: 1 }}
@@ -128,7 +139,7 @@ export function SummaryCard({ story, onClose, palette }: Props) {
         {/* 브랜드 헤더 */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <MascotTinted stem={story.day_ganji.stem} size={28} />
+            <MascotTinted stem={null} size={28} />
             <Text style={{ fontSize: 13, fontWeight: '900', letterSpacing: 3, textTransform: 'uppercase', color: ink }}>
               사주구리
             </Text>
@@ -263,7 +274,7 @@ export function SummaryCard({ story, onClose, palette }: Props) {
 
       {/* CTA 버튼 */}
       <View style={{ gap: 12 }}>
-        {/* 이미지로 저장 */}
+        {/* 이미지 저장 */}
         <Pressable
           onPress={handleSaveImage}
           disabled={saving}
@@ -282,7 +293,33 @@ export function SummaryCard({ story, onClose, palette }: Props) {
             <ActivityIndicator size="small" color={base} />
           ) : (
             <Text style={{ fontSize: 14, fontWeight: '900', color: base }}>
-              이미지로 저장
+              이미지 저장
+            </Text>
+          )}
+        </Pressable>
+
+        {/* 링크 공유 */}
+        <Pressable
+          onPress={handleShareLink}
+          disabled={sharing}
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            borderWidth: 2,
+            borderColor: ink,
+            borderRadius: 16,
+            paddingVertical: 14,
+            opacity: sharing ? 0.6 : pressed ? 0.7 : 1,
+            backgroundColor: 'transparent',
+          })}
+        >
+          {sharing ? (
+            <ActivityIndicator size="small" color={ink} />
+          ) : (
+            <Text style={{ fontSize: 14, fontWeight: '900', color: ink }}>
+              링크 공유
             </Text>
           )}
         </Pressable>

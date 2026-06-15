@@ -1,10 +1,10 @@
 /**
  * /fortune 라우트 — 오늘의 운세 스토리 풀스크린.
- * 대표 프로필이 있으면 바로 스토리 생성, 없으면 BirthInputForm 표시.
+ * 대표 프로필이 있으면 바로 스토리 생성, 없으면 MansePickerSheet 표시.
  * 탭 크롬 없음 (standalone 스택 스크린).
  */
 import { useCallback, useEffect, useState } from 'react'
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { createDailyStory } from '@sajuguri/api-client'
@@ -13,8 +13,7 @@ import type { SajuCalcRequest } from '@sajuguri/api-client'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useProfiles } from '@/lib/queries'
 import type { ProfileResponse } from '@sajuguri/api-client'
-import { BirthInputForm } from '@/components/manse/BirthInputForm'
-import type { ManseBirthInput } from '@/components/manse/BirthInputForm'
+import { MansePickerSheet, type MansePick } from '@/components/manse/MansePickerSheet'
 import { StoryPager } from '@/components/fortune/StoryPager'
 
 // ── 날짜 유틸 ─────────────────────────────────────────────────────────────────
@@ -39,19 +38,17 @@ function profileToCalcRequest(profile: ProfileResponse): SajuCalcRequest {
   }
 }
 
-// ── ManseBirthInput → SajuCalcRequest 변환 ────────────────────────────────────
+// ── MansePick → SajuCalcRequest 변환 ─────────────────────────────────────────
 
-function birthInputToCalcRequest(input: ManseBirthInput): SajuCalcRequest {
+function mansePickToCalcRequest(pick: MansePick): SajuCalcRequest {
   return {
-    name: input.name || undefined,
-    birth_date: input.birth_date,
-    birth_time: input.birth_time,
-    gender: input.gender,
-    calendar: input.calendar,
-    is_leap_month: input.is_leap_month,
-    birth_longitude: input.birth_longitude,
-    birth_utc_offset: input.birth_utc_offset,
-    city: input.city,
+    name: pick.name || undefined,
+    birth_date: pick.birth_date,
+    birth_time: pick.birth_time,
+    gender: pick.gender,
+    calendar: pick.calendar,
+    is_leap_month: pick.is_leap_month,
+    birth_longitude: pick.birth_longitude,
   }
 }
 
@@ -86,7 +83,7 @@ export default function FortunePage() {
       })
       setStory(data)
     } catch {
-      setError('운세를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.')
+      setError('운세를 불러올 수 없어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setLoading(false)
     }
@@ -112,9 +109,9 @@ export default function FortunePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, profiles, profilesLoading])
 
-  // BirthInputForm 제출
-  const handleFormSubmit = useCallback(async (input: ManseBirthInput) => {
-    await fetchStory(birthInputToCalcRequest(input))
+  // MansePickerSheet 픽
+  const handlePick = useCallback(async (pick: MansePick) => {
+    await fetchStory(mansePickToCalcRequest(pick))
   }, [fetchStory])
 
   // ── 스토리 완성 → StoryPager ──────────────────────────────────────────────
@@ -141,7 +138,7 @@ export default function FortunePage() {
       >
         <ActivityIndicator size="large" color="#1A1A1A" />
         <Text style={{ fontSize: 14, fontWeight: '700', color: '#8A8270' }}>
-          오늘의 운세를 불러오고 있어요
+          운세를 분석하고 있어요
         </Text>
       </View>
     )
@@ -180,65 +177,9 @@ export default function FortunePage() {
     )
   }
 
-  // ── BirthInputForm (프로필 없는 경우) ────────────────────────────────────
-  if (showForm) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#FFFBF2',
-          paddingTop: insets.top,
-        }}
-      >
-        {/* 헤더 */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            borderBottomWidth: 1,
-            borderBottomColor: '#E0D9CE',
-          }}
-        >
-          <Text style={{ fontSize: 17, fontWeight: '900', color: '#1A1A1A' }}>오늘의 운세</Text>
-          <Pressable onPress={handleClose} accessibilityLabel="닫기">
-            <Text style={{ fontSize: 22, color: '#8A8270', lineHeight: 26 }}>✕</Text>
-          </Pressable>
-        </View>
-
-        <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 20,
-            paddingBottom: insets.bottom + 24,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: '700',
-              color: '#8A8270',
-              marginBottom: 20,
-              lineHeight: 20,
-            }}
-          >
-            생년월일을 입력하면 오늘의 운세를 확인할 수 있어요.
-          </Text>
-
-          <BirthInputForm
-            onSubmit={handleFormSubmit}
-            submitLabel="오늘의 운세 보기"
-            busy={loading}
-          />
-        </ScrollView>
-      </View>
-    )
-  }
-
-  // 최초 진입 — 프로필 로딩 대기
+  // ── 시트 모드 (프로필 없는 경우) ─────────────────────────────────────────────
+  // showForm일 때는 크림 배경 위에 MansePickerSheet 오버레이.
+  // sheet를 닫으면 뒤로 돌아간다 (onClose = handleClose).
   return (
     <View
       style={{
@@ -250,6 +191,13 @@ export default function FortunePage() {
       }}
     >
       <ActivityIndicator size="large" color="#1A1A1A" />
+      <MansePickerSheet
+        open={showForm}
+        onClose={handleClose}
+        profiles={profiles ?? []}
+        title="누구의 운세를 볼까요?"
+        onPick={handlePick}
+      />
     </View>
   )
 }

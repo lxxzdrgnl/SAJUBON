@@ -1,11 +1,13 @@
 /**
  * 스토리 페이저 — 탭 네비(좌 1/3=뒤로, 우 2/3=다음) + 세그먼트 프로그레스 바.
- * Reanimated 4 슬라이드 전환(translateX) + 닫기(X) 버튼.
+ * Reanimated 4 슬라이드+스케일 전환(translateX+scale) + 닫기(X) 버튼.
+ * 배경색 ~480ms 크로스페이드, 하단 스쿼글 웨이브 SVG.
  * 텍스트 전부 한국어. 이모지 없음.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Pressable, Text } from 'react-native'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated'
+import { Svg, Path } from 'react-native-svg'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
 import {
   calcSegmentFills,
@@ -51,12 +53,13 @@ export function StoryPager({ story, onClose }: Props) {
     return idx >= 0 ? idx + 1 : null
   })()
 
-  // Reanimated 슬라이드 애니메이션
+  // Reanimated 슬라이드+스케일 애니메이션
   const translateX = useSharedValue(0)
   const opacity = useSharedValue(1)
+  const scale = useSharedValue(1)
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [{ translateX: translateX.value }, { scale: scale.value }],
     opacity: opacity.value,
     flex: 1,
   }))
@@ -70,9 +73,11 @@ export function StoryPager({ story, onClose }: Props) {
     const fromX = dir === 'next' ? 40 : -40
     translateX.value = fromX
     opacity.value = 0
+    scale.value = 0.985
     translateX.value = withTiming(0, { duration: 420, easing: Easing.out(Easing.cubic) })
     opacity.value = withTiming(1, { duration: 420, easing: Easing.out(Easing.ease) })
-  }, [translateX, opacity])
+    scale.value = withTiming(1, { duration: 420, easing: Easing.out(Easing.cubic) })
+  }, [translateX, opacity, scale])
 
   const goNext = useCallback(() => {
     const next = Math.min(cardIndex + 1, story.cards.length - 1)
@@ -97,14 +102,33 @@ export function StoryPager({ story, onClose }: Props) {
     else goNext()
   }, [goPrev, goNext])
 
-  // 배경색 — 현재 카드 팔레트의 base색을 배경으로
+  // 배경색 — ~480ms 크로스페이드 (두 레이어 방식)
   const bg = palette.base
+  const bgOpacity = useSharedValue(1)
+  const prevBgRef = useRef(bg)
+  const [prevBg, setPrevBg] = useState(bg)
+
+  useEffect(() => {
+    if (prevBgRef.current === bg) return
+    const old = prevBgRef.current
+    prevBgRef.current = bg
+    setPrevBg(old)
+    bgOpacity.value = 0
+    bgOpacity.value = withTiming(1, { duration: 480, easing: Easing.out(Easing.ease) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bg])
+
+  const bgOverlayStyle = useAnimatedStyle(() => ({ opacity: bgOpacity.value }))
 
   return (
-    <View style={{ flex: 1, backgroundColor: bg }}>
+    <View style={{ flex: 1 }}>
+      {/* Layer 1: 이전 배경 (아래) */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: prevBg }} />
+      {/* Layer 2: 새 배경 (위, 페이드인) */}
+      <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: bg }, bgOverlayStyle]} />
 
-      {/* 그래픽 악센트 — 흩뿌린 점 */}
-      <View style={{ position: 'absolute', inset: 0 }} pointerEvents="none">
+      {/* 그래픽 악센트 — 흩뿌린 점 + 하단 스쿼글 */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} pointerEvents="none">
         {SCATTER_DOTS.map((d, i) => (
           <View
             key={i}
@@ -119,6 +143,21 @@ export function StoryPager({ story, onClose }: Props) {
             }}
           />
         ))}
+
+        {/* 하단 물결 */}
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} pointerEvents="none">
+          <Svg
+            width="100%"
+            height={90}
+            viewBox="0 0 640 120"
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0 70 Q 80 30 160 70 T 320 70 T 480 70 T 640 70 V120 H0 Z"
+              fill={palette.inkLight ? 'rgba(255,255,255,0.06)' : 'rgba(21,35,58,0.06)'}
+            />
+          </Svg>
+        </View>
       </View>
 
       {/* 세그먼트 프로그레스 바 + 닫기 */}
