@@ -7,7 +7,7 @@
 import { useCallback, useState } from 'react'
 import { Alert, Pressable, Text, View } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { setRepresentative, deleteProfile, type ProfileResponse } from '@sajuguri/api-client'
+import { setRepresentative, deleteProfile, createProfile, type ProfileResponse } from '@sajuguri/api-client'
 import { loadRecentInputs, removeRecentInput, type RecentBirthInput } from '@sajuguri/core'
 import { Screen } from '@/components/ui/Screen'
 import { BrutalCard } from '@/components/ui/BrutalCard'
@@ -276,136 +276,191 @@ function SavedManseSection({ profiles }: { profiles: ProfileResponse[] }) {
 
 // ── 최근 본 만세력 아이템 ────────────────────────────────────────────────────
 
+type SaveState = 'idle' | 'busy' | 'done' | 'error'
+
 function RecentManseItem({
   item,
+  isAuthed,
   onTap,
   onDelete,
+  onSave,
 }: {
   item: RecentBirthInput
+  isAuthed: boolean
   onTap: () => void
   onDelete: () => void
+  onSave: () => void
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [saveState, setSaveState] = useState<SaveState>('idle')
   const genderLabel = item.gender === 'male' ? '남성' : '여성'
   const timeLabel = item.birth_time ?? '시간 미상'
 
+  async function handleSave(e: { stopPropagation?: () => void }) {
+    e.stopPropagation?.()
+    if (saveState === 'busy' || saveState === 'done') return
+    setSaveState('busy')
+    try {
+      await onSave()
+      setSaveState('done')
+    } catch {
+      setSaveState('error')
+    }
+  }
+
+  const saveLabel =
+    saveState === 'done' ? '저장됨' : saveState === 'error' ? '저장 실패' : '저장'
+
   if (confirmDelete) {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderWidth: 2,
-          borderColor: '#1A1A1A',
-          borderRadius: 16,
-          backgroundColor: '#FAFAF7',
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          minHeight: 72,
-          gap: 8,
-        }}
-      >
-        <Text style={{ flex: 1, fontSize: 13, fontWeight: '800', color: '#1A1A1A' }} numberOfLines={1}>
-          삭제할까요?
-        </Text>
-        <View style={{ flexDirection: 'row', gap: 6 }}>
-          <Pressable
-            onPress={() => { setConfirmDelete(false); onDelete() }}
-            style={{
-              borderWidth: 2,
-              borderColor: '#1A1A1A',
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              backgroundColor: '#FF6B00',
-            }}
-          >
-            <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFFFFF' }}>삭제</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setConfirmDelete(false)}
-            style={{
-              borderWidth: 2,
-              borderColor: '#1A1A1A',
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              backgroundColor: '#FAFAF7',
-            }}
-          >
-            <Text style={{ fontSize: 12, fontWeight: '800', color: '#1A1A1A' }}>취소</Text>
-          </Pressable>
+      <BrutalShadow radius={radii.card}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderWidth: 2,
+            borderColor: '#1A1A1A',
+            borderRadius: 16,
+            backgroundColor: '#FAFAF7',
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            minHeight: 60,
+            gap: 8,
+          }}
+        >
+          <Text style={{ flex: 1, fontSize: 13, fontWeight: '800', color: '#1A1A1A' }} numberOfLines={1}>
+            최근 목록에서 지울까요?
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            <Pressable
+              onPress={() => { setConfirmDelete(false); onDelete() }}
+              style={{
+                borderWidth: 2,
+                borderColor: '#1A1A1A',
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                backgroundColor: '#FF6B00',
+              }}
+            >
+              <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFFFFF' }}>삭제</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setConfirmDelete(false)}
+              style={{
+                borderWidth: 2,
+                borderColor: '#1A1A1A',
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                backgroundColor: '#FAFAF7',
+              }}
+            >
+              <Text style={{ fontSize: 12, fontWeight: '800', color: '#1A1A1A' }}>취소</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </BrutalShadow>
     )
   }
 
   return (
-    <BrutalCard intensity="soft">
+    <BrutalShadow radius={radii.card}>
       <Pressable
         onPress={onTap}
         style={({ pressed }) => ({
           flexDirection: 'row',
           alignItems: 'center',
+          borderWidth: 2,
+          borderColor: '#1A1A1A',
+          borderRadius: 16,
+          backgroundColor: '#FAFAF7',
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          gap: 10,
           opacity: pressed ? 0.85 : 1,
         })}
       >
         {/* 마스코트 아이콘 */}
         <View
           style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
+            width: 40,
+            height: 40,
+            borderRadius: 10,
             borderWidth: 2,
             borderColor: '#1A1A1A',
             backgroundColor: '#FAFAF7',
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            marginRight: 12,
             flexShrink: 0,
           }}
         >
-          <MascotTinted stem={item.day_stem} size={36} />
+          <MascotTinted stem={item.day_stem} size={34} />
         </View>
 
-        {/* 이름 + 날짜 */}
-        <View style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
-          <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A' }} numberOfLines={1}>
+        {/* 이름 + 날짜·성별 */}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }} numberOfLines={1}>
             {item.name || '이름 없음'}
           </Text>
-          <Text style={{ fontSize: 12, color: '#8A8270' }} numberOfLines={1}>
+          <Text style={{ fontSize: 11, color: '#8A8270' }} numberOfLines={1}>
             {item.birth_date} · {timeLabel} · {genderLabel}
           </Text>
         </View>
 
-        {/* 삭제 버튼 */}
-        <Pressable
-          onPress={(e) => { e.stopPropagation?.(); setConfirmDelete(true) }}
-          style={{
-            borderWidth: 2,
-            borderColor: '#1A1A1A',
-            borderRadius: 8,
-            padding: 6,
-            backgroundColor: '#FAFAF7',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <TrashIcon />
-        </Pressable>
+        {/* 저장 + 삭제 버튼 */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          {/* 저장 버튼 */}
+          <Pressable
+            onPress={handleSave}
+            disabled={saveState === 'busy' || saveState === 'done'}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 3,
+              borderWidth: 2,
+              borderColor: '#1A1A1A',
+              borderRadius: 8,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              backgroundColor: '#FFDE21',
+              opacity: (saveState === 'busy' || saveState === 'done') ? 0.5 : 1,
+            }}
+          >
+            <Text style={{ fontSize: 11, fontWeight: '800', color: '#1A1A1A' }}>{saveLabel}</Text>
+          </Pressable>
+
+          {/* 삭제 버튼 */}
+          <Pressable
+            onPress={(e) => { e.stopPropagation?.(); setConfirmDelete(true) }}
+            style={{
+              borderWidth: 2,
+              borderColor: '#1A1A1A',
+              borderRadius: 8,
+              padding: 5,
+              backgroundColor: '#FAFAF7',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <TrashIcon />
+          </Pressable>
+        </View>
       </Pressable>
-    </BrutalCard>
+    </BrutalShadow>
   )
 }
 
 // ── 최근 본 만세력 섹션 ──────────────────────────────────────────────────────
 
-function RecentManseSection({ savedKeys }: { savedKeys: Set<string> }) {
+function RecentManseSection({ savedKeys, isAuthed }: { savedKeys: Set<string>; isAuthed: boolean }) {
   const router = useRouter()
+  const { api } = useAuth()
+  const queryClient = useQueryClient()
   const [items, setItems] = useState<RecentBirthInput[] | null>(null)
+  const [loginPrompt, setLoginPrompt] = useState(false)
 
   const load = useCallback(async () => {
     const loaded = await loadRecentInputs(rnStorage)
@@ -436,6 +491,24 @@ function RecentManseSection({ savedKeys }: { savedKeys: Set<string> }) {
     ) ?? null)
   }
 
+  async function handleSave(item: RecentBirthInput) {
+    if (!isAuthed) {
+      setLoginPrompt(true)
+      return
+    }
+    await createProfile(api, {
+      name: item.name,
+      birth_date: item.birth_date,
+      birth_time: item.birth_time,
+      calendar: item.calendar,
+      gender: item.gender,
+      is_leap_month: item.is_leap_month,
+      city: item.city ?? null,
+      longitude: item.birth_longitude ?? null,
+    })
+    await queryClient.invalidateQueries({ queryKey: ['profiles'] })
+  }
+
   function handleTap(item: RecentBirthInput) {
     const input: ManseBirthInput = {
       name: item.name,
@@ -461,11 +534,73 @@ function RecentManseSection({ savedKeys }: { savedKeys: Set<string> }) {
           <RecentManseItem
             key={`${item.birth_date}|${item.birth_time}|${item.gender}|${item.calendar}`}
             item={item}
+            isAuthed={isAuthed}
             onTap={() => handleTap(item)}
             onDelete={() => handleDelete(item)}
+            onSave={() => handleSave(item)}
           />
         ))}
       </View>
+
+      {/* 비로그인 저장 시 로그인 안내 */}
+      {loginPrompt && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 50,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(26,26,26,0.4)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: '#FAFAF7',
+              borderWidth: 2,
+              borderColor: '#1A1A1A',
+              borderRadius: 16,
+              padding: 20,
+              width: '90%',
+              maxWidth: 320,
+              alignItems: 'center',
+              gap: 12,
+              shadowColor: '#1A1A1A',
+              shadowOffset: { width: 4, height: 4 },
+              shadowOpacity: 1,
+              shadowRadius: 0,
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: '900', color: '#1A1A1A', textAlign: 'center' }}>
+              로그인이 필요해요
+            </Text>
+            <Text style={{ fontSize: 13, color: '#8A8270', textAlign: 'center' }}>
+              로그인하면 만세력을 저장하고 관리할 수 있어요
+            </Text>
+            <Pressable
+              onPress={() => { setLoginPrompt(false); router.push('/auth/login') }}
+              style={{
+                width: '100%',
+                borderWidth: 2,
+                borderColor: '#1A1A1A',
+                borderRadius: 12,
+                backgroundColor: '#FFDE21',
+                paddingVertical: 12,
+                alignItems: 'center',
+                shadowColor: '#1A1A1A',
+                shadowOffset: { width: 4, height: 4 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }}>구글로 로그인</Text>
+            </Pressable>
+            <Pressable onPress={() => setLoginPrompt(false)}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#8A8270' }}>닫기</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </View>
   )
 }
@@ -520,7 +655,7 @@ export default function ManseScreen() {
       )}
 
       {/* 최근 본 만세력 */}
-      <RecentManseSection savedKeys={savedKeys} />
+      <RecentManseSection savedKeys={savedKeys} isAuthed={isAuthed} />
     </Screen>
   )
 }

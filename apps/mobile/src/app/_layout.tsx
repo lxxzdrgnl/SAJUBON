@@ -25,7 +25,6 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFBF2' } }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="auth/login" options={{ presentation: 'modal' }} />
-              <Stack.Screen name="my/profiles" />
             </Stack>
           </AuthProvider>
         </QueryClientProvider>

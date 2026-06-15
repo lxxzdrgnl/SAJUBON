@@ -118,14 +118,15 @@ function TabAccordion({ tab }: { tab: ReportTab }) {
 
 export interface TabbedReportProps {
   tabs: ReportTab[]
-  header?: React.ReactNode
+  /** 오버뷰 슬롯 — 탭 위에 year_flow, dae_un 등 도메인별 컴포넌트 삽입 (웹 overview와 동일) */
+  overview?: React.ReactNode
 }
 
-export function TabbedReport({ tabs, header }: TabbedReportProps) {
+export function TabbedReport({ tabs, overview }: TabbedReportProps) {
   return (
     <View style={{ gap: 12 }}>
-      {/* 헤더 슬롯 (year_flow, dae_un 등) */}
-      {header}
+      {/* 오버뷰 슬롯 (year_flow, dae_un 등) */}
+      {overview}
 
       {/* 탭 아코디언 목록 */}
       {tabs.map((tab, i) => (

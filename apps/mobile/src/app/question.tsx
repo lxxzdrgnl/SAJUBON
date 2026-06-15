@@ -9,7 +9,6 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Alert,
   Pressable,
   Share,
   Text,
@@ -19,21 +18,18 @@ import {
 import { useRouter } from 'expo-router'
 import {
   askQuestion,
-  deleteConsultation,
   shareConsultation,
   type ConsultationResponse,
-  type ConsultationHistoryItem,
   type QuestionRequest,
 } from '@sajuguri/api-client'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { useProfiles, useConsultations } from '@/lib/queries'
+import { useProfiles } from '@/lib/queries'
 import { Screen } from '@/components/ui/Screen'
 import { BrutalCard } from '@/components/ui/BrutalCard'
 import { BrutalShadow } from '@/components/ui/BrutalShadow'
 import { MascotTinted } from '@/components/ui/MascotTinted'
 import { MansePickerSheet, type MansePick } from '@/components/manse/MansePickerSheet'
 import { AnswerCard } from '@/components/question/AnswerCard'
-import { HistoryItem } from '@/components/question/HistoryItem'
 import { useQueryClient } from '@tanstack/react-query'
 import { colors, radii } from '@/theme'
 
@@ -56,8 +52,6 @@ const S = {
   pickSheetTitle: '누구의 사주로 물어볼까요?',
   share: '공유하기',
   sharing: '공유 중...',
-  recentHistory: '최근 상담 기록',
-  deleteError: '삭제하는 중 오류가 발생했어요.',
 } as const
 
 // ── MansePick → QuestionRequest ───────────────────────────────────────────────
@@ -149,7 +143,6 @@ export default function QuestionScreen() {
   const queryClient = useQueryClient()
 
   const { data: profiles } = useProfiles()
-  const { data: consultations } = useConsultations()
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedPick, setSelectedPick] = useState<MansePick | null>(null)
@@ -158,8 +151,6 @@ export default function QuestionScreen() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<ConsultationResponse | null>(null)
   const [sharing, setSharing] = useState(false)
-
-  const isAuthed = status === 'authed'
 
   // 진입 시 만세력 미선택이면 시트 자동 오픈 (웹과 동일)
   useEffect(() => {
@@ -191,15 +182,13 @@ export default function QuestionScreen() {
       const body = pickToRequest(selectedPick, q)
       const res = await askQuestion(api, body)
       setResult(res)
-      if (isAuthed) {
-        await queryClient.invalidateQueries({ queryKey: ['consultations'] })
-      }
+      await queryClient.invalidateQueries({ queryKey: ['consultations'] })
     } catch {
       setError(S.errorFallback)
     } finally {
       setLoading(false)
     }
-  }, [selectedPick, question, api, isAuthed, queryClient])
+  }, [selectedPick, question, api, queryClient])
 
   // 공유
   async function handleShare() {
@@ -212,26 +201,6 @@ export default function QuestionScreen() {
       // 공유 취소 또는 오류 — 무시
     } finally {
       setSharing(false)
-    }
-  }
-
-  // 히스토리 삭제
-  async function handleDelete(id: number) {
-    try {
-      await deleteConsultation(api, id)
-      await queryClient.invalidateQueries({ queryKey: ['consultations'] })
-    } catch {
-      Alert.alert('오류', S.deleteError)
-    }
-  }
-
-  // 히스토리 항목 공유
-  async function handleHistoryShare(id: number) {
-    try {
-      const { share_url } = await shareConsultation(api, id)
-      await Share.share({ message: share_url, url: share_url })
-    } catch {
-      // ignore
     }
   }
 
@@ -447,31 +416,6 @@ export default function QuestionScreen() {
         </View>
       ) : null}
 
-      {/* 상담 기록 (로그인 시) */}
-      {isAuthed && consultations && consultations.length > 0 && (
-        <View style={{ marginTop: 36 }}>
-          <Text
-            style={{
-              fontSize: 15,
-              fontWeight: '900',
-              color: colors.ink,
-              marginBottom: 12,
-            }}
-          >
-            {S.recentHistory}
-          </Text>
-          <View style={{ gap: 10 }}>
-            {consultations.slice(0, 10).map((item: ConsultationHistoryItem) => (
-              <HistoryItem
-                key={item.id}
-                item={item}
-                onDelete={handleDelete}
-                onShare={handleHistoryShare}
-              />
-            ))}
-          </View>
-        </View>
-      )}
     </Screen>
   )
 }

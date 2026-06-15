@@ -41,7 +41,7 @@ const FILTER_LABELS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: '전체' },
   { key: 'report', label: '리포트' },
   { key: 'consultation', label: '한줄상담' },
-  { key: 'daily', label: '일진 기록' },
+  { key: 'daily', label: '운세' },
   { key: 'compatibility', label: '궁합' },
 ]
 

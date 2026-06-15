@@ -13,10 +13,9 @@ import {
   View,
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
   getCompatibilityReport,
-  deleteCompatibilityReport,
   shareCompatibilityReport,
   type CompatibilityReportDetail,
   type CompatibilityTab,
@@ -41,9 +40,7 @@ export default function CompatibilityDetailScreen() {
   const { id: rawId } = useLocalSearchParams<{ id: string }>()
   const id = Number(rawId)
   const { api, status, login } = useAuth()
-  const queryClient = useQueryClient()
   const [sharing, setSharing] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
   const { data: report, isLoading, error } = useQuery<CompatibilityReportDetail, Error>({
     queryKey: ['compatibility', id],
@@ -69,12 +66,12 @@ export default function CompatibilityDetailScreen() {
       <Screen scroll={false}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
           <Text style={{ fontSize: 18, fontWeight: '900', color: '#1A1A1A', textAlign: 'center' }}>
-            로그인이 필요합니다
+            로그인이 필요해요
           </Text>
           <Text style={{ fontSize: 14, color: '#8A8270', textAlign: 'center', lineHeight: 20 }}>
-            궁합 리포트를 보려면 로그인이 필요해요.
+            궁합 리포트는 저장·공유를 위해 로그인 후 이용할 수 있어요.
           </Text>
-          <Button label="로그인하기" onPress={() => login()} variant="primary" />
+          <Button label="구글로 로그인" onPress={() => login()} variant="primary" />
         </View>
       </Screen>
     )
@@ -123,33 +120,6 @@ export default function CompatibilityDetailScreen() {
     } finally {
       setSharing(false)
     }
-  }
-
-  // ── 삭제 ─────────────────────────────────────────────────────────────────
-  const handleDelete = () => {
-    Alert.alert(
-      '궁합 리포트 삭제',
-      '이 궁합 리포트를 삭제할까요? 이 작업은 되돌릴 수 없어요.',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true)
-            try {
-              await deleteCompatibilityReport(api, id)
-              queryClient.invalidateQueries({ queryKey: ['compatibility'] })
-              router.back()
-            } catch {
-              Alert.alert('삭제 실패', '삭제에 실패했어요. 다시 시도해주세요.')
-            } finally {
-              setDeleting(false)
-            }
-          },
-        },
-      ],
-    )
   }
 
   // ── 데이터 준비 ───────────────────────────────────────────────────────────
@@ -215,7 +185,7 @@ export default function CompatibilityDetailScreen() {
       {/* 리포트 본문 */}
       <TabbedReport
         tabs={reportTabs}
-        header={
+        overview={
           <View style={{ gap: 24, marginBottom: 24 }}>
             <CompatScoreHeader
               nameA={nameA}
@@ -244,13 +214,7 @@ export default function CompatibilityDetailScreen() {
           label={sharing ? '공유 링크 생성 중...' : '궁합 리포트 공유하기'}
           onPress={handleShare}
           variant="secondary"
-          disabled={sharing || deleting}
-        />
-        <Button
-          label={deleting ? '삭제 중...' : '리포트 삭제'}
-          onPress={handleDelete}
-          variant="ghost"
-          disabled={sharing || deleting}
+          disabled={sharing}
         />
       </View>
     </Screen>

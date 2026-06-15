@@ -91,14 +91,11 @@ export default function CompatibilityNewScreen() {
         <View
           style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 20, paddingHorizontal: 8 }}
         >
-          <Text style={{ fontSize: 40 }}>😔</Text>
           <Text style={{ fontSize: 18, fontWeight: '900', color: '#1A1A1A', textAlign: 'center' }}>
-            {isTimeout ? '시간이 너무 걸렸어요' : '궁합 리포트 생성에 실패했어요'}
+            리포트 생성에 실패했어요. 다시 시도해 주세요.
           </Text>
           <Text style={{ fontSize: 14, color: '#8A8270', textAlign: 'center', lineHeight: 20 }}>
-            {isTimeout
-              ? '잠시 후 다시 시도해주세요.'
-              : (jobError ?? '알 수 없는 오류가 발생했어요. 잠시 후 다시 시도해주세요.')}
+            {jobError ?? '알 수 없는 오류가 발생했어요.'}
           </Text>
           <Button
             label="다시 시도"

@@ -288,12 +288,12 @@ export default function ChatDetailScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFBF2', alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 }}>
         <Text style={{ fontSize: 18, fontWeight: '900', color: '#1A1A1A', textAlign: 'center' }}>
-          로그인이 필요합니다
+          로그인이 필요해요
         </Text>
         <Text style={{ fontSize: 14, color: '#8A8270', textAlign: 'center', lineHeight: 20 }}>
-          AI 상담을 이용하려면 로그인이 필요해요.
+          AI 상담은 로그인한 사용자만 이용할 수 있어요.
         </Text>
-        <Button label="로그인하기" onPress={() => login()} variant="primary" />
+        <Button label="구글로 로그인" onPress={() => login()} variant="primary" />
       </View>
     )
   }
@@ -388,16 +388,6 @@ export default function ChatDetailScreen() {
           }}
           onContentSizeChange={scrollBottom}
           showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={{ paddingTop: 32, alignItems: 'center', gap: 8 }}>
-              <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A' }}>
-                안녕하세요! 무엇이 궁금하신가요?
-              </Text>
-              <Text style={{ fontSize: 13, color: '#8A8270', textAlign: 'center', lineHeight: 19 }}>
-                사주, 운세, 궁합 등 무엇이든 물어보세요.
-              </Text>
-            </View>
-          }
         />
       )}
 
