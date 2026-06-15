@@ -1,18 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-  type TextInputProps,
-} from 'react-native'
-import { Button } from '@/components/ui/Button'
-import { BrutalCard } from '@/components/ui/BrutalCard'
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native'
+import { BrutalShadow } from '@/components/ui/BrutalShadow'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { searchCities, type CityOption } from '@sajuguri/api-client'
+import { colors, radii } from '@/theme'
 
+// 생년월일 입력 폼 — 웹 BirthInputForm 디자인에 맞춤(단일 브루탈 카드 + 날짜·시각 한 줄 입력바 +
+// 양력/음력/윤달·성별 알약 세그먼트 + 주황 제출). 출력 계약(ManseBirthInput)·props는 불변.
 export interface ManseBirthInput {
   name: string
   birth_date: string
@@ -31,14 +25,15 @@ interface Props {
   busy?: boolean
 }
 
-function SegmentInput({
+// 날짜·시각 한 줄 입력바 안의 숫자 칸 (가운데 정렬, tabular)
+function SegInput({
   value,
   onChangeText,
   maxLength,
   placeholder,
   inputRef,
   onFilled,
-  style,
+  flex,
 }: {
   value: string
   onChangeText: (v: string) => void
@@ -46,7 +41,7 @@ function SegmentInput({
   placeholder: string
   inputRef?: React.RefObject<TextInput | null>
   onFilled?: () => void
-  style?: TextInputProps['style']
+  flex: number
 }) {
   return (
     <TextInput
@@ -60,61 +55,50 @@ function SegmentInput({
       keyboardType="number-pad"
       maxLength={maxLength}
       placeholder={placeholder}
-      placeholderTextColor="#C0B8A8"
-      style={[
-        {
-          borderWidth: 2,
-          borderColor: '#1A1A1A',
-          borderRadius: 8,
-          paddingHorizontal: 8,
-          paddingVertical: 10,
-          fontSize: 16,
-          fontWeight: '700',
-          color: '#1A1A1A',
-          textAlign: 'center',
-          backgroundColor: '#FAFAF7',
-        },
-        style,
-      ]}
+      placeholderTextColor={colors.textSub}
+      style={{
+        flex,
+        minWidth: 0,
+        textAlign: 'center',
+        fontSize: 15,
+        fontWeight: '700',
+        color: colors.ink,
+        fontVariant: ['tabular-nums'],
+        paddingVertical: 0,
+      }}
     />
   )
 }
 
-function PillToggle<T extends string>({
-  options,
-  value,
-  onChange,
+// 알약 세그먼트 (양력/음력/윤달, 성별) — rounded-full border-2, 활성=노랑
+function Segment({
+  items,
 }: {
-  options: { label: string; value: T }[]
-  value: T
-  onChange: (v: T) => void
+  items: { label: string; active: boolean; disabled?: boolean; onPress: () => void }[]
 }) {
   return (
-    <View style={{ flexDirection: 'row', gap: 6 }}>
-      {options.map((opt) => {
-        const active = opt.value === value
-        return (
-          <Pressable
-            key={opt.value}
-            onPress={() => onChange(opt.value)}
-            style={{
-              flex: 1,
-              borderWidth: 2,
-              borderColor: '#1A1A1A',
-              borderRadius: 8,
-              paddingVertical: 8,
-              alignItems: 'center',
-              backgroundColor: active ? '#1A1A1A' : '#FAFAF7',
-            }}
+    <View className="flex-row overflow-hidden rounded-full border-2 border-ink">
+      {items.map((it, i) => (
+        <Pressable
+          key={it.label}
+          disabled={it.disabled}
+          onPress={it.onPress}
+          className={`flex-1 py-2 ${i > 0 ? 'border-l-2 border-ink' : ''} ${it.active ? 'bg-yellow' : ''}`}
+          style={{ opacity: it.disabled ? 0.35 : 1 }}
+        >
+          <Text
+            className={`text-center text-sm font-extrabold ${it.active ? 'text-ink' : 'text-text-sub'}`}
           >
-            <Text style={{ fontSize: 13, fontWeight: '800', color: active ? '#FFFFFF' : '#1A1A1A' }}>
-              {opt.label}
-            </Text>
-          </Pressable>
-        )
-      })}
+            {it.label}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   )
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <Text className="mb-1.5 text-xs font-extrabold text-ink">{children}</Text>
 }
 
 export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', busy = false }: Props) {
@@ -129,10 +113,10 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
   const [timeUnknown, setTimeUnknown] = useState(false)
   const [gender, setGender] = useState<'male' | 'female'>('male')
   const [calendar, setCalendar] = useState<'solar' | 'lunar'>('solar')
-  const [isLeapMonth, setIsLeapMonth] = useState(false)
+  const [isLeap, setIsLeap] = useState(false)
   const [cityQuery, setCityQuery] = useState('')
   const [cityResults, setCityResults] = useState<CityOption[]>([])
-  const [selectedCity, setSelectedCity] = useState<CityOption | null>(null)
+  const [city, setCity] = useState<CityOption | null>(null)
   const [citySearching, setCitySearching] = useState(false)
 
   const monthRef = useRef<TextInput>(null)
@@ -140,272 +124,191 @@ export function BirthInputForm({ onSubmit, submitLabel = '만세력 보기', bus
   const hourRef = useRef<TextInput>(null)
   const minuteRef = useRef<TextInput>(null)
 
-  // Debounced city search
+  // 도시 검색 (디바운스 300ms)
   useEffect(() => {
-    if (!cityQuery.trim() || selectedCity) {
+    if (!cityQuery.trim() || city) {
       setCityResults([])
       return
     }
     const timer = setTimeout(async () => {
       setCitySearching(true)
       try {
-        const results = await searchCities(api, cityQuery)
-        setCityResults(results)
+        setCityResults(await searchCities(api, cityQuery))
       } finally {
         setCitySearching(false)
       }
     }, 300)
     return () => clearTimeout(timer)
-  }, [cityQuery, api, selectedCity])
+  }, [cityQuery, api, city])
+
+  const dateReady = year.length === 4 && month.length >= 1 && day.length >= 1
+  const timeReady = timeUnknown || (hour.length >= 1 && minute.length >= 1)
+  const canSubmit = dateReady && timeReady && !busy
 
   const handleSubmit = useCallback(async () => {
-    if (year.length < 4 || month.length < 1 || day.length < 1) return
-    const mm = month.padStart(2, '0')
-    const dd = day.padStart(2, '0')
-    const birth_date = `${year}-${mm}-${dd}`
-
-    let birth_time: string | null = null
-    if (!timeUnknown) {
-      if (hour.length < 1 || minute.length < 1) return
-      birth_time = `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`
-    }
-
+    if (!dateReady || !timeReady) return
+    const birth_date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    const birth_time = timeUnknown ? null : `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`
     const input: ManseBirthInput = {
       name,
       birth_date,
       birth_time,
       gender,
       calendar,
-      is_leap_month: calendar === 'lunar' ? isLeapMonth : false,
-      ...(selectedCity
+      is_leap_month: calendar === 'lunar' ? isLeap : false,
+      ...(city
         ? {
-            birth_longitude: selectedCity.longitude,
-            birth_utc_offset: selectedCity.isKorea ? undefined : selectedCity.utcOffset,
-            city: selectedCity.label,
+            birth_longitude: city.longitude,
+            birth_utc_offset: city.isKorea ? undefined : city.utcOffset,
+            city: city.label,
           }
         : {}),
     }
     await onSubmit(input)
-  }, [year, month, day, hour, minute, timeUnknown, name, gender, calendar, isLeapMonth, selectedCity, onSubmit])
+  }, [dateReady, timeReady, year, month, day, hour, minute, timeUnknown, name, gender, calendar, isLeap, city, onSubmit])
 
-  const calendarOptions: { label: string; value: 'solar' | 'lunar' }[] = [
-    { label: '양력', value: 'solar' },
-    { label: '음력', value: 'lunar' },
-  ]
+  const sep = <Text className="text-text-sub">/</Text>
 
   return (
-    <View style={{ gap: 16 }}>
-      {/* 이름 */}
-      <BrutalCard intensity="soft">
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#8A8270', marginBottom: 6 }}>이름 (선택)</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder="이름을 입력하세요"
-          placeholderTextColor="#C0B8A8"
-          style={{
-            borderWidth: 2,
-            borderColor: '#1A1A1A',
-            borderRadius: 8,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            fontSize: 15,
-            fontWeight: '600',
-            color: '#1A1A1A',
-            backgroundColor: '#FAFAF7',
-          }}
-        />
-      </BrutalCard>
-
-      {/* 생년월일 */}
-      <BrutalCard intensity="soft">
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#8A8270', marginBottom: 6 }}>생년월일</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <SegmentInput
-            value={year}
-            onChangeText={setYear}
-            maxLength={4}
-            placeholder="년"
-            onFilled={() => monthRef.current?.focus()}
-            style={{ flex: 2 }}
-          />
-          <Text style={{ color: '#8A8270', fontWeight: '700' }}>-</Text>
-          <SegmentInput
-            value={month}
-            onChangeText={setMonth}
-            maxLength={2}
-            placeholder="월"
-            inputRef={monthRef}
-            onFilled={() => dayRef.current?.focus()}
-            style={{ flex: 1 }}
-          />
-          <Text style={{ color: '#8A8270', fontWeight: '700' }}>-</Text>
-          <SegmentInput
-            value={day}
-            onChangeText={setDay}
-            maxLength={2}
-            placeholder="일"
-            inputRef={dayRef}
-            style={{ flex: 1 }}
+    <BrutalShadow radius={radii.card}>
+      <View className="gap-4 rounded-2xl border-2 border-ink bg-surface p-4">
+        {/* 이름 */}
+        <View>
+          <FieldLabel>이름</FieldLabel>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            maxLength={20}
+            placeholder="이름 (선택)"
+            placeholderTextColor={colors.textSub}
+            className="rounded-xl border-2 border-ink bg-bg-base px-3 text-sm text-ink"
+            style={{ paddingVertical: 10 }}
           />
         </View>
-      </BrutalCard>
 
-      {/* 시간 */}
-      <BrutalCard intensity="soft">
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <Text style={{ fontSize: 12, fontWeight: '800', color: '#8A8270' }}>출생 시간</Text>
-          <Pressable
-            onPress={() => setTimeUnknown((v) => !v)}
-            style={{
-              borderWidth: 2,
-              borderColor: '#1A1A1A',
-              borderRadius: 6,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              backgroundColor: timeUnknown ? '#1A1A1A' : '#FAFAF7',
-            }}
-          >
-            <Text style={{ fontSize: 11, fontWeight: '800', color: timeUnknown ? '#FFFFFF' : '#1A1A1A' }}>시간 모름</Text>
-          </Pressable>
+        {/* 출생지 */}
+        <View>
+          <FieldLabel>출생지</FieldLabel>
+          {city ? (
+            <View className="flex-row items-center justify-between rounded-xl border-2 border-ink bg-bg-base px-3 py-2.5">
+              <View className="min-w-0 flex-1">
+                <Text className="text-sm font-bold text-ink">{city.label}</Text>
+                <Text className="text-xs text-text-sub">{city.sublabel}</Text>
+              </View>
+              <Pressable onPress={() => { setCity(null); setCityQuery('') }} hitSlop={8}>
+                <Text className="text-sm text-text-sub">✕</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View className="rounded-xl border-[1.5px] border-border-soft px-3">
+              <TextInput
+                value={cityQuery}
+                onChangeText={setCityQuery}
+                placeholder="도시명 검색 (예: 서울, Tokyo)"
+                placeholderTextColor={colors.textSub}
+                className="text-sm text-ink"
+                style={{ paddingVertical: 10 }}
+              />
+            </View>
+          )}
+          {!city && (citySearching || cityResults.length > 0) && (
+            <BrutalShadow radius={radii.button} style={{ marginTop: 4 }}>
+              <View className="overflow-hidden rounded-xl border-2 border-ink bg-surface">
+                {citySearching ? (
+                  <View className="px-3 py-2.5">
+                    <ActivityIndicator size="small" color={colors.ink} />
+                  </View>
+                ) : (
+                  cityResults.slice(0, 6).map((c, i) => (
+                    <Pressable
+                      key={`${c.label}-${c.timezone}`}
+                      onPress={() => { setCity(c); setCityQuery(''); setCityResults([]) }}
+                      className={`flex-row items-center justify-between px-3 py-2.5 ${i > 0 ? 'border-t border-border-soft' : ''}`}
+                    >
+                      <Text className="text-sm font-bold text-ink">{c.label}</Text>
+                      <Text className="text-xs text-text-sub">{c.sublabel}</Text>
+                    </Pressable>
+                  ))
+                )}
+              </View>
+            </BrutalShadow>
+          )}
+          <Text className="mt-1 text-[11px] text-text-sub">
+            {city ? city.timezone : '출생지를 넣으면 진태양시로 더 정확해져요'}
+          </Text>
         </View>
-        {!timeUnknown && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <SegmentInput
-              value={hour}
-              onChangeText={setHour}
-              maxLength={2}
-              placeholder="시"
-              inputRef={hourRef}
-              onFilled={() => minuteRef.current?.focus()}
-              style={{ flex: 1 }}
-            />
-            <Text style={{ color: '#8A8270', fontWeight: '700' }}>:</Text>
-            <SegmentInput
-              value={minute}
-              onChangeText={setMinute}
-              maxLength={2}
-              placeholder="분"
-              inputRef={minuteRef}
-              style={{ flex: 1 }}
-            />
-          </View>
-        )}
-        {timeUnknown && (
-          <Text style={{ fontSize: 12, color: '#8A8270', fontWeight: '600' }}>시간 미입력 — 시주 제외로 계산됩니다</Text>
-        )}
-      </BrutalCard>
 
-      {/* 양음력 */}
-      <BrutalCard intensity="soft">
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#8A8270', marginBottom: 8 }}>양력 / 음력</Text>
-        <PillToggle options={calendarOptions} value={calendar} onChange={setCalendar} />
-        {calendar === 'lunar' && (
-          <Pressable
-            onPress={() => setIsLeapMonth((v) => !v)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 }}
-          >
-            <View style={{ width: 18, height: 18, borderWidth: 2, borderColor: '#1A1A1A', borderRadius: 4, backgroundColor: isLeapMonth ? '#1A1A1A' : '#FAFAF7', alignItems: 'center', justifyContent: 'center' }}>
-              {isLeapMonth && <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '900' }}>✓</Text>}
-            </View>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#1A1A1A' }}>윤달</Text>
-          </Pressable>
-        )}
-      </BrutalCard>
-
-      {/* 성별 */}
-      <BrutalCard intensity="soft">
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#8A8270', marginBottom: 8 }}>성별</Text>
-        <PillToggle
-          options={[
-            { label: '남성', value: 'male' },
-            { label: '여성', value: 'female' },
-          ]}
-          value={gender}
-          onChange={setGender}
-        />
-      </BrutalCard>
-
-      {/* 출생지 */}
-      <BrutalCard intensity="soft">
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#8A8270', marginBottom: 6 }}>출생지 (선택)</Text>
-        {selectedCity ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View>
-              <Text style={{ fontSize: 14, fontWeight: '800', color: '#1A1A1A' }}>{selectedCity.label}</Text>
-              <Text style={{ fontSize: 11, color: '#8A8270', marginTop: 2 }}>{selectedCity.sublabel}</Text>
-            </View>
-            <Pressable
-              onPress={() => { setSelectedCity(null); setCityQuery('') }}
-              style={{ borderWidth: 2, borderColor: '#1A1A1A', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 }}
-            >
-              <Text style={{ fontSize: 11, fontWeight: '800', color: '#1A1A1A' }}>변경</Text>
+        {/* 생년월일 · 시각 */}
+        <View>
+          <View className="mb-1.5 flex-row items-center justify-between">
+            <Text className="text-xs font-extrabold text-ink">생년월일 · 시각</Text>
+            <Pressable className="flex-row items-center gap-1.5" onPress={() => setTimeUnknown((v) => !v)}>
+              <View
+                className="h-4 w-4 items-center justify-center rounded border-2 border-ink"
+                style={{ backgroundColor: timeUnknown ? colors.ink : colors.bgBase }}
+              >
+                {timeUnknown && <Text className="text-[10px] font-black text-white">✓</Text>}
+              </View>
+              <Text className="text-[11px] text-text-sub">시간 모름</Text>
             </Pressable>
           </View>
-        ) : (
-          <>
-            <TextInput
-              value={cityQuery}
-              onChangeText={(v) => { setCityQuery(v); setSelectedCity(null) }}
-              placeholder="도시명 검색 (예: 서울, Tokyo)"
-              placeholderTextColor="#C0B8A8"
-              style={{
-                borderWidth: 2,
-                borderColor: '#1A1A1A',
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                fontSize: 14,
-                fontWeight: '600',
-                color: '#1A1A1A',
-                backgroundColor: '#FAFAF7',
-              }}
-            />
-            {citySearching && (
-              <View style={{ alignItems: 'center', paddingVertical: 8 }}>
-                <ActivityIndicator size="small" color="#1A1A1A" />
-              </View>
-            )}
-            {cityResults.length > 0 && (
-              <View style={{ marginTop: 4, borderWidth: 2, borderColor: '#1A1A1A', borderRadius: 8, overflow: 'hidden', maxHeight: 200 }}>
-                <FlatList
-                  data={cityResults}
-                  keyExtractor={(item) => `${item.label}-${item.longitude}`}
-                  renderItem={({ item, index }) => (
-                    <Pressable
-                      onPress={() => {
-                        setSelectedCity(item)
-                        setCityQuery('')
-                        setCityResults([])
-                      }}
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 10,
-                        borderTopWidth: index > 0 ? 1 : 0,
-                        borderTopColor: '#E0D9CE',
-                        backgroundColor: '#FAFAF7',
-                      }}
-                    >
-                      <Text style={{ fontSize: 13, fontWeight: '700', color: '#1A1A1A' }}>{item.label}</Text>
-                      <Text style={{ fontSize: 11, color: '#8A8270' }}>{item.sublabel}</Text>
-                    </Pressable>
-                  )}
-                  scrollEnabled
-                  nestedScrollEnabled
-                />
-              </View>
-            )}
-          </>
-        )}
-      </BrutalCard>
 
-      {/* Submit */}
-      <Button
-        label={busy ? '계산 중...' : submitLabel}
-        onPress={handleSubmit}
-        variant="primary"
-        disabled={busy || year.length < 4 || month.length < 1 || day.length < 1 || (!timeUnknown && (hour.length < 1 || minute.length < 1))}
-      />
-    </View>
+          {/* 한 줄 입력바 */}
+          <View className="flex-row items-center gap-1 rounded-xl border-2 border-ink bg-bg-base px-2 py-2.5">
+            <SegInput value={year} onChangeText={setYear} maxLength={4} placeholder="YYYY" onFilled={() => monthRef.current?.focus()} flex={2} />
+            {sep}
+            <SegInput value={month} onChangeText={setMonth} maxLength={2} placeholder="MM" inputRef={monthRef} onFilled={() => dayRef.current?.focus()} flex={1} />
+            {sep}
+            <SegInput value={day} onChangeText={setDay} maxLength={2} placeholder="DD" inputRef={dayRef} onFilled={() => hourRef.current?.focus()} flex={1} />
+            <Text className="px-0.5 text-border-soft">·</Text>
+            {timeUnknown ? (
+              <Text className="text-center text-[13px] text-text-sub" style={{ flex: 2 }}>모름</Text>
+            ) : (
+              <View className="flex-row items-center justify-center gap-1" style={{ flex: 2 }}>
+                <SegInput value={hour} onChangeText={setHour} maxLength={2} placeholder="HH" inputRef={hourRef} onFilled={() => minuteRef.current?.focus()} flex={1} />
+                <Text className="text-text-sub">:</Text>
+                <SegInput value={minute} onChangeText={setMinute} maxLength={2} placeholder="mm" inputRef={minuteRef} flex={1} />
+              </View>
+            )}
+          </View>
+
+          {/* 양력 · 음력 · 윤달 */}
+          <View className="mt-2">
+            <Segment
+              items={[
+                { label: '양력', active: calendar === 'solar', onPress: () => { setCalendar('solar'); setIsLeap(false) } },
+                { label: '음력', active: calendar === 'lunar' && !isLeap, onPress: () => { setCalendar('lunar'); setIsLeap(false) } },
+                { label: '윤달', active: calendar === 'lunar' && isLeap, disabled: calendar !== 'lunar', onPress: () => setIsLeap(true) },
+              ]}
+            />
+          </View>
+
+          {timeUnknown && (
+            <Text className="mt-1 text-[11px] text-text-sub">시간을 모르면 시주를 제외하고 계산해요</Text>
+          )}
+        </View>
+
+        {/* 성별 */}
+        <View>
+          <FieldLabel>성별</FieldLabel>
+          <Segment
+            items={[
+              { label: '남성', active: gender === 'male', onPress: () => setGender('male') },
+              { label: '여성', active: gender === 'female', onPress: () => setGender('female') },
+            ]}
+          />
+        </View>
+
+        {/* 제출 — 웹과 동일 주황 */}
+        <BrutalShadow radius={radii.button} style={{ opacity: canSubmit ? 1 : 0.4 }}>
+          <Pressable
+            onPress={canSubmit ? handleSubmit : undefined}
+            className="items-center justify-center rounded-xl border-2 border-ink bg-orange py-3"
+          >
+            <Text className="text-[15px] font-extrabold text-white">{busy ? '계산 중…' : submitLabel}</Text>
+          </Pressable>
+        </BrutalShadow>
+      </View>
+    </BrutalShadow>
   )
 }
