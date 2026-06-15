@@ -135,6 +135,9 @@ export default async function Home() {
           </BrutalCard>
         </ManseEntryButton>
 
+        {/* 정밀 분석 소제목 */}
+        <h4 className="mt-2 text-[13px] font-extrabold text-text-sub">{t('reportSectionTitle')}</h4>
+
         {/* 내 사주 리포트 · 궁합 리포트 — 2열 그리드 (세로형 카드) */}
         <div className="grid grid-cols-2 gap-3">
           {/* 사주 풀리포트 — 프로필 선택 시트 → /report/new */}
