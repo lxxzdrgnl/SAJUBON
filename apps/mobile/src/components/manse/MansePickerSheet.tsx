@@ -15,6 +15,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from 'react-native'
@@ -22,6 +23,7 @@ import type { ProfileResponse, SajuCalcRequest } from '@sajuguri/api-client'
 import { calcSaju } from '@sajuguri/api-client'
 import type { RecentBirthInput } from '@sajuguri/core'
 import { loadRecentInputs, saveRecentInput } from '@sajuguri/core'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { rnStorage } from '@/lib/storage'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { MascotTinted } from '@/components/ui/MascotTinted'
@@ -71,6 +73,7 @@ export function MansePickerSheet({
   includeRecent = true,
 }: Props) {
   const { api } = useAuth()
+  const insets = useSafeAreaInsets()
   const [recentInputs, setRecentInputs] = useState<RecentBirthInput[]>([])
   const [showForm, setShowForm] = useState(false)
   // 백드롭 페이드 + 시트 슬라이드 (animationType=slide는 회색 백드롭까지 통째로 올려서 직접 제어)
@@ -161,28 +164,25 @@ export function MansePickerSheet({
       animationType="none"
       onRequestClose={onClose}
     >
-      {/* 백드롭 — 페이드만 (슬라이드 X) */}
-      <Animated.View style={{ flex: 1, backgroundColor: 'rgba(26,26,26,0.4)', opacity: anim }}>
-        <Pressable style={{ flex: 1 }} onPress={onClose} />
-      </Animated.View>
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        {/* 백드롭 — 화면 전체 덮음, 페이드 (웹 fixed inset-0 bg-ink/40) */}
+        <Animated.View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(26,26,26,0.4)', opacity: anim }]}>
+          <Pressable style={{ flex: 1 }} onPress={onClose} />
+        </Animated.View>
 
-      {/* 바텀시트 — 아래에서 위로 슬라이드 */}
-      <Animated.View
-        style={{
-          borderTopLeftRadius: radii.sheet,
-          borderTopRightRadius: radii.sheet,
-          borderWidth: 2,
-          borderColor: colors.ink,
-          backgroundColor: colors.surface,
-          shadowColor: colors.ink,
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 1,
-          shadowRadius: 0,
-          elevation: 8,
-          maxHeight: '80%',
-          transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }],
-        }}
-      >
+        {/* 바텀시트 — 백드롭 위, 하단 고정, 아래서 위로 슬라이드 (웹 bottom-0 rounded-t) */}
+        <Animated.View
+          style={{
+            borderTopLeftRadius: radii.sheet,
+            borderTopRightRadius: radii.sheet,
+            borderWidth: 2,
+            borderColor: colors.ink,
+            backgroundColor: colors.surface,
+            boxShadow: '0px -4px 0px #1A1A1A',
+            maxHeight: '85%',
+            transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [600, 0] }) }],
+          }}
+        >
         {/* 드래그 핸들 */}
         <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
           <View
@@ -197,7 +197,7 @@ export function MansePickerSheet({
 
         <ScrollView
           style={{ flexGrow: 0 }}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32, paddingTop: 12 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 32, paddingTop: 12 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -431,6 +431,7 @@ export function MansePickerSheet({
           )}
         </ScrollView>
       </Animated.View>
+      </View>
     </Modal>
   )
 }
