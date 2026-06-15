@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl'
 import type { ReportTab } from '@sajuguri/api-client'
 import type { ReactNode } from 'react'
 import Markdown from '@/components/ui/Markdown'
-import ToolCard from '@/components/chat/ToolCard'
 import { renderTextWithCharts, markerToolsInText, CHART_MARKER_RE } from '@/lib/chat/chartMarkers'
 
 // ── 헤드라인 아코디언 ──────────────────────────────────────────────────────────
@@ -88,19 +87,38 @@ function TabAccordion({
         <div className="border-t-2 border-dashed border-ink px-4 py-3">
           {paragraphs.map((para, i) =>
             i === lastIdx ? (
-              // 마지막 문단 = "현실 조언" 박스. 차트는 박스 안에 가두지 않고 본문(박스 위)에
-              // 빼서 렌더하고, 박스에는 조언 텍스트만 남긴다. (마커가 마지막 문단에 들어오면
-              // 십성·오행 차트가 조언 박스에 끼어 보이던 문제 방지.)
+              // 마지막 문단 = "현실 조언" 박스. 단, 궁합 리포트는 차트 마커+캡션을 조언 문단
+              // 뒤에 빈 줄 없이 붙여 마지막 문단에 끼어든다(사주 리포트는 빈 줄로 분리돼 무관).
+              // → 첫 차트 마커 기준으로 쪼개서, 앞쪽(순수 조언 텍스트)만 박스에 넣고
+              //   마커 이후(차트+캡션)는 본문으로 박스 위에 렌더한다. 박스엔 차트가 안 갇힌다.
               (() => {
-                const charts = markerToolsInText(para).filter((tool) => chartsToolByName[tool])
-                const adviceText = para.replace(CHART_MARKER_RE, '').trim()
+                const hasChart = markerToolsInText(para).some((tool) => chartsToolByName[tool])
+                if (!hasChart) {
+                  return (
+                    <div key={i} className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
+                      <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
+                      <ParagraphWithCharts
+                        text={para}
+                        chartsToolByName={chartsToolByName}
+                        keyPrefix={`p${i}`}
+                        className="text-[14px] text-ink"
+                      />
+                    </div>
+                  )
+                }
+                const markerStart = para.search(CHART_MARKER_RE)
+                const adviceText = para.slice(0, markerStart).trim()
+                const chartBlock = para.slice(markerStart)
                 return (
                   <div key={i}>
-                    {charts.map((tool, ci) => (
-                      <div key={`p${i}-advchart${ci}`} className="mb-3 flex w-full min-w-0 flex-col gap-2">
-                        <ToolCard tool={tool} payload={chartsToolByName[tool]} />
-                      </div>
-                    ))}
+                    {/* 차트 + 캡션 — 본문 흐름(박스 위) */}
+                    <ParagraphWithCharts
+                      text={chartBlock}
+                      chartsToolByName={chartsToolByName}
+                      keyPrefix={`p${i}-chart`}
+                      className="mb-3 text-[14px] text-ink"
+                    />
+                    {/* 현실 조언 — 텍스트만 */}
                     {adviceText && (
                       <div className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
                         <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
