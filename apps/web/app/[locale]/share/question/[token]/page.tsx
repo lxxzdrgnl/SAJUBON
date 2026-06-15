@@ -79,13 +79,13 @@ export default async function SharedConsultationPage({
       {/* 질문 */}
       <div className="rounded-2xl border-[1.5px] border-border-soft bg-surface p-4">
         <p className="mb-1 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
-          {tq('questionLabel')}
+          {tq('questionHeader')}
         </p>
         <p className="text-[14px] font-bold text-ink">{detail.question}</p>
       </div>
 
       {/* 상담 결과 — 채팅과 동일: content의 [[chart:...]] 마커를 인라인 ToolCard로 렌더 */}
-      <div className="rounded-2xl border-2 border-[#4DA8E8] bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+      <div className="rounded-2xl border-2 border-teal bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
         <p className="mb-3 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
           {tq('resultLabel')}
         </p>
