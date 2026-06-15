@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import type { ReportDetail, YearFlowMonth } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import { shareReport } from '@sajuguri/api-client'
@@ -175,21 +174,6 @@ export default function ReportView({
     )
   }
 
-  // birth 쿼리 재구성 (다시 생성 CTA용)
-  const bi = report.birth_input
-  const regenQuery = new URLSearchParams(
-    Object.entries({
-      name: bi.name,
-      birth_date: bi.birth_date,
-      birth_time: bi.birth_time,
-      gender: bi.gender,
-      calendar: bi.calendar,
-      is_leap_month: bi.is_leap_month,
-    })
-      .filter(([, v]) => v !== undefined && v !== null && v !== '')
-      .map(([k, v]) => [k, String(v)]),
-  ).toString()
-
   const chartsToolByName = buildChartsToolByName(report.charts)
 
   return (
@@ -211,18 +195,6 @@ export default function ReportView({
         shareMode={shareMode}
         chartsToolByName={chartsToolByName}
       />
-
-      {/* 다시 생성 CTA (공유 모드에서는 숨김) */}
-      {!shareMode && (
-        <div className="pb-4">
-          <Link
-            href={`/report/new?${regenQuery}`}
-            className="block w-full rounded-xl border-2 border-ink bg-surface py-3 text-center text-sm font-extrabold text-ink shadow-[4px_4px_0_#1A1A1A]"
-          >
-            {t('page.regenerateBtn')}
-          </Link>
-        </div>
-      )}
 
       {/* 공유 모달 */}
       <ShareModal
