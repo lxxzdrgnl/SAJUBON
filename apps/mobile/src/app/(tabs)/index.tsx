@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native'
 import { Pressable, Text, View } from 'react-native'
 import { useRouter } from 'expo-router'
-import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg'
+import Svg, { Path } from 'react-native-svg'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Screen } from '@/components/ui/Screen'
 import { BrutalCard } from '@/components/ui/BrutalCard'
 import { BrutalShadow } from '@/components/ui/BrutalShadow'
@@ -27,18 +28,15 @@ function bannerStops(stem?: string | null): [string, string] {
   return (stem && STEM_GRADIENT[stem]) || DEFAULT_GRADIENT
 }
 
-// SVG linear gradient 배너 배경 (135deg ≈ x2=0.7 y2=0.7 in normalized coords)
+// 배너 배경 그라데이션 — expo-linear-gradient (135deg ≈ start 0,0 → end 0.9,0.9)
 function GradientBg({ stop1, stop2, borderRadius }: { stop1: string; stop2: string; borderRadius: number }) {
   return (
-    <Svg style={StyleSheet.absoluteFillObject}>
-      <Defs>
-        <LinearGradient id="bannerGrad" x1="0" y1="0" x2="0.7" y2="0.7">
-          <Stop offset="0" stopColor={stop1} />
-          <Stop offset="1" stopColor={stop2} />
-        </LinearGradient>
-      </Defs>
-      <Rect width="100%" height="100%" fill="url(#bannerGrad)" rx={borderRadius} ry={borderRadius} />
-    </Svg>
+    <LinearGradient
+      colors={[stop1, stop2]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0.9, y: 0.9 }}
+      style={[StyleSheet.absoluteFill, { borderRadius }]}
+    />
   )
 }
 
