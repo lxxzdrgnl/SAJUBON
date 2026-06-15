@@ -14,8 +14,8 @@ import { askQuestion, shareConsultation } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import MascotTinted from '@/components/ui/MascotTinted'
 import MansePickerSheet, { type MansePick } from '@/components/manse/MansePickerSheet'
-import ToolCard from '@/components/chat/ToolCard'
 import Markdown from '@/components/ui/Markdown'
+import { renderTextWithCharts } from '@/lib/chat/chartMarkers'
 import ShareModal from '@/components/ui/ShareModal'
 import { useShareModal } from '@/lib/hooks/useShareModal'
 
@@ -23,7 +23,6 @@ import { useShareModal } from '@/lib/hooks/useShareModal'
 
 export default function QuestionPage() {
   const t = useTranslations('question')
-  const tToolCard = useTranslations('chat.toolCard')
   const locale = useLocale()
 
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -33,7 +32,6 @@ export default function QuestionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ id: number; headline: string; content: string; category: string; charts?: ToolChartItem[]; more?: ToolChartItem[] } | null>(null)
-  const [openMore, setOpenMore] = useState<Set<number>>(new Set())
   const { shareUrl, sharing, share, close } = useShareModal()
 
   // 프로필 목록 — 클라이언트에서 로드 (SSR 없음, 게스트 허용 페이지)
@@ -104,72 +102,34 @@ export default function QuestionPage() {
     share(() => shareConsultation(api, result.id).then(({ share_url }) => share_url))
   }
 
-  function toggleMore(idx: number) {
-    setOpenMore((prev) => {
-      const next = new Set(prev)
-      if (next.has(idx)) next.delete(idx)
-      else next.add(idx)
-      return next
-    })
-  }
-
   // 결과 화면
   if (result) {
-    const charts = result.charts ?? []
-    const more = result.more ?? []
-    const hasChartArea = charts.length > 0 || more.length > 0
+    // 채팅과 동일 — charts(tool→payload) 맵으로 content의 [[chart:...]] 마커를 인라인
+    // ToolCard로 렌더한다. 가벼운 질문은 마커가 없어 텍스트만 나온다.
+    const toolByName: Record<string, Record<string, unknown>> = Object.fromEntries(
+      (result.charts ?? []).map((c) => [c.tool, c.payload as Record<string, unknown>]),
+    )
 
     return (
       <main className="flex flex-col gap-5">
         <h1 className="text-lg font-black">{t('title')}</h1>
 
-        <div className="rounded-2xl border-2 border-ink bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+        <div className="rounded-2xl border-2 border-[#4DA8E8] bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
           <p className="mb-3 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
             {t('resultLabel')}
           </p>
           <p className="mb-2 text-[18px] font-black leading-snug text-ink">{result.headline}</p>
-          <Markdown className="text-[14px] text-ink">{result.content}</Markdown>
+          <div className="flex flex-col gap-3">
+            {renderTextWithCharts(result.content, toolByName, 'q', {
+              renderText: (seg, key) => (
+                <Markdown key={key} className="text-[14px] text-ink">{seg}</Markdown>
+              ),
+            })}
+          </div>
           <span className="mt-4 inline-block rounded-full border-[1.5px] border-ink bg-orange px-3 py-0.5 text-[11px] font-extrabold text-white">
             {result.category}
           </span>
         </div>
-
-        {hasChartArea && (
-          <div className="flex flex-col gap-3">
-            {charts.map((item, i) => (
-              <ToolCard key={i} tool={item.tool} payload={item.payload} />
-            ))}
-
-            {more.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap gap-2">
-                  {more.map((item, i) => {
-                    const isOpen = openMore.has(i)
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => toggleMore(i)}
-                        className={`rounded-full border-2 px-3 py-1 text-[12px] font-extrabold transition-colors ${
-                          isOpen
-                            ? 'border-teal bg-teal-tint text-teal-deep'
-                            : 'border-border-soft bg-surface text-text-sub hover:border-ink hover:text-ink'
-                        }`}
-                      >
-                        {tToolCard.has(`labels.${item.tool}`) ? tToolCard(`labels.${item.tool}`) : item.tool}
-                      </button>
-                    )
-                  })}
-                </div>
-                {more.map((item, i) =>
-                  openMore.has(i) ? (
-                    <ToolCard key={i} tool={item.tool} payload={item.payload} />
-                  ) : null
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="flex flex-col gap-2">
           <button
@@ -182,7 +142,7 @@ export default function QuestionPage() {
           </button>
           <button
             className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
-            onClick={() => { setResult(null); setQuestion(''); setOpenMore(new Set()); close() }}
+            onClick={() => { setResult(null); setQuestion(''); close() }}
           >
             {t('askAgain')}
           </button>

@@ -3,8 +3,8 @@ import { getTranslations } from 'next-intl/server'
 import { serverApi } from '@/lib/api'
 import { getSharedConsultation } from '@sajuguri/api-client'
 import type { ConsultationDetail } from '@sajuguri/api-client'
-import SharedCharts from './SharedCharts'
 import Markdown from '@/components/ui/Markdown'
+import { renderTextWithCharts } from '@/lib/chat/chartMarkers'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,20 +84,24 @@ export default async function SharedConsultationPage({
         <p className="text-[14px] font-bold text-ink">{detail.question}</p>
       </div>
 
-      {/* 상담 결과 */}
-      <div className="rounded-2xl border-2 border-ink bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+      {/* 상담 결과 — 채팅과 동일: content의 [[chart:...]] 마커를 인라인 ToolCard로 렌더 */}
+      <div className="rounded-2xl border-2 border-[#4DA8E8] bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
         <p className="mb-3 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
           {tq('resultLabel')}
         </p>
         <p className="mb-2 text-[18px] font-black leading-snug text-ink">{detail.headline}</p>
-        <Markdown className="text-[14px] text-ink">{detail.content}</Markdown>
+        <div className="flex flex-col gap-3">
+          {renderTextWithCharts(
+            detail.content,
+            Object.fromEntries((detail.charts ?? []).map((c) => [c.tool, c.payload])) as Record<string, Record<string, unknown>>,
+            'sq',
+            { renderText: (seg, key) => <Markdown key={key} className="text-[14px] text-ink">{seg}</Markdown> },
+          )}
+        </div>
         <span className="mt-4 inline-block rounded-full border-[1.5px] border-ink bg-orange px-3 py-0.5 text-[11px] font-extrabold text-white">
           {detail.category}
         </span>
       </div>
-
-      {/* 사주 분석 차트 (저장본) */}
-      <SharedCharts charts={detail.charts ?? []} more={detail.more ?? []} />
 
       {/* 나도 한줄상담 받기 CTA */}
       <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
