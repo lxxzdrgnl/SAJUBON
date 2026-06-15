@@ -125,8 +125,11 @@ async def generate_consultation(
 ) -> ConsultationOutput:
     """
     한줄 상담 LLM 호출 — ConsultationOutput(headline, content) 반환.
+
+    모델은 gpt-4.1-mini — nano는 content 안 [[chart:...]] 마커 지시를 따르지 않아
+    차트가 안 붙는다(채팅이 차트 때문에 mini를 쓰는 것과 동일).
     """
-    llm = get_llm(provider)
+    llm = get_llm(provider, model="gpt-4.1-mini")
 
     parser: PydanticOutputParser[ConsultationOutput] = PydanticOutputParser(
         pydantic_object=ConsultationOutput
