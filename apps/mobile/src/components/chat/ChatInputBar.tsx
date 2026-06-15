@@ -11,9 +11,10 @@ interface Props {
   onChange: (v: string) => void
   onSend: () => void
   disabled?: boolean
+  placeholder?: string
 }
 
-export function ChatInputBar({ value, onChange, onSend, disabled }: Props) {
+export function ChatInputBar({ value, onChange, onSend, disabled, placeholder }: Props) {
   const insets = useSafeAreaInsets()
   const inputRef = useRef<TextInput>(null)
 
@@ -47,7 +48,7 @@ export function ChatInputBar({ value, onChange, onSend, disabled }: Props) {
           maxHeight: 120,
           lineHeight: 21,
         }}
-        placeholder="메시지를 입력하세요…"
+        placeholder={placeholder ?? '메시지를 입력하세요…'}
         placeholderTextColor="#C0B8A8"
         value={value}
         onChangeText={onChange}
