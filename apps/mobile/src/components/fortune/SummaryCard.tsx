@@ -10,6 +10,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView, Pressable, Animated, ActivityIndicator, Alert } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Constants from 'expo-constants'
 import * as MediaLibrary from 'expo-media-library'
 import * as Sharing from 'expo-sharing'
@@ -43,6 +44,7 @@ interface Props {
 
 export function SummaryCard({ story, onClose, palette }: Props) {
   const { ink, inkSoft, accent, base } = palette
+  const insets = useSafeAreaInsets()
   const viewShotRef = useRef<ViewShot>(null)
   const [saving, setSaving] = useState(false)
   const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions()
@@ -127,14 +129,14 @@ export function SummaryCard({ story, onClose, palette }: Props) {
   return (
     <ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 }}
+      contentContainerStyle={{ flexGrow: 1, paddingTop: 12 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* ViewShot 래퍼 — 이 영역만 캡처 */}
+      {/* ViewShot 래퍼 — 풀블리드(웹과 동일: 별도 카드 박스 없이 페이지 배경에 직접). 이 영역만 캡처. */}
       <ViewShot
         ref={viewShotRef}
         options={{ format: 'png', quality: 1.0 }}
-        style={{ backgroundColor: base, borderRadius: 16, padding: 20, marginBottom: 20 }}
+        style={{ backgroundColor: base, paddingHorizontal: 24, paddingTop: 4, paddingBottom: 16 }}
       >
         {/* 브랜드 헤더 */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -272,8 +274,8 @@ export function SummaryCard({ story, onClose, palette }: Props) {
         </Text>
       </ViewShot>
 
-      {/* CTA 버튼 — 웹과 동일: [이미지 저장][링크 공유] 가로 2개 */}
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+      {/* CTA 버튼 — 웹과 동일: [이미지 저장][링크 공유] 가로 2개. mt-auto로 하단 고정. */}
+      <View style={{ flexDirection: 'row', gap: 12, marginTop: 'auto', paddingHorizontal: 24, paddingTop: 12, paddingBottom: insets.bottom + 16 }}>
         {/* 이미지 저장 — 잉크 솔리드 */}
         <Pressable
           onPress={handleSaveImage}
