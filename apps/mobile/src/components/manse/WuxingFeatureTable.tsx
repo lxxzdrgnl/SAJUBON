@@ -1,47 +1,76 @@
 import { View, Text } from 'react-native'
-import { BrutalCard } from '@/components/ui/BrutalCard'
-import { ohaengColor } from '@/lib/manse/ohaeng'
 import type { SajuCalcResponse } from '@sajuguri/api-client'
+import { Accordion } from '@/components/ui/Accordion'
+import { Chip } from '@/components/ui/Chip'
+import { ohaengColor } from '@/lib/manse/ohaeng'
+import { colors } from '@/theme'
 
-const WUXING_ORDER = ['木', '火', '土', '金', '水']
-const WUXING_FEATURES: Record<string, { organ: string; direction: string; season: string }> = {
-  木: { organ: '간·담', direction: '동', season: '봄' },
-  火: { organ: '심장·소장', direction: '남', season: '여름' },
-  土: { organ: '비장·위', direction: '중앙', season: '환절기' },
-  金: { organ: '폐·대장', direction: '서', season: '가을' },
-  水: { organ: '신장·방광', direction: '북', season: '겨울' },
+// 오행 특성 참고표 — 웹 WuxingFeatureTable 미러. 과다(dominant)·부족(weak) 오행 강조.
+// 정적 데이터(웹과 동일), 퍼센트 표시 안 함. Accordion으로 접힘.
+const FEATURES = [
+  { el: '목', dir: '동 · 봄', traits: '창의·성장·인자함', body: '간·담·눈', jobs: '교육·의료·법' },
+  { el: '화', dir: '남 · 여름', traits: '열정·표현·명랑함', body: '심장·소장·혀', jobs: '방송·영업·IT' },
+  { el: '토', dir: '중앙 · 환절기', traits: '신뢰·중용·포용력', body: '위·비장·입', jobs: '부동산·금융·중개' },
+  { el: '금', dir: '서 · 가을', traits: '의리·결단·정의감', body: '폐·대장·코', jobs: '군경·기계·법조' },
+  { el: '수', dir: '북 · 겨울', traits: '지혜·유연·통찰력', body: '신장·방광·귀', jobs: '철학·유통·무역' },
+] as const
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={{ flexDirection: 'row', gap: 6 }}>
+      <Text style={{ fontSize: 11, color: colors.textSub, width: 64 }}>{label}</Text>
+      <Text style={{ fontSize: 11, color: colors.ink, flex: 1, fontWeight: '600' }}>{value}</Text>
+    </View>
+  )
 }
 
 export function WuxingFeatureTable({ data }: { data: SajuCalcResponse }) {
-  const count = data.wuxing_count ?? {}
-  const total = Object.values(count).reduce((s, v) => s + (v as number), 0) || 1
+  const dominant = data.dominant_elements ?? []
+  const weak = data.weak_elements ?? []
 
   return (
-    <BrutalCard>
-      <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 10 }}>오행 특성 참고표</Text>
-      <View style={{ gap: 6 }}>
-        {WUXING_ORDER.map((w) => {
-          const n = (count[w] as number) ?? 0
-          const pct = Math.round((n / total) * 100)
-          const color = ohaengColor(w)
-          const feat = WUXING_FEATURES[w]
+    <Accordion title="오행 특성 참고표">
+      <View style={{ gap: 12 }}>
+        {FEATURES.map((f) => {
+          const isOver = dominant.includes(f.el)
+          const isLack = weak.includes(f.el)
+          const color = ohaengColor(f.el)
           return (
-            <View key={w} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={{
-                width: 28, height: 28, borderRadius: 6,
-                borderWidth: 1.5, borderColor: '#1A1A1A',
-                backgroundColor: color, alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Text style={{ fontSize: 13, fontWeight: '800', color: '#1A1A1A' }}>{w}</Text>
+            <View
+              key={f.el}
+              style={{
+                gap: 4,
+                paddingBottom: 10,
+                borderBottomWidth: f.el === '수' ? 0 : 1,
+                borderBottomColor: colors.borderSoft,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <View
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 6,
+                    borderWidth: 1.5,
+                    borderColor: colors.ink,
+                    backgroundColor: `${color}22`,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ fontSize: 14, fontWeight: '900', color }}>{f.el}</Text>
+                </View>
+                {isOver && <Chip label="과다" variant="unlucky" />}
+                {isLack && <Chip label="부족" variant="lucky" />}
               </View>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: '#1A1A1A', width: 32 }}>{pct}%</Text>
-              <Text style={{ fontSize: 11, color: '#8A8270', flex: 1 }}>
-                {feat.organ} · {feat.direction} · {feat.season}
-              </Text>
+              <Field label="방위·계절" value={f.dir} />
+              <Field label="성격 특성" value={f.traits} />
+              <Field label="관련 신체" value={f.body} />
+              <Field label="어울리는 직업" value={f.jobs} />
             </View>
           )
         })}
       </View>
-    </BrutalCard>
+    </Accordion>
   )
 }
