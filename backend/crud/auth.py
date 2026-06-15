@@ -10,15 +10,25 @@ from core.security import create_access_token, generate_refresh_token, hash_toke
 from db.models import RefreshToken, User
 
 
-async def get_or_create_user(db: AsyncSession, email: str, social_id: str) -> User:
-    """이메일로 유저를 조회하고 없으면 생성한다. commit은 호출자 책임."""
+async def get_or_create_user(
+    db: AsyncSession, email: str, social_id: str, name: str | None = None
+) -> User:
+    """이메일로 유저를 조회하고 없으면 생성한다. commit은 호출자 책임.
+
+    name(구글 프로필 닉네임)은 생성 시 저장하고, 기존 유저는 로그인할 때마다
+    최신 구글 닉네임으로 동기화한다(닉네임이 바뀌면 반영).
+    """
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if not user:
-        user = User(email=email, provider="google", social_id=social_id, role="user")
+        user = User(email=email, name=name, provider="google", social_id=social_id, role="user")
         db.add(user)
         await db.flush()
         await db.refresh(user)
+    elif name and user.name != name:
+        # 로그인 때마다 최신 구글 닉네임으로 동기화 (변경 반영 + 과거 미저장분 보강)
+        user.name = name
+        await db.flush()
     return user
 
 

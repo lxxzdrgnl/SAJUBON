@@ -69,9 +69,9 @@ export default async function Home() {
     }
   }
 
-  // 대표 만세력 이름 → 없으면 이메일 로컬파트 폴백 — 로그인 시 시간대별 랜덤 인사말 (KST 기준)
+  // 대표 만세력 이름 → 없으면 구글 닉네임 → 마지막으로 이메일 로컬파트 폴백 (KST 기준 인사말)
   const repProfile = profiles.find((p) => p.is_representative)
-  const name = repProfile?.name ?? (user?.email ? user.email.split('@')[0] : null)
+  const name = repProfile?.name ?? user?.name ?? (user?.email ? user.email.split('@')[0] : null)
 
   const repStem = repProfile?.day_stem ?? null
   const hourKST = (new Date().getUTCHours() + 9) % 24

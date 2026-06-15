@@ -4,6 +4,8 @@ import type { ApiClient } from './client'
 export interface MeResponse {
   id: number
   email: string
+  /** 구글 프로필 닉네임 (소셜 로그인 시 저장). 없으면 null. */
+  name: string | null
   role: string
   provider: string
 }

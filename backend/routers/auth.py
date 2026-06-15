@@ -89,9 +89,10 @@ def _clear_auth_cookies(resp: Response) -> None:
 @router.get("/google", summary="Google OAuth 로그인 시작")
 async def google_login(request: Request, client: str | None = None):
     # client=web 이면 콜백에서 httpOnly 쿠키 모드로 처리한다 (신규 Next.js web).
+    # client=native 이면 콜백에서 딥링크 프래그먼트로 토큰을 반환한다 (React Native 앱).
     # 그 외(레거시 Nuxt)는 기존 쿼리 토큰 리다이렉트를 유지한다.
-    if client == "web":
-        request.session["oauth_client"] = "web"
+    if client in ("web", "native"):
+        request.session["oauth_client"] = client
     else:
         request.session.pop("oauth_client", None)
     return await oauth.google.authorize_redirect(request, settings.google_redirect_uri)
@@ -110,19 +111,33 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
     email = user_info.get("email")
     social_id = user_info.get("sub")
+    name = user_info.get("name")
     if not email:
         raise OAuthFailedException("이메일 정보가 없습니다.")
 
     try:
-        access_token, refresh_token = await social_login(db, email, social_id)
+        access_token, refresh_token = await social_login(db, email, social_id, name)
     except Exception as e:
         raise DatabaseException(str(e))
 
+    oauth_client = request.session.pop("oauth_client", None)
+
     # 신규 web — httpOnly 쿠키를 심고 web URL로 리다이렉트.
-    if request.session.pop("oauth_client", None) == "web":
+    if oauth_client == "web":
         resp = RedirectResponse(url=f"{settings.web_url}/auth/done", status_code=302)
         _set_auth_cookies(resp, access_token, refresh_token)
         return resp
+
+    # native(React Native 앱) — 딥링크의 URL 프래그먼트(#)로 토큰을 전달한다.
+    # 쿼리스트링이 아닌 프래그먼트라 중간 경유 서버 로그에 토큰이 남지 않는다. 쿠키는 심지 않는다.
+    if oauth_client == "native":
+        deeplink = (
+            f"{settings.native_auth_redirect}"
+            f"#access_token={access_token}"
+            f"&refresh_token={refresh_token}"
+            f"&expires_in={settings.jwt_expire_minutes * 60}"
+        )
+        return RedirectResponse(url=deeplink, status_code=302)
 
     # 레거시 Nuxt — 기존 쿼리 토큰 리다이렉트 그대로 유지.
     redirect_url = (
@@ -175,6 +190,7 @@ async def get_me(user: User = Depends(get_current_user)):
     return {
         "id": user.id,
         "email": user.email,
+        "name": user.name,
         "role": user.role,
         "provider": user.provider,
     }
