@@ -1,12 +1,36 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { serverApi } from '@/lib/api'
 import { getSharedFortune } from '@sajuguri/api-client'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
+import { cardPalette, hashSeed } from '@/lib/fortune/story'
 import FortuneStoryPage from '@/components/fortune/FortuneStoryPage'
 
 export const dynamic = 'force-dynamic'
+
+// 공유 스토리는 첫 카드 색을 SSR theme-color로 박는다 — iOS Safari는 첫 페인트 색으로
+// 상하 크롬을 동결하므로, 이렇게 해야 상하단이 흰색이 아니라 카드 색으로 칠해진다.
+// (생성본과 동일한 시드 규칙으로 첫 카드 팔레트를 계산.)
+export async function generateViewport({
+  params,
+}: {
+  params: Promise<{ token: string }>
+}): Promise<Viewport> {
+  const { token } = await params
+  let story: DailyStoryResponse | null = null
+  try {
+    story = await getSharedFortune(serverApi, token)
+  } catch {
+    story = null
+  }
+  const first = story?.cards?.[0]
+  if (!story || !first) return { themeColor: '#FFFBF2', viewportFit: 'cover' }
+  const scoresSeed = Object.keys(story.scores).sort().map((k) => `${k}:${story.scores[k]}`).join(',')
+  const seed = hashSeed(`${story.date}|${story.profile_name ?? ''}|${scoresSeed}`)
+  const pal = cardPalette(first.kind, (first as { category_key?: string }).category_key, seed)
+  return { themeColor: pal.base, viewportFit: 'cover' }
+}
 
 /** 총점 — overall 카드 점수 또는 카테고리 평균 (SummaryCard와 동일 규칙). */
 function overallScore(story: DailyStoryResponse): number | undefined {
