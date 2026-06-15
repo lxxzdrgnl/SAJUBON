@@ -93,37 +93,27 @@ export default async function Home() {
       {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
       <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
         <section
-          className="flex items-center gap-3 rounded-[18px] border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A]"
+          className="relative flex min-h-[132px] items-center gap-3 overflow-hidden rounded-[18px] border-2 border-ink p-5 shadow-[4px_4px_0_#1A1A1A]"
           style={{ background: bannerGradient(repStem) }}
         >
-          {/* 만세력 목록 아바타와 동일 규격 (h-11 rounded-xl, 마스코트 40px) */}
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
-            <MascotTinted stem={repStem} width={40} height={40} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
-            <p className="text-xs font-semibold text-ink">{fortuneSub}</p>
+          <div className="relative z-10 min-w-0 flex-1 pr-28">
+            <h2 className="text-xl font-black leading-tight">{t('fortuneBannerCta')}</h2>
+            <p className="mt-1.5 text-xs font-semibold text-ink">{fortuneSub}</p>
           </div>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="shrink-0 text-ink opacity-60"
+          {/* 구슬 마스코트 — 우측 */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/mascot/fortune.png"
+            alt=""
             aria-hidden="true"
-          >
-            <path d="M9 6l6 6-6 6" />
-          </svg>
+            className="pointer-events-none absolute -bottom-1 right-0 z-0 h-32 w-32 object-contain"
+          />
         </section>
       </FortuneBannerClient>
 
       <h3 className="mb-3 mt-5 text-[15px] font-extrabold">{t('sectionTitle')}</h3>
       <div className="flex flex-col gap-3">
-        {/* 만세력 보기 — 만세력 선택 시트 → /manse/result */}
+        {/* 만세력 보기 — 전체폭. 만세력 선택 시트 → /manse/result */}
         <ManseEntryButton profiles={profiles} isLoggedIn={!!user}>
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.manse} bg="#7BD3C8" color="var(--ink)" />
@@ -135,23 +125,37 @@ export default async function Home() {
           </BrutalCard>
         </ManseEntryButton>
 
-        {/* 사주 풀리포트 — 프로필 선택 시트 → /report/new */}
-        <ReportEntryButton profiles={profiles} isLoggedIn={!!user}>
-          <BrutalCard className="flex items-center gap-3">
-            <CardIcon d={ICONS.doc} bg="#FFD900" color="var(--ink)" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-extrabold">
-                {t('cards.report.title')}
-                <span className="ml-1 inline-block rounded-full border-[1.5px] border-ink bg-orange px-2 text-[10px] font-extrabold text-white align-[2px]">
-                  {t('cards.report.badge')}
-                </span>
-              </p>
-              <p className="mt-0.5 text-xs text-text-sub">{t('cards.report.desc')}</p>
-            </div>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-          </BrutalCard>
-        </ReportEntryButton>
+        {/* 내 사주 리포트 · 궁합 리포트 — 2열 그리드. 아이콘 자리에 마스코트. */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* 사주 풀리포트 — 프로필 선택 시트 → /report/new */}
+          <ReportEntryButton profiles={profiles} isLoggedIn={!!user}>
+            <BrutalCard className="flex h-full min-h-[120px] flex-col gap-2">
+              <CardIcon d={ICONS.doc} bg="#FFD900" color="var(--ink)" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-extrabold">
+                  {t('cards.report.title')}
+                  <span className="ml-1 inline-block rounded-full border-[1.5px] border-ink bg-orange px-2 text-[10px] font-extrabold text-white align-[2px]">
+                    {t('cards.report.badge')}
+                  </span>
+                </p>
+                <p className="mt-0.5 text-xs text-text-sub">{t('cards.report.desc')}</p>
+              </div>
+            </BrutalCard>
+          </ReportEntryButton>
 
+          {/* 궁합 리포트 — /compatibility/new */}
+          <Link href="/compatibility/new" className="h-full">
+            <BrutalCard className="flex h-full min-h-[120px] flex-col gap-2">
+              <CardIcon d={ICONS.heart} bg="#4DA8E8" color="#FFFFFF" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-extrabold">{t('cards.compatibility.title')}</p>
+                <p className="mt-0.5 text-xs text-text-sub">{t('cards.compatibility.desc')}</p>
+              </div>
+            </BrutalCard>
+          </Link>
+        </div>
+
+        {/* AI 사주 상담 — 전체폭 */}
         <Link href="/chat">
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.chat} bg="#00C2B8" color="#FFFFFF" />
@@ -163,25 +167,13 @@ export default async function Home() {
           </BrutalCard>
         </Link>
 
-        {/* 한 번 물어보기 — 활성 카드 → /question */}
+        {/* 한 번 물어보기 — 전체폭 → /question */}
         <Link href="/question">
           <BrutalCard className="flex items-center gap-3">
             <CardIcon d={ICONS.bolt} bg="#FFB200" color="#FFFFFF" />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-extrabold">{t('cards.question.title')}</p>
               <p className="mt-0.5 text-xs text-text-sub">{t('cards.question.desc')}</p>
-            </div>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-          </BrutalCard>
-        </Link>
-
-        {/* 궁합 리포트 — /compatibility/new */}
-        <Link href="/compatibility/new">
-          <BrutalCard className="flex items-center gap-3">
-            <CardIcon d={ICONS.heart} bg="#4DA8E8" color="#FFFFFF" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-extrabold">{t('cards.compatibility.title')}</p>
-              <p className="mt-0.5 text-xs text-text-sub">{t('cards.compatibility.desc')}</p>
             </div>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink opacity-60" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </BrutalCard>

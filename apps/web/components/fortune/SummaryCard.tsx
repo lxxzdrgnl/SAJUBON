@@ -250,7 +250,8 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       className="flex flex-1 min-h-0 flex-col overflow-y-auto px-6 pt-3 select-none"
       style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
     >
-      {/* 브랜드 헤더 — 너구리 마크 + 사주구리 + 날짜 */}
+      {/* 브랜드 헤더 — 너구리 마크 + 사주구리. 날짜는 진행바 밑 좌상단에 이미 있어 화면에선 생략
+          (중복 방지). 단, 저장 이미지(canvas)에는 날짜를 그대로 그린다 — handleSaveImage 참고. */}
       <div className="mb-2 flex items-center justify-between" style={rise(0)}>
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -259,9 +260,6 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
             사주구리
           </span>
         </div>
-        <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: inkSoft }}>
-          {story.date}
-        </p>
       </div>
 
       {/* 총점 히어로 */}
@@ -352,7 +350,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       {shareMode ? (
         <div className="mt-auto pt-3" style={rise(orderedKeys.length * 80 + 540)}>
           <a
-            href="/fortune"
+            href="/?fortune=1"
             className="flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[2px]"
             style={{ background: ink, color: base }}
             onClick={(e) => e.stopPropagation()}

@@ -83,6 +83,7 @@
   "home": {
     "title": "사주구리",
     "fortuneBanner": "오늘의 운세",
+    "fortuneBannerCta": "오늘의 운세 보러가기",
     "fortuneSub": "너의 하루는?",
     "sectionTitle": "이런 건 어때?",
     "cards": {

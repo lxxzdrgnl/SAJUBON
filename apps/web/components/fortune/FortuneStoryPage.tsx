@@ -129,7 +129,9 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
       const pname = params.get('pname') || params.get('name') || ''
 
       if (!birthDate || !gender) {
-        if (!cancelled) { setError(t('error')); setLoading(false) }
+        // 파라미터 없이 진입(공유 링크로 온 방문자 등) → 막다른 에러 대신 홈으로 보내
+        // 만세력 선택 모달을 띄운다.
+        if (!cancelled) router.replace('/?fortune=1')
         return
       }
 
@@ -383,6 +385,20 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
             </svg>
           </button>
         </div>
+
+        {/* 진행바 밑 좌측 — 이름 + 날짜 (스토리 내내 고정) */}
+        {!loading && !error && story && (
+          <div className="flex shrink-0 items-center gap-2 px-4 pb-1">
+            {story.profile_name && (
+              <span className="text-[13px] font-extrabold" style={{ color: palette.ink }}>
+                {story.profile_name}
+              </span>
+            )}
+            <span className="text-[11px] font-semibold tabular-nums" style={{ color: palette.inkSoft }}>
+              {story.date}
+            </span>
+          </div>
+        )}
 
         {/* 카드 영역 — 탭 네비 포함 */}
         <div
