@@ -19,7 +19,7 @@ export default function ReportEntryButton({ profiles, isLoggedIn, children }: Pr
   return (
     <>
       <button
-        className="block w-full cursor-pointer text-left"
+        className="block h-full w-full cursor-pointer text-left"
         onClick={() => setSheetOpen(true)}
       >
         {children}
