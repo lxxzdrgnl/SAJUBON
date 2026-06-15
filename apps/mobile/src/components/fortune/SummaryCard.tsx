@@ -13,7 +13,7 @@ import { View, Text, ScrollView, Pressable, Animated, ActivityIndicator, Alert }
 import Constants from 'expo-constants'
 import * as MediaLibrary from 'expo-media-library'
 import * as Sharing from 'expo-sharing'
-import ViewShot, { type ViewShotRef } from 'react-native-view-shot'
+import ViewShot from 'react-native-view-shot'
 
 // react-native-view-shot은 네이티브 모듈 — Expo Go엔 없다. 개발 빌드에서만 캡처가 동작한다.
 const IS_EXPO_GO = Constants.executionEnvironment === 'storeClient'
@@ -40,7 +40,7 @@ interface Props {
 
 export function SummaryCard({ story, onClose, palette }: Props) {
   const { ink, inkSoft, accent, base } = palette
-  const viewShotRef = useRef<ViewShotRef>(null)
+  const viewShotRef = useRef<ViewShot>(null)
   const [saving, setSaving] = useState(false)
   const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions()
 
@@ -98,8 +98,8 @@ export function SummaryCard({ story, onClose, palette }: Props) {
         }
       }
 
-      if (!viewShotRef.current) return
-      const uri = await viewShotRef.current.capture()
+      const uri = await viewShotRef.current?.capture?.()
+      if (!uri) return
 
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: '운세 이미지 저장' })

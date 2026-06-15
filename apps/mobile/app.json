@@ -27,7 +27,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
       [
         "expo-splash-screen",
         {
@@ -35,9 +34,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120
         }
-      ],
-      "expo-localization",
-      "expo-sharing"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

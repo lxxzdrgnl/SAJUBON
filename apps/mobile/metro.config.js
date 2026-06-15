@@ -10,8 +10,8 @@ const workspaceRoot = path.resolve(projectRoot, '../..')
 
 const config = getDefaultConfig(projectRoot)
 
-// 모노레포: 루트까지 감시 + 루트 node_modules도 해석 대상에 포함
-config.watchFolders = [workspaceRoot]
+// 모노레포: 루트까지 감시 + 루트 node_modules도 해석 대상에 포함 (Expo 기본 watchFolders 유지)
+config.watchFolders = [...(config.watchFolders ?? []), workspaceRoot]
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
