@@ -83,9 +83,9 @@
   "home": {
     "title": "사주구리",
     "fortuneBanner": "오늘의 운세",
+    "fortuneBannerCta": "오늘의 운세 보러가기",
     "fortuneSub": "너의 하루는?",
     "sectionTitle": "이런 건 어때?",
-    "reportSectionTitle": "같이 정밀 분석해보기",
     "cards": {
       "manse": { "title": "만세력 보기", "desc": "내 사주 원국을 한눈에" },
       "report": {

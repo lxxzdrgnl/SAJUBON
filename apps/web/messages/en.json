@@ -83,9 +83,9 @@
   "home": {
     "title": "SajuGuri",
     "fortuneBanner": "Today's Fortune",
+    "fortuneBannerCta": "See today's fortune",
     "fortuneSub": "How's your day?",
     "sectionTitle": "What about these?",
-    "reportSectionTitle": "Analyze in detail together",
     "cards": {
       "manse": { "title": "View Saju Chart", "desc": "Your full natal chart at a glance" },
       "report": {

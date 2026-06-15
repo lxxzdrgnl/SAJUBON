@@ -93,31 +93,21 @@ export default async function Home() {
       {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
       <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
         <section
-          className="flex items-center gap-3 rounded-[18px] border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A]"
+          className="relative flex min-h-[132px] items-center gap-3 overflow-hidden rounded-[18px] border-2 border-ink p-5 shadow-[4px_4px_0_#1A1A1A]"
           style={{ background: bannerGradient(repStem) }}
         >
-          {/* 만세력 목록 아바타와 동일 규격 (h-11 rounded-xl, 마스코트 40px) */}
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
-            <MascotTinted stem={repStem} width={40} height={40} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-black">{t('fortuneBanner')}</h2>
-            <p className="text-xs font-semibold text-ink">{fortuneSub}</p>
+          <div className="relative z-10 min-w-0 flex-1 pr-28">
+            <h2 className="text-xl font-black leading-tight">{t('fortuneBannerCta')}</h2>
+            <p className="mt-1.5 text-xs font-semibold text-ink">{fortuneSub}</p>
           </div>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="shrink-0 text-ink opacity-60"
+          {/* 구슬 마스코트 — 우측 */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/mascot/fortune.png"
+            alt=""
             aria-hidden="true"
-          >
-            <path d="M9 6l6 6-6 6" />
-          </svg>
+            className="pointer-events-none absolute -bottom-1 right-0 z-0 h-32 w-32 object-contain"
+          />
         </section>
       </FortuneBannerClient>
 
@@ -135,14 +125,11 @@ export default async function Home() {
           </BrutalCard>
         </ManseEntryButton>
 
-        {/* 정밀 분석 소제목 */}
-        <h4 className="mt-2 text-[13px] font-extrabold text-text-sub">{t('reportSectionTitle')}</h4>
-
-        {/* 내 사주 리포트 · 궁합 리포트 — 2열 그리드 (세로형 카드) */}
+        {/* 내 사주 리포트 · 궁합 리포트 — 2열 그리드. 아이콘 자리에 마스코트. */}
         <div className="grid grid-cols-2 gap-3">
           {/* 사주 풀리포트 — 프로필 선택 시트 → /report/new */}
           <ReportEntryButton profiles={profiles} isLoggedIn={!!user}>
-            <BrutalCard className="flex h-full flex-col gap-2">
+            <BrutalCard className="flex h-full min-h-[120px] flex-col gap-2">
               <CardIcon d={ICONS.doc} bg="#FFD900" color="var(--ink)" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-extrabold">
@@ -158,7 +145,7 @@ export default async function Home() {
 
           {/* 궁합 리포트 — /compatibility/new */}
           <Link href="/compatibility/new" className="h-full">
-            <BrutalCard className="flex h-full flex-col gap-2">
+            <BrutalCard className="flex h-full min-h-[120px] flex-col gap-2">
               <CardIcon d={ICONS.heart} bg="#4DA8E8" color="#FFFFFF" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-extrabold">{t('cards.compatibility.title')}</p>
