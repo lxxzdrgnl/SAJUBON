@@ -5,7 +5,8 @@ import { useTranslations } from 'next-intl'
 import type { ReportTab } from '@sajuguri/api-client'
 import type { ReactNode } from 'react'
 import Markdown from '@/components/ui/Markdown'
-import { renderTextWithCharts } from '@/lib/chat/chartMarkers'
+import ToolCard from '@/components/chat/ToolCard'
+import { renderTextWithCharts, markerToolsInText, CHART_MARKER_RE } from '@/lib/chat/chartMarkers'
 
 // ── 헤드라인 아코디언 ──────────────────────────────────────────────────────────
 
@@ -87,15 +88,28 @@ function TabAccordion({
         <div className="border-t-2 border-dashed border-ink px-4 py-3">
           {paragraphs.map((para, i) =>
             i === lastIdx ? (
-              <div key={i} className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
-                <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
-                <ParagraphWithCharts
-                  text={para}
-                  chartsToolByName={chartsToolByName}
-                  keyPrefix={`p${i}`}
-                  className="text-[14px] text-ink"
-                />
-              </div>
+              // 마지막 문단 = "현실 조언" 박스. 차트는 박스 안에 가두지 않고 본문(박스 위)에
+              // 빼서 렌더하고, 박스에는 조언 텍스트만 남긴다. (마커가 마지막 문단에 들어오면
+              // 십성·오행 차트가 조언 박스에 끼어 보이던 문제 방지.)
+              (() => {
+                const charts = markerToolsInText(para).filter((tool) => chartsToolByName[tool])
+                const adviceText = para.replace(CHART_MARKER_RE, '').trim()
+                return (
+                  <div key={i}>
+                    {charts.map((tool, ci) => (
+                      <div key={`p${i}-advchart${ci}`} className="mb-3 flex w-full min-w-0 flex-col gap-2">
+                        <ToolCard tool={tool} payload={chartsToolByName[tool]} />
+                      </div>
+                    ))}
+                    {adviceText && (
+                      <div className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
+                        <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
+                        <Markdown className="text-[14px] text-ink">{adviceText}</Markdown>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()
             ) : (
               <ParagraphWithCharts
                 key={i}
