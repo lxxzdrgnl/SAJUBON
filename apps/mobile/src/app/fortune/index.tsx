@@ -117,11 +117,8 @@ export default function FortunePage() {
 
   // ── 스토리 완성 → StoryPager ──────────────────────────────────────────────
   if (story) {
-    return (
-      <View style={{ flex: 1, paddingTop: insets.top }}>
-        <StoryPager story={story} onClose={handleClose} />
-      </View>
-    )
+    // 풀블리드 — 비비드 배경이 상태바까지 차도록 paddingTop 없이 StoryPager가 직접 세이프에어리어 처리
+    return <StoryPager story={story} onClose={handleClose} />
   }
 
   // ── 로딩 상태 ─────────────────────────────────────────────────────────────

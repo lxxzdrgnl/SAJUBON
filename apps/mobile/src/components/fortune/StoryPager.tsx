@@ -6,6 +6,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Pressable, Text } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated'
 import { Svg, Path } from 'react-native-svg'
 import type { DailyStoryResponse } from '@sajuguri/api-client'
@@ -29,6 +30,7 @@ interface Props {
 const FALLBACK_PALETTE = paletteFromBase('#FFFBF2')
 
 export function StoryPager({ story, onClose }: Props) {
+  const insets = useSafeAreaInsets()
   const [cardIndex, setCardIndex] = useState(0)
   const prevIndexRef = useRef(0)
 
@@ -166,7 +168,7 @@ export function StoryPager({ story, onClose }: Props) {
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: 16,
-          paddingTop: 12,
+          paddingTop: insets.top + 12,
           paddingBottom: 8,
           gap: 12,
         }}

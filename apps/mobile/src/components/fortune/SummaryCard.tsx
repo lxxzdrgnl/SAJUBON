@@ -272,17 +272,16 @@ export function SummaryCard({ story, onClose, palette }: Props) {
         </Text>
       </ViewShot>
 
-      {/* CTA 버튼 */}
-      <View style={{ gap: 12 }}>
-        {/* 이미지 저장 */}
+      {/* CTA 버튼 — 웹과 동일: [이미지 저장][링크 공유] 가로 2개 */}
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        {/* 이미지 저장 — 잉크 솔리드 */}
         <Pressable
           onPress={handleSaveImage}
           disabled={saving}
           style={({ pressed }) => ({
-            flexDirection: 'row',
+            flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 8,
             backgroundColor: ink,
             borderRadius: 16,
             paddingVertical: 14,
@@ -292,22 +291,19 @@ export function SummaryCard({ story, onClose, palette }: Props) {
           {saving ? (
             <ActivityIndicator size="small" color={base} />
           ) : (
-            <Text style={{ fontSize: 14, fontWeight: '900', color: base }}>
-              이미지 저장
-            </Text>
+            <Text style={{ fontSize: 14, fontWeight: '900', color: base }}>이미지 저장</Text>
           )}
         </Pressable>
 
-        {/* 링크 공유 */}
+        {/* 링크 공유 — 아웃라인 */}
         <Pressable
           onPress={handleShareLink}
           disabled={sharing}
           style={({ pressed }) => ({
-            flexDirection: 'row',
+            flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 8,
-            borderWidth: 2,
+            borderWidth: 2.5,
             borderColor: ink,
             borderRadius: 16,
             paddingVertical: 14,
@@ -318,30 +314,8 @@ export function SummaryCard({ story, onClose, palette }: Props) {
           {sharing ? (
             <ActivityIndicator size="small" color={ink} />
           ) : (
-            <Text style={{ fontSize: 14, fontWeight: '900', color: ink }}>
-              링크 공유
-            </Text>
+            <Text style={{ fontSize: 14, fontWeight: '900', color: ink }}>링크 공유</Text>
           )}
-        </Pressable>
-
-        {/* 닫기 */}
-        <Pressable
-          onPress={onClose}
-          style={({ pressed }) => ({
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 2,
-            borderColor: ink,
-            borderRadius: 16,
-            paddingVertical: 14,
-            opacity: pressed ? 0.7 : 1,
-            backgroundColor: 'transparent',
-          })}
-        >
-          <Text style={{ fontSize: 14, fontWeight: '900', color: ink }}>
-            닫기
-          </Text>
         </Pressable>
       </View>
     </ScrollView>
