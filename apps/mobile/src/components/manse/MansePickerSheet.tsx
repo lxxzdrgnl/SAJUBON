@@ -87,6 +87,9 @@ export function MansePickerSheet({
       if (includeRecent) {
         loadRecentInputs(rnStorage).then(setRecentInputs)
       }
+    } else {
+      // 닫힐 때 0으로 되돌려 둠 — 다음 오픈 시 시트가 최종 위치로 한 프레임 깜빡이는 버그 방지.
+      anim.setValue(0)
     }
   }, [open, includeRecent, anim])
 
@@ -382,7 +385,8 @@ export function MansePickerSheet({
                             </Text>
                             <Text style={{ fontSize: 12, color: colors.textSub, marginTop: 2 }}>
                               {r.birth_date}
-                              {r.birth_time ? ` · ${r.birth_time}` : ''}
+                              {r.birth_time ? ` · ${r.birth_time}` : ' · 시간 미상'}
+                              {` · ${r.gender === 'male' ? '남성' : '여성'}`}
                             </Text>
                           </View>
                         </Pressable>
