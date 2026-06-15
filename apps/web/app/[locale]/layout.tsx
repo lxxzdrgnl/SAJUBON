@@ -19,7 +19,14 @@ const notoSerifKR = Noto_Serif_KR({
   preload: false,
 })
 
-export const metadata = { title: '사주구리' }
+// metadataBase — og:image(공유 카드 미리보기)·트위터 이미지가 절대 URL로 해석되도록.
+// 미설정 시 Next가 localhost:3000으로 해석해 카카오/트위터가 이미지를 못 불러와 미리보기가 깨진다.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sajuguri.rheon.kr'
+
+export const metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: '사주구리',
+}
 
 // viewport-fit=cover — iOS 세이프에어리어(노치·홈인디케이터)까지 페이지가 칠해지게.
 // 이게 없으면 풀스크린 오버레이(운세 스토리)가 상하 세이프에어리어를 못 덮어
