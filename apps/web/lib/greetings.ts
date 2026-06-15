@@ -17,9 +17,9 @@ export function slotForHour(hour: number): GreetingSlot {
 const POOL: Record<'ko' | 'en', Record<GreetingSlot, string[]>> = {
   ko: {
     dawn: [
-      '{name}님, 아직 안 주무셨네요',
+      '{name}님, 오늘 운세 살펴볼까요?',
       '{name}님, 늦은 시간까지 고생 많으세요',
-      '{name}님, 새벽까지 바쁘셨나 봐요',
+      '{name}님, 고요한 새벽이에요',
     ],
     morning: [
       '{name}님, 오늘 운세 보러 갈까요?',
@@ -39,7 +39,7 @@ const POOL: Record<'ko' | 'en', Record<GreetingSlot, string[]>> = {
       '{name}님, 하루 마무리 잘 하고 계세요?',
     ],
     night: [
-      '{name}님, 내일 운세 미리 볼까요?',
+      '{name}님, 하루 마무리 전에 운세 한 번 어때요?',
       '{name}님, 편안한 밤 보내세요',
       '{name}님, 오늘 하루도 끝이네요',
     ],
@@ -68,7 +68,7 @@ const POOL: Record<'ko' | 'en', Record<GreetingSlot, string[]>> = {
       '{name}, winding down for the day?',
     ],
     night: [
-      '{name}, a peek at tomorrow before bed?',
+      '{name}, check today’s fortune before bed?',
       '{name}, have a good night',
       '{name}, another day done',
     ],
@@ -85,4 +85,32 @@ export function pickGreeting(
   const pool = POOL[locale][slotForHour(hour)]
   const msg = pool[Math.floor(rand() * pool.length) % pool.length]
   return msg.replaceAll('{name}', name)
+}
+
+/** 비로그인(이름 없음)용 시간대별 인사말 — {name} 없이. */
+const GUEST_POOL: Record<'ko' | 'en', Record<GreetingSlot, string[]>> = {
+  ko: {
+    dawn: ['오늘 운세 살펴볼까요?', '늦은 시간까지 고생 많아요', '고요한 새벽이에요'],
+    morning: ['오늘 운세 보러 갈까요?', '좋은 아침이에요', '오늘 하루 어떨지 볼까요?'],
+    afternoon: ['오후도 잘 보내고 계신가요?', '오늘 운세 아직이라면 지금이에요', '점심은 챙기셨어요?'],
+    evening: ['오늘 하루 어떠셨어요?', '오늘도 수고 많았어요', '하루 마무리 잘 하고 계세요?'],
+    night: ['하루 마무리 전에 운세 한 번 어때요?', '편안한 밤 보내세요', '오늘 하루도 끝이네요'],
+  },
+  en: {
+    dawn: ['Up late tonight?', 'Burning the midnight oil?', 'Busy night?'],
+    morning: ['Shall we check today’s fortune?', 'Good morning', 'Let’s see how today looks'],
+    afternoon: ['How’s your day going?', 'Haven’t checked today’s fortune yet?', 'Had lunch yet?'],
+    evening: ['How was your day?', 'You’ve earned a rest', 'Winding down for the day?'],
+    night: ['Check today’s fortune before bed?', 'Have a good night', 'Another day done'],
+  },
+}
+
+/** 비로그인 사용자용 시간대별 인사말 (이름 미사용). */
+export function pickGuestGreeting(
+  locale: 'ko' | 'en',
+  hour: number,
+  rand: () => number = Math.random,
+): string {
+  const pool = GUEST_POOL[locale][slotForHour(hour)]
+  return pool[Math.floor(rand() * pool.length) % pool.length]
 }

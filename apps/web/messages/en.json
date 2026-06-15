@@ -91,10 +91,10 @@
       "report": {
         "title": "My Full Saju Report",
         "badge": "10 tabs",
-        "desc": "AI insights, conclusions first"
+        "desc": "Dig deep into your saju"
       },
       "chat": {
-        "title": "AI Saju Chat",
+        "title": "Chat with SajuGuri",
         "desc": "Explore your saju, question by question"
       },
       "question": {
