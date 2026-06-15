@@ -3,7 +3,7 @@ import { Link } from '@/i18n/navigation'
 import BrutalCard from '@/components/ui/BrutalCard'
 import MascotTinted from '@/components/ui/MascotTinted'
 import { currentUser, serverAuthApi } from '@/lib/serverAuth'
-import { pickGreeting } from '@/lib/greetings'
+import { pickGreeting, pickGuestGreeting } from '@/lib/greetings'
 import { listProfiles, type ProfileResponse } from '@sajuguri/api-client'
 import FortuneBannerClient from '@/components/fortune/FortuneBannerClient'
 import ReportEntryButton from '@/components/report/ReportEntryButton'
@@ -75,7 +75,7 @@ export default async function Home() {
 
   const repStem = repProfile?.day_stem ?? null
   const hourKST = (new Date().getUTCHours() + 9) % 24
-  const fortuneSub = name ? pickGreeting(locale, name, hourKST) : t('fortuneSub')
+  const fortuneSub = name ? pickGreeting(locale, name, hourKST) : pickGuestGreeting(locale, hourKST)
 
   return (
     <main>
