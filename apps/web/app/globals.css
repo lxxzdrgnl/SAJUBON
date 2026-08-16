@@ -82,3 +82,15 @@ body {
     animation: none !important;
   }
 }
+
+/* iOS Safari는 포커스된 입력의 font-size가 16px 미만이면 페이지를 강제 확대한다.
+   viewport의 maximum-scale로 막는 건 핀치 줌을 빼앗는 접근성 위반이므로,
+   터치 기기에서만 입력 폰트를 16px로 올려 확대 트리거 자체를 없앤다.
+   (체크박스·라디오는 폰트 크기가 렌더에 영향이 없고 레이아웃만 흔들리므로 제외) */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
