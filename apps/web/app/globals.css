@@ -17,6 +17,18 @@
   --text-sub: #8A8270;
   --sky: #4DA8E8;
   --sky-tint: #DCEFFB;
+
+  /* 모션 토큰 — 커브·지속시간 단일 출처.
+     이름 앞에 --motion- 을 붙여 Tailwind 테마 네임스페이스(--ease-*)와 충돌을 피한다. */
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --motion-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --motion-duration-press: 160ms;   /* 버튼 눌림 피드백 */
+  --motion-duration-fast: 200ms;    /* 툴팁·작은 팝오버 */
+  --motion-duration-base: 220ms;    /* 탭 인디케이터·드롭다운 */
+  --motion-duration-sheet: 300ms;   /* 바텀시트·모달 이동 */
+  --motion-duration-fade: 200ms;    /* 투명도 전용 — reduced-motion에서도 살아남는다 */
 }
 
 @theme inline {
@@ -38,9 +50,35 @@
   --color-text-sub: var(--text-sub);
   --color-sky: var(--sky);
   --color-sky-tint: var(--sky-tint);
+
+  /* 모션 커브 — Tailwind 유틸(ease-out-strong / ease-in-out-strong / ease-drawer) 생성.
+     내장 ease-out 은 기존 사용처가 그대로 동작해야 하므로 덮어쓰지 않는다. */
+  --ease-out-strong: var(--motion-ease-out);
+  --ease-in-out-strong: var(--motion-ease-in-out);
+  --ease-drawer: var(--motion-ease-drawer);
 }
 
 body {
   background: var(--bg-base);
   color: var(--ink);
+}
+
+/* 접근성 — 움직임 줄이기.
+   "모션 제거"가 아니라 "이동 제거"다. 투명도·색 전환은 상태 이해를 돕기 때문에
+   --motion-duration-fade 는 일부러 그대로 둔다. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-press: 1ms;
+    --motion-duration-fast: 1ms;
+    --motion-duration-base: 1ms;
+    --motion-duration-sheet: 1ms;
+    /* --motion-duration-fade 는 200ms 유지 */
+  }
+
+  /* 무한 반복 데코 애니메이션 정지 (로딩 마스코트, 타이핑 커서 등) */
+  .animate-bounce,
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+  }
 }
