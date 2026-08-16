@@ -19,18 +19,38 @@ const TABS = [
 export default function TabBar() {
   const t = useTranslations('tab')
   const pathname = usePathname()
+  const activeIndex = TABS.findIndex(({ href }) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href),
+  )
   // 모바일=하단, 데스크탑(md+)=상단 고정 (사용자 확정)
   return (
     <nav className="fixed bottom-[calc(0.875rem+env(safe-area-inset-bottom))] left-1/2 flex w-[calc(100%-28px)] max-w-[612px] -translate-x-1/2 overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A] md:bottom-auto md:top-3.5">
-      {TABS.map(({ key, href }) => {
-        const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+      {/* 활성 탭 인디케이터 — 탭마다 bg를 켜고 끄는 대신 알약 하나를 옮긴다.
+          탭이 어느 방향으로 이동했는지 설명해주는 게 목적이라 transform만 애니메이트한다. */}
+      {activeIndex >= 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 left-0 bg-yellow"
+          style={{
+            width: `${100 / TABS.length}%`,
+            transform: `translateX(${activeIndex * 100}%)`,
+            transitionProperty: 'transform',
+            transitionDuration: 'var(--motion-duration-base)',
+            transitionTimingFunction: 'var(--motion-ease-out)',
+            willChange: 'transform',
+          }}
+        />
+      )}
+      {TABS.map(({ key, href }, i) => {
+        const active = i === activeIndex
         return (
           <Link
             key={key}
             href={href}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-extrabold ${
-              active ? 'bg-yellow text-ink' : 'text-text-sub'
+            className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-extrabold transition-colors ${
+              active ? 'text-ink' : 'text-text-sub'
             }`}
+            style={{ transitionDuration: 'var(--motion-duration-fade)' }}
           >
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
