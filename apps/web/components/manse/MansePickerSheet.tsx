@@ -19,6 +19,7 @@ import type { RecentBirthInput } from '@sajuguri/core'
 import { loadRecentInputs, saveRecentInput } from '@sajuguri/core'
 import { webStorage } from '@/lib/storage'
 import { api } from '@/lib/api'
+import { useSheetTransition } from '@/lib/hooks/useSheetTransition'
 import MascotTinted from '@/components/ui/MascotTinted'
 import BirthInputForm, { type ManseBirthInput } from '@/components/manse/BirthInputForm'
 
@@ -55,6 +56,7 @@ export default function MansePickerSheet({
   const t = useTranslations('mansePicker')
   const [recentInputs, setRecentInputs] = useState<RecentBirthInput[]>([])
   const [showForm, setShowForm] = useState(false)
+  const { mounted, visible, onTransitionEnd } = useSheetTransition(open)
 
   useEffect(() => {
     if (open) {
@@ -65,7 +67,7 @@ export default function MansePickerSheet({
     }
   }, [open, includeRecent])
 
-  if (!open) return null
+  if (!mounted) return null
 
   // 저장 프로필과 중복되는 최근 입력 숨김 (birth_date|birth_time|gender 기준)
   const savedKeys = new Set(
@@ -137,11 +139,30 @@ export default function MansePickerSheet({
   return (
     <>
       {/* 백드롭 */}
-      <div className="fixed inset-0 z-40 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div
+        className="fixed inset-0 z-40 bg-ink/40"
+        style={{
+          opacity: visible ? 1 : 0,
+          transitionProperty: 'opacity',
+          transitionDuration: 'var(--motion-duration-fade)',
+          transitionTimingFunction: 'var(--motion-ease-out)',
+        }}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       {/* 시트 */}
       <div
         className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-[22px] border-2 border-ink bg-surface shadow-[0_-4px_0_#1A1A1A]"
+        style={{
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+          opacity: visible ? 1 : 0,
+          transitionProperty: 'transform, opacity',
+          transitionDuration: 'var(--motion-duration-sheet), var(--motion-duration-fade)',
+          transitionTimingFunction: 'var(--motion-ease-drawer), var(--motion-ease-out)',
+          willChange: 'transform, opacity',
+        }}
+        onTransitionEnd={onTransitionEnd}
         role="dialog"
         aria-modal="true"
       >
