@@ -15,7 +15,7 @@ export default function Accordion({
   const [open, setOpen] = useState(defaultOpen)
   return (
     <div
-      className={`overflow-hidden rounded-2xl bg-surface ${
+      className={`overflow-hidden rounded-lg bg-surface ${
         open
           ? 'border-2 border-orange shadow-pop'
           : 'border-2 border-ink'

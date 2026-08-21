@@ -69,12 +69,12 @@ export default async function SharedCompatibilityPage({
       <CompatibilityView detail={detail} shareMode />
 
       {/* 나도 확인 CTA */}
-      <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+      <div className="mt-2 rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
         <p className="mb-1 text-[14px] font-extrabold text-ink">{t('share.ctaTitle')}</p>
         <p className="mb-3 text-[13px] text-text-sub">{t('share.ctaDesc')}</p>
         <a
           href="/compatibility/new"
-          className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal"
+          className="block w-full rounded-lg border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal"
         >
           {t('share.ctaBtn')}
         </a>

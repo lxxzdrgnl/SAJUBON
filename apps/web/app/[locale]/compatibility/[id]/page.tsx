@@ -33,7 +33,7 @@ export default async function CompatibilityDetailPage({
   return (
     <main className="flex flex-col gap-4">
       {/* 두 사람 요약 헤더 */}
-      <div className="flex items-center gap-2 rounded-2xl border-2 border-ink bg-surface px-4 py-3 shadow-brutal">
+      <div className="flex items-center gap-2 rounded-lg border-2 border-ink bg-surface px-4 py-3 shadow-brutal">
         <div className="flex flex-1 flex-col min-w-0">
           <span className="truncate text-[14px] font-extrabold text-ink">{nameA}</span>
           {detail.person_a.birth_date && (

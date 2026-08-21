@@ -61,11 +61,11 @@ function SlotCard({ pick, onOpen, t }: SlotCardProps) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-surface p-3 text-center shadow-brutal transition-opacity hover:opacity-80"
+      className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-ink bg-surface p-3 text-center shadow-brutal transition-opacity hover:opacity-80"
     >
       {pick ? (
         <>
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-ink bg-surface">
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-ink bg-surface">
             <MascotTinted stem={pick.day_stem ?? null} width={58} height={58} />
           </span>
           <span className="w-full min-w-0">
@@ -76,7 +76,7 @@ function SlotCard({ pick, onOpen, t }: SlotCardProps) {
         </>
       ) : (
         <>
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-ink text-3xl font-black text-ink">
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-ink text-3xl font-black text-ink">
             +
           </span>
           <span className="text-[13px] font-extrabold text-text-sub">{t('slot.selectOrInput')}</span>
@@ -143,7 +143,7 @@ export default function PersonSlotPicker({ profiles, onComplete }: Props) {
         type="button"
         disabled={!bothFilled}
         onClick={handleComplete}
-        className="mt-2 w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-[15px] font-extrabold text-white shadow-brutal transition-opacity disabled:opacity-40 active:translate-x-[2px] active:translate-y-[2px] active:shadow-brutal-sm"
+        className="mt-2 w-full rounded-lg border-2 border-ink bg-orange py-3.5 text-[15px] font-extrabold text-white shadow-brutal transition-opacity disabled:opacity-40 active:translate-x-[2px] active:translate-y-[2px] active:shadow-brutal-sm"
       >
         {t('viewCompatibility')}
       </button>

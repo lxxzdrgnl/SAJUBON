@@ -17,7 +17,7 @@ export default function PillarCard({
   const color = ohaengColor(element)
   const border = isDay ? 'border-orange shadow-pop-md' : 'border-ink shadow-brutal-md'
   return (
-    <div className={`flex-1 rounded-xl border-2 ${border} px-1 py-2 text-center`}
+    <div className={`flex-1 rounded-lg border-2 ${border} px-1 py-2 text-center`}
       style={{ background: ohaengTintColor(element) }}>
       {label && (
         <p className={`text-[10px] font-bold ${isDay ? 'text-orange' : 'text-text-sub'}`}>

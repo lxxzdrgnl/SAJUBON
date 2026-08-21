@@ -227,7 +227,7 @@ export default function BirthInputForm({
     'min-w-0 bg-transparent text-center text-sm font-bold tabular-nums outline-none placeholder:font-normal placeholder:text-text-sub'
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+    <div className="flex flex-col gap-4 rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
       {/* 이름 */}
       <label className="block">
         <span className="mb-1.5 block text-xs font-extrabold">
@@ -238,7 +238,7 @@ export default function BirthInputForm({
           value={name}
           maxLength={20}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-xl border-2 border-ink bg-bg-base px-3 py-2.5 text-sm"
+          className="w-full rounded-lg border-2 border-ink bg-bg-base px-3 py-2.5 text-sm"
         />
         {submitAttempted && nameError && (
           <p className="mt-1 text-[11px] font-bold text-orange">{nameError}</p>
@@ -249,7 +249,7 @@ export default function BirthInputForm({
       <div>
         <span className="mb-1.5 block text-xs font-extrabold">{t('birthplace')}</span>
         <div className="relative">
-          <div className="flex items-center gap-2 rounded-xl border-[1.5px] border-border-soft px-3">
+          <div className="focus-ring-within flex items-center gap-2 rounded-lg border-[1.5px] border-border-soft px-3">
             <input
               ref={cityInputRef}
               value={cityQuery}
@@ -272,7 +272,7 @@ export default function BirthInputForm({
             )}
           </div>
           {cityOpen && (cityLoading || cityResults.length > 0) && (
-            <ul className="absolute z-10 mt-1 max-h-44 w-full overflow-y-auto rounded-xl border-2 border-ink bg-surface shadow-brutal">
+            <ul className="absolute z-10 mt-1 max-h-44 w-full overflow-y-auto rounded-lg border-2 border-ink bg-surface shadow-brutal">
               {cityLoading ? (
                 <li className="px-3 py-2 text-sm text-text-sub">{t('searching')}</li>
               ) : (
@@ -316,7 +316,7 @@ export default function BirthInputForm({
         </div>
 
         {/* 세그먼트 날짜 + 시각 입력바 */}
-        <div className="flex items-center gap-1 rounded-xl border-2 border-ink bg-bg-base px-2 py-2.5 text-sm">
+        <div className="focus-ring-within flex items-center gap-1 rounded-lg border-2 border-ink bg-bg-base px-2 py-2.5 text-sm">
           <input
             ref={yearRef}
             inputMode="numeric"
@@ -466,7 +466,7 @@ export default function BirthInputForm({
         type="button"
         onClick={submit}
         disabled={hasBlockingError || busy}
-        className="rounded-xl border-2 border-ink bg-orange py-3 text-[15px] font-extrabold text-white shadow-brutal disabled:opacity-40"
+        className="rounded-lg border-2 border-ink bg-orange py-3 text-[15px] font-extrabold text-white shadow-brutal disabled:opacity-40"
       >
         {busy ? <span className="inline-block animate-pulse">…</span> : (submitLabel ?? t('submit'))}
       </button>

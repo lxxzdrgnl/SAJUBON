@@ -118,13 +118,13 @@ export default function CompatibilityNewPage() {
     return (
       <main className="flex flex-col gap-5">
         <h1 className="text-lg font-black">{t('new.title')}</h1>
-        <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-ink bg-surface p-6 text-center shadow-brutal">
+        <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-ink bg-surface p-6 text-center shadow-brutal">
           <Image src="/mascot.svg" alt="" width={56} height={56} />
           <p className="text-[15px] font-extrabold">{t('new.loginRequired')}</p>
           <p className="text-[13px] text-text-sub">{t('new.loginDesc')}</p>
           <a
             href={GOOGLE_LOGIN_URL}
-            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal"
+            className="w-full rounded-lg border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal"
           >
             {t('new.loginWithGoogle')}
           </a>
@@ -153,14 +153,14 @@ export default function CompatibilityNewPage() {
           value={topics}
           onChange={(e) => setTopics(e.target.value)}
           placeholder={t('new.topicsPlaceholder')}
-          className="w-full rounded-xl border-2 border-ink bg-surface px-4 py-3 text-sm outline-none shadow-brutal"
+          className="w-full rounded-lg border-2 border-ink bg-surface px-4 py-3 text-sm shadow-brutal"
           maxLength={100}
         />
         <p className="text-[12px] text-text-sub">{t('new.topicsHint')}</p>
       </div>
 
       {(error || jobError) && (
-        <p className="rounded-xl border-[1.5px] border-orange-tint bg-orange-tint px-4 py-3 text-[13px] font-bold text-orange">
+        <p className="rounded-lg border-[1.5px] border-orange-tint bg-orange-tint px-4 py-3 text-[13px] font-bold text-orange">
           {error || t('new.errorFallback')}
         </p>
       )}

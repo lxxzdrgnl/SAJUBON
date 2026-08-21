@@ -22,6 +22,7 @@ class FortuneItem(BaseModel):
     level: str  = Field(description="점수 구간 레벨", examples=["좋음"])
     text:  str  = Field(description="카테고리 설명 텍스트")
     label: str  = Field(description="카테고리 한글명", examples=["시험운"])
+    headline: str = Field(default="", description="점수대별 일상어 헤드라인 (리라이트 폴백)", examples=["머리가 잘 돌아가는 날"])
 
 
 class DailyGanji(BaseModel):
@@ -68,6 +69,7 @@ class DailyFortuneResponse(BaseModel):
     overall:          str            = Field(description="전체 요약 한 문장")
     caution:          str            = Field(description="오늘 조심해야 할 것")
     basis:            str            = Field(description="오늘 운세의 명리 근거 요약")
+    day_summary:      str            = Field(default="", description="일진 카드용 일상어 요약 (용어 없음)")
     signals:          list[FortuneSignal] = Field(default_factory=list, description="구조화 근거 신호")
     good_hours:       list[GoodHour]      = Field(default_factory=list, description="움직이기 좋은 시진")
     action:           ActionHint          = Field(description="오늘의 한 수")

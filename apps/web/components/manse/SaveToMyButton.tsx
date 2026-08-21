@@ -38,11 +38,11 @@ export default function SaveToMyButton({ birthInput, isLoggedIn, googleLoginUrl 
 
   if (!isLoggedIn) {
     return (
-      <div className="mt-2 flex flex-col gap-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+      <div className="mt-2 flex flex-col gap-2 rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
         <p className="text-[13px] text-text-sub">{t('saveToMyLoginHint')}</p>
         <a
           href={googleLoginUrl}
-          className="block w-full rounded-xl border-2 border-ink bg-surface py-3 text-center text-sm font-extrabold shadow-brutal-sm transition-opacity hover:opacity-80"
+          className="block w-full rounded-lg border-2 border-ink bg-surface py-3 text-center text-sm font-extrabold shadow-brutal-sm transition-opacity hover:opacity-80"
         >
           {t('saveToMyLoginLink')}
         </a>
@@ -56,7 +56,7 @@ export default function SaveToMyButton({ birthInput, isLoggedIn, googleLoginUrl 
       onClick={handleSave}
       disabled={state === 'busy' || state === 'done'}
       className={
-        'mt-2 block w-full rounded-xl border-2 border-ink py-3 text-center text-sm font-extrabold shadow-brutal-sm transition-opacity disabled:opacity-60 ' +
+        'mt-2 block w-full rounded-lg border-2 border-ink py-3 text-center text-sm font-extrabold shadow-brutal-sm transition-opacity disabled:opacity-60 ' +
         (state === 'done'
           ? 'bg-teal text-surface'
           : state === 'error'

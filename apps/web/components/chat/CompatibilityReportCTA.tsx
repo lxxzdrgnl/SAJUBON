@@ -37,12 +37,12 @@ export default function CompatibilityReportCTA({ sessionId }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border-2 border-ink bg-teal-tint p-3 shadow-brutal-sm">
+    <div className="rounded-lg border-2 border-ink bg-teal-tint p-3 shadow-brutal-sm">
       <p className="mb-2.5 text-[13px] font-extrabold text-ink leading-snug">
         {t('compatibilityCta.title')}
       </p>
       <button
-        className="w-full rounded-xl border-2 border-ink bg-teal py-2 text-sm font-extrabold text-surface shadow-brutal-sm transition-opacity hover:opacity-80 disabled:opacity-40"
+        className="w-full rounded-lg border-2 border-ink bg-teal py-2 text-sm font-extrabold text-surface shadow-brutal-sm transition-opacity hover:opacity-80 disabled:opacity-40"
         onClick={handleClick}
         disabled={busy}
       >

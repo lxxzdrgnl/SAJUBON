@@ -9,7 +9,7 @@ export default async function DaeUnTimeline({ data }: { data: SajuCalcResponse }
   const currentAge = data.current_dae_un?.start_age
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+    <section className="rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
       <div className="mb-3 flex items-center gap-2">
         <h3 className="text-[15px] font-extrabold">{t('title')}</h3>
         <span className="rounded-full border-2 border-ink bg-yellow px-2 py-0.5 text-[11px] font-extrabold">
@@ -23,7 +23,7 @@ export default async function DaeUnTimeline({ data }: { data: SajuCalcResponse }
             <div
               key={e.start_age}
               className={current
-                ? 'shrink-0 rounded-xl border-2 border-orange bg-[#FFF4E3] px-2 py-1 shadow-pop-lg'
+                ? 'shrink-0 rounded-lg border-2 border-orange bg-[#FFF4E3] px-2 py-1 shadow-pop-lg'
                 : 'shrink-0'}
             >
               <GanjiColumn

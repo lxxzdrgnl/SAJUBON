@@ -22,7 +22,7 @@ export default function BackButton({ fallback = '/my', label }: Props) {
     <button
       type="button"
       onClick={handleClick}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface shadow-brutal-sm transition-opacity hover:opacity-70"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-2 border-ink bg-surface shadow-brutal-sm transition-opacity hover:opacity-70"
       aria-label={label}
     >
       <svg

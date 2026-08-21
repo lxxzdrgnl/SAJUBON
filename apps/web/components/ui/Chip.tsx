@@ -17,7 +17,7 @@ export default function Chip({
 }) {
   return (
     <span
-      className={`mb-2 mr-1.5 inline-block rounded-[10px] border-2 border-ink px-2.5 py-1
+      className={`mb-2 mr-1.5 inline-block rounded-lg border-2 border-ink px-2.5 py-1
         text-xs font-extrabold shadow-brutal-sm ${VARIANT[variant]}`}
     >
       {children}

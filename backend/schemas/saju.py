@@ -172,7 +172,7 @@ class YongSin(BaseModel):
         examples=["balanced_weakest_supplement"],
     )
     yong_sin_label: str = Field(
-        description="용신 종류 레이블 (억부용신/통관용신)",
+        description="용신 종류 레이블 (억부용신/보충용신)",
         examples=["억부용신"],
     )
     reasoning_priority: str = Field(
@@ -430,7 +430,7 @@ class SajuCalcResponse(BaseModel):
                     "xi_sin": ["수", "목"],
                     "ji_sin": ["화"],
                     "logic_type": "balanced_weakest_supplement",
-                    "yong_sin_label": "통관용신",
+                    "yong_sin_label": "보충용신",
                     "reasoning_priority": "억부",
                 },
                 "gyeok_guk": {

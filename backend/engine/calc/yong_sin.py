@@ -69,7 +69,7 @@ def select_yong_sin(saju: dict, strength: dict, ten_gods_dist: dict) -> dict:
     _LABEL = {
         "overpowered_day_master_drain": "억부용신",
         "weak_day_master_support":      "억부용신",
-        "balanced_weakest_supplement":  "통관용신",
+        "balanced_weakest_supplement":  "보충용신",   # 가장 부족한 오행 보충 — '통관'(두 세력 사이를 잇는 용신)과는 다른 개념
     }
     return {
         "primary": primary,

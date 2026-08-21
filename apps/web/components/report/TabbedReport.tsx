@@ -35,48 +35,66 @@ function ParagraphWithCharts({
 
 function TabAccordion({
   tab,
+  index,
   t,
   chartsToolByName,
 }: {
   tab: ReportTab
+  index: number
   t: ReturnType<typeof useTranslations>
   chartsToolByName: Record<string, Record<string, unknown>>
 }) {
   const [open, setOpen] = useState(false)
   const paragraphs = tab.content.split('\n\n').filter(Boolean)
   const lastIdx = paragraphs.length - 1
+  const num = String(index + 1).padStart(2, '0')
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl bg-surface transition-all ${
+      className={`overflow-hidden rounded-lg bg-surface transition-all ${
         open
-          ? 'border-2 border-orange shadow-pop'
-          : 'border-2 border-ink shadow-brutal'
+          ? 'border-2 border-ink shadow-brutal'
+          : 'border-2 border-ink shadow-brutal-sm'
       }`}
     >
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="flex w-full items-start gap-2 px-4 py-3 text-left"
+        aria-expanded={open}
+        className={`flex w-full items-start gap-2.5 px-3.5 py-3 text-left transition-colors ${
+          open ? 'bg-yellow shadow-gloss' : ''
+        }`}
+        style={
+          open
+            ? undefined
+            : { background: 'linear-gradient(180deg,var(--surface),var(--bg-base))' }
+        }
       >
+        {/* 번호 — 리포트 탭은 순서대로 읽는 흐름이라 번호가 실제 정보를 담는다 */}
+        <span
+          className={`mt-0.5 shrink-0 rounded border-2 border-ink px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums leading-none ${
+            open ? 'bg-ink text-yellow' : 'bg-surface text-text-sub'
+          }`}
+        >
+          {num}
+        </span>
+
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span
-              className="shrink-0 rounded border-2 border-ink px-2 py-0.5 text-[11px] font-extrabold text-ink shadow-gloss"
-              style={{ background: 'var(--holo)' }}
-            >
+          <div className="flex items-center gap-1.5">
+            <span className="shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-teal-deep">
               {tab.category}
             </span>
             {tab.requested && (
-              <span className="shrink-0 rounded-full border-[1.5px] border-orange px-2 py-0.5 text-[10px] font-extrabold text-orange">
+              <span className="shrink-0 rounded-full border-[1.5px] border-orange px-1.5 py-px text-[10px] font-extrabold text-orange">
                 {t('page.requestedBadge')}
               </span>
             )}
           </div>
-          <p className="text-[15.5px] font-extrabold leading-snug text-ink">
+          <p className="text-[15px] font-extrabold leading-snug text-ink">
             {tab.headline}
           </p>
         </div>
+
         <svg
           className={`mt-1 h-4 w-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
           viewBox="0 0 16 16"
@@ -87,7 +105,7 @@ function TabAccordion({
       </button>
 
       {open && (
-        <div className="border-t-2 border-dashed border-ink px-4 py-3">
+        <div className="border-t-2 border-ink bg-bg-base px-3.5 py-3.5">
           {paragraphs.map((para, i) =>
             i === lastIdx ? (
               // 마지막 문단 = "현실 조언" 박스. 단, 궁합 리포트는 차트 마커+캡션을 조언 문단
@@ -98,7 +116,7 @@ function TabAccordion({
                 const hasChart = markerToolsInText(para).some((tool) => chartsToolByName[tool])
                 if (!hasChart) {
                   return (
-                    <div key={i} className="mt-3 rounded-xl bg-[#DCF4FF] px-4 py-3">
+                    <div key={i} className="mt-3 rounded-lg border-2 border-ink bg-[#DCF4FF] px-3.5 py-3 shadow-brutal-sm">
                       <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
                       <ParagraphWithCharts
                         text={para}
@@ -123,7 +141,7 @@ function TabAccordion({
                     />
                     {/* 현실 조언 — 텍스트만 */}
                     {adviceText && (
-                      <div className="mt-3 rounded-xl bg-[#DCF4FF] px-4 py-3">
+                      <div className="mt-3 rounded-lg border-2 border-ink bg-[#DCF4FF] px-3.5 py-3 shadow-brutal-sm">
                         <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
                         <Markdown className="text-[14px] text-ink">{adviceText}</Markdown>
                       </div>
@@ -174,13 +192,13 @@ export default function TabbedReport({
   const label = shareLabel ?? t('page.shareBtn')
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2.5">
       {/* 오버뷰 슬롯 — 탭 위에 도메인별 컴포넌트 삽입 */}
       {overview}
 
       {/* 헤드라인 아코디언 */}
       {tabs.map((tab, i) => (
-        <TabAccordion key={i} tab={tab} t={t} chartsToolByName={chartsToolByName} />
+        <TabAccordion key={i} tab={tab} index={i} t={t} chartsToolByName={chartsToolByName} />
       ))}
 
       {/* 공유 버튼 (공유 모드에서는 숨김) */}
@@ -189,7 +207,7 @@ export default function TabbedReport({
           <button
             type="button"
             onClick={onShare}
-            className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-brutal"
+            className="w-full rounded-lg border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-brutal"
           >
             {label}
           </button>

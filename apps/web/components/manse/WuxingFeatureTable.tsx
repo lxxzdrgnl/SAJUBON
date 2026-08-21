@@ -52,12 +52,12 @@ export default async function WuxingFeatureTable({ data }: { data: SajuCalcRespo
                         {f.el}
                       </span>
                       {isOver && (
-                        <span className="rounded-[8px] border-[1.5px] border-ink bg-orange-tint px-1.5 py-px text-[9px] font-extrabold text-[#B34800] shadow-brutal-xs">
+                        <span className="rounded-lg border-[1.5px] border-ink bg-orange-tint px-1.5 py-px text-[9px] font-extrabold text-[#B34800] shadow-brutal-xs">
                           {t('over')}
                         </span>
                       )}
                       {isLack && (
-                        <span className="rounded-[8px] border-[1.5px] border-ink bg-teal-tint px-1.5 py-px text-[9px] font-extrabold text-[#00665F] shadow-brutal-xs">
+                        <span className="rounded-lg border-[1.5px] border-ink bg-teal-tint px-1.5 py-px text-[9px] font-extrabold text-[#00665F] shadow-brutal-xs">
                           {t('lack')}
                         </span>
                       )}

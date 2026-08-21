@@ -107,7 +107,7 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
     >
       {/* 모달 패널 — 브루탈 */}
       <div
-        className="w-full max-w-sm rounded-2xl border-2 border-ink bg-surface shadow-brutal"
+        className="w-full max-w-sm rounded-lg border-2 border-ink bg-surface shadow-brutal"
         role="dialog"
         aria-modal="true"
         aria-label={title ?? t('title')}
@@ -129,7 +129,7 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
 
         {/* 자동 복사 완료 배너 — 모달 열리는 순간 복사됐음을 명확히 알림 */}
         {copied && (
-          <div className="mx-4 mt-3 flex items-center justify-center gap-1.5 rounded-xl border-2 border-ink bg-yellow py-2 text-[13px] font-black text-ink">
+          <div className="mx-4 mt-3 flex items-center justify-center gap-1.5 rounded-lg border-2 border-ink bg-yellow py-2 text-[13px] font-black text-ink">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -139,7 +139,7 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
 
         {/* URL 표시 필드 */}
         <div className="px-4 pt-3 pb-3">
-          <div className="rounded-xl border-2 border-ink bg-[#F5F5F0] px-3 py-2.5">
+          <div className="rounded-lg border-2 border-ink bg-[#F5F5F0] px-3 py-2.5">
             <p
               className="break-all text-[12px] font-mono leading-relaxed text-ink"
               style={{ wordBreak: 'break-all' }}
@@ -154,7 +154,7 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
           {/* 복사 버튼 */}
           <button
             type="button"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-ink py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[1px]"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 border-ink py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[1px]"
             style={{
               background: copied ? 'var(--ink)' : 'transparent',
               color: copied ? 'var(--bg-base)' : 'var(--ink)',
@@ -183,7 +183,7 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
           {hasNativeShare && (
             <button
               type="button"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-ink bg-ink py-3 text-[14px] font-black text-surface transition-all duration-100 active:translate-y-[1px] active:opacity-80"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 border-ink bg-ink py-3 text-[14px] font-black text-surface transition-all duration-100 active:translate-y-[1px] active:opacity-80"
               onClick={handleNativeShare}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

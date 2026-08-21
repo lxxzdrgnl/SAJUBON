@@ -41,7 +41,7 @@ function LangButton({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       aria-pressed={active}
       className={
-        'flex-1 rounded-xl border-2 border-ink py-2.5 text-[13px] font-extrabold shadow-brutal-sm transition-opacity ' +
+        'flex-1 rounded-lg border-2 border-ink py-2.5 text-[13px] font-extrabold shadow-brutal-sm transition-opacity ' +
         (active ? 'bg-yellow text-ink' : 'bg-surface text-text-sub hover:opacity-80')
       }
     >

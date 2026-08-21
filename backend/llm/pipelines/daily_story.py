@@ -94,7 +94,8 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
         "title": "오늘의 일진",
         "score": None,
         "headline": f"오늘은 {ganji_str}일",
-        "body": data.get("basis", ""),
+        # 일상어 요약(day_summary)을 본문으로. 명리 근거(basis)는 signals 칩/facts로 따로 전달된다
+        "body": data.get("day_summary") or data.get("basis", ""),
     })
 
     # overall — headline은 짧은 한 마디로, body는 원문 풀어쓰기용 소스로 넘김
@@ -115,7 +116,7 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
             "category_key": key,
             "title": _CATEGORY_TITLES[key],
             "score": int(f["score"]),
-            "headline": f.get("label", ""),
+            "headline": f.get("headline") or f.get("label", ""),
             "body": f.get("text", ""),
         })
 
@@ -234,7 +235,11 @@ async def build_daily_story(
     rewritten = await _rewrite(cards, language, facts=facts)
 
     # 리라이트 실패·누락 시 빈 headline 폴백 (UI 빈 칸 방지)
+    _labels = {f.get("label", "") for f in data["fortunes"].values()}
     for c in cards:
+        if c["kind"] == "category" and c.get("headline", "").strip() in _labels:
+            # 리라이트가 라벨("시험운")을 그대로 둔 경우 → 엔진 폴백 헤드라인으로
+            c["headline"] = data["fortunes"][c["category_key"]].get("headline") or c["headline"]
         if not c.get("headline"):
             if c["kind"] == "caution":
                 c["headline"] = "오늘 조심할 것"

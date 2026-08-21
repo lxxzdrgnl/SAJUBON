@@ -351,7 +351,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
         <div className="mt-auto pt-3" style={rise(orderedKeys.length * 80 + 540)}>
           <a
             href="/?fortune=1"
-            className="flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[2px]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[2px]"
             style={{ background: ink, color: base }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -362,7 +362,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
       <div className="mt-auto flex gap-3 pt-3" style={rise(orderedKeys.length * 80 + 540)}>
         {/* 이미지 저장 — 잉크 솔리드 필 */}
         <button
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3 text-[14px] font-black disabled:opacity-50 transition-all duration-100 active:translate-y-[2px]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg py-3 text-[14px] font-black disabled:opacity-50 transition-all duration-100 active:translate-y-[2px]"
           style={{ background: ink, color: base }}
           onClick={(e) => { e.stopPropagation(); handleSaveImage() }}
           disabled={saving}
@@ -375,7 +375,7 @@ export default function SummaryCard({ story, palette, shareMode = false }: Props
 
         {/* 링크 공유 — 아웃라인 */}
         <button
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-[2.5px] py-3 text-[14px] font-black disabled:opacity-50 transition-all duration-150"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border-[2.5px] py-3 text-[14px] font-black disabled:opacity-50 transition-all duration-150"
           style={{
             borderColor: ink,
             color: ink,

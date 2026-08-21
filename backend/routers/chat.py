@@ -149,7 +149,19 @@ async def send_message(
 
         yield sse({"type": "done"})
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    # SSE가 프록시에서 통째로 버퍼링돼 "한 번에 도착"하지 않게 하는 헤더.
+    # 운영 경로: 브라우저 → Cloudflare → NPM(nginx) → Next.js rewrites → 백엔드.
+    #   X-Accel-Buffering: no  → nginx의 proxy_buffering(기본 on) 해제
+    #   no-transform           → Cloudflare가 압축·버퍼링으로 변형하지 못하게
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 @router.get("/{session_id}/history", response_model=ChatHistoryResponse)

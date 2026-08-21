@@ -37,14 +37,14 @@ export default async function ResultView({ data }: { data: SajuCalcResponse }) {
           pillar ? (
             <PillarCard key={key} pillar={pillar} kind="stem" label={t(`pillars.${key}`)} isDay={key === 'day'} />
           ) : (
-            <div key={key} className="flex-1 rounded-xl border-2 border-dashed border-ink py-2 text-center text-[10px] text-text-sub">{t(`pillars.${key}`)}<br />—</div>
+            <div key={key} className="flex-1 rounded-lg border-2 border-dashed border-ink py-2 text-center text-[10px] text-text-sub">{t(`pillars.${key}`)}<br />—</div>
           ),
         )}
       </div>
       <div className="flex gap-1.5">
         {pillars.map(({ pillar, key }) =>
           pillar ? <PillarCard key={key} pillar={pillar} kind="branch" isDay={key === 'day'} /> :
-            <div key={key} className="flex-1 rounded-xl border-2 border-dashed border-ink py-3 text-center text-[10px] text-text-sub">—</div>,
+            <div key={key} className="flex-1 rounded-lg border-2 border-dashed border-ink py-3 text-center text-[10px] text-text-sub">—</div>,
         )}
       </div>
       {/* 레거시 ResultPanel.vue 섹션 순서 정합 — 합충은 팔자 바로 아래,

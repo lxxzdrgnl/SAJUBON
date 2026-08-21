@@ -31,7 +31,7 @@ export default async function HistoryPage({
           <p className="text-[15px] font-extrabold">{t('history.loginRequired')}</p>
           <a
             href={GOOGLE_LOGIN_URL}
-            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal"
+            className="w-full rounded-lg border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal"
           >
             {t('history.loginWithGoogle')}
           </a>

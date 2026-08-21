@@ -202,10 +202,10 @@ export default function MansePickerSheet({
                       <li key={p.id}>
                         <button
                           type="button"
-                          className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
+                          className="flex w-full items-center gap-3 rounded-lg border-2 border-ink bg-surface p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
                           onClick={() => pickFromProfile(p)}
                         >
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-ink bg-surface">
                             <MascotTinted stem={p.day_stem} width={38} height={38} />
                           </span>
                           <span className="min-w-0 flex-1">
@@ -240,10 +240,10 @@ export default function MansePickerSheet({
                       <li key={`${r.birth_date}|${r.birth_time ?? ''}|${r.gender}`}>
                         <button
                           type="button"
-                          className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
+                          className="flex w-full items-center gap-3 rounded-lg border-2 border-ink bg-surface p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
                           onClick={() => pickFromRecent(r)}
                         >
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-ink bg-surface">
                             <MascotTinted stem={r.day_stem} width={38} height={38} />
                           </span>
                           <span className="min-w-0 flex-1">
@@ -265,10 +265,10 @@ export default function MansePickerSheet({
               {/* 만세력 추가하기 */}
               <button
                 type="button"
-                className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-brutal font-extrabold transition-opacity hover:opacity-80"
+                className="flex w-full items-center gap-3 rounded-lg border-2 border-ink bg-yellow p-4 text-left shadow-brutal font-extrabold transition-opacity hover:opacity-80"
                 onClick={() => setShowForm(true)}
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface text-lg">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-ink bg-surface text-lg">
                   +
                 </span>
                 <span className="text-[14px] font-extrabold">{t('directInput')}</span>
