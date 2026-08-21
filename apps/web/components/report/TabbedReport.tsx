@@ -50,8 +50,8 @@ function TabAccordion({
     <div
       className={`overflow-hidden rounded-2xl bg-surface transition-all ${
         open
-          ? 'border-2 border-orange shadow-[4px_4px_0_#FF6B00]'
-          : 'border-2 border-ink shadow-[4px_4px_0_#1A1A1A]'
+          ? 'border-2 border-orange shadow-pop'
+          : 'border-2 border-ink shadow-brutal'
       }`}
     >
       <button
@@ -61,7 +61,10 @@ function TabAccordion({
       >
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-center gap-2">
-            <span className="shrink-0 rounded-[6px] bg-orange px-2 py-0.5 text-[11px] font-extrabold text-white">
+            <span
+              className="shrink-0 rounded border-2 border-ink px-2 py-0.5 text-[11px] font-extrabold text-ink shadow-gloss"
+              style={{ background: 'var(--holo)' }}
+            >
               {tab.category}
             </span>
             {tab.requested && (
@@ -95,7 +98,7 @@ function TabAccordion({
                 const hasChart = markerToolsInText(para).some((tool) => chartsToolByName[tool])
                 if (!hasChart) {
                   return (
-                    <div key={i} className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
+                    <div key={i} className="mt-3 rounded-xl bg-[#DCF4FF] px-4 py-3">
                       <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
                       <ParagraphWithCharts
                         text={para}
@@ -120,7 +123,7 @@ function TabAccordion({
                     />
                     {/* 현실 조언 — 텍스트만 */}
                     {adviceText && (
-                      <div className="mt-3 rounded-xl bg-[#FFF4E3] px-4 py-3">
+                      <div className="mt-3 rounded-xl bg-[#DCF4FF] px-4 py-3">
                         <p className="mb-1 text-[11px] font-extrabold text-orange">{t('page.adviceBoxLabel')}</p>
                         <Markdown className="text-[14px] text-ink">{adviceText}</Markdown>
                       </div>
@@ -186,7 +189,7 @@ export default function TabbedReport({
           <button
             type="button"
             onClick={onShare}
-            className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A]"
+            className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-brutal"
           >
             {label}
           </button>

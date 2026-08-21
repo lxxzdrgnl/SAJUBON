@@ -19,14 +19,28 @@ const ICONS = {
   manse: 'M4 5 h16 M4 9 h16 M4 13 h10 M4 17 h10',
 } as const
 
-// 일간(오행) 색에 맞춘 운세 배너 그라데이션 — 마스코트 색과 어우러지게.
-const DEFAULT_BANNER = 'linear-gradient(135deg,var(--yellow),var(--orange))'
+// 일간(오행) 색에 맞춘 운세 배너 그라데이션 — Y2K 크롬(금속 다단).
+// 이전엔 2-stop 무광이라 화면에서 가장 큰 요소가 가장 칙칙했다. 특히 수(水)는
+// 슬레이트 그레이라 죽어 보였는데, Y2K에서 수는 리퀴드 크롬/아쿠아가 제자리다.
+// 다단 stop이 밝음-어두움을 번갈아 만들어 금속 반사처럼 읽힌다.
+const DEFAULT_BANNER =
+  'linear-gradient(158deg,#FFF6C9 0%,#FFD900 30%,#FFF3AE 46%,#E09A00 64%,#FFE98A 100%)'
 const STEM_BANNER: Record<string, string> = {
-  갑: 'linear-gradient(135deg,#9FD8D0,#5BB3A8)', 을: 'linear-gradient(135deg,#9FD8D0,#5BB3A8)', // 목
-  병: 'linear-gradient(135deg,#F4845F,#D9512E)', 정: 'linear-gradient(135deg,#F4845F,#D9512E)', // 화
-  무: 'linear-gradient(135deg,var(--yellow),var(--orange))', 기: 'linear-gradient(135deg,var(--yellow),var(--orange))', // 토
-  경: 'linear-gradient(135deg,#F2F4F6,#C7CDD4)', 신: 'linear-gradient(135deg,#F2F4F6,#C7CDD4)', // 금
-  임: 'linear-gradient(135deg,#AEB6C4,#5E6B80)', 계: 'linear-gradient(135deg,#AEB6C4,#5E6B80)', // 수 — 슬레이트 블루그레이(무채색 탈피)
+  // 목 — 신록 크롬
+  갑: 'linear-gradient(158deg,#F2FFF8,#8FE3B8 34%,#EAFFF3 48%,#3FA875 66%,#DFFBEC)',
+  을: 'linear-gradient(158deg,#F2FFF8,#8FE3B8 34%,#EAFFF3 48%,#3FA875 66%,#DFFBEC)',
+  // 화 — 코퍼 크롬
+  병: 'linear-gradient(158deg,#FFF4EC,#FFAE7A 32%,#FFEDE0 47%,#E2551F 64%,#FFE3D0)',
+  정: 'linear-gradient(158deg,#FFF4EC,#FFAE7A 32%,#FFEDE0 47%,#E2551F 64%,#FFE3D0)',
+  // 토 — 골드 크롬
+  무: 'linear-gradient(158deg,#FFFBEA,#FFE066 32%,#FFF8DB 47%,#C79A00 64%,#FFF2C2)',
+  기: 'linear-gradient(158deg,#FFFBEA,#FFE066 32%,#FFF8DB 47%,#C79A00 64%,#FFF2C2)',
+  // 금 — 리퀴드 크롬(순은). 토큰 --chrome과 동일 계열
+  경: 'linear-gradient(158deg,#FDFEFF,#CBD4E2 16%,#8E9BB0 32%,#EAEFF7 46%,#6E7C93 60%,#AEBACB 74%,#F4F8FD)',
+  신: 'linear-gradient(158deg,#FDFEFF,#CBD4E2 16%,#8E9BB0 32%,#EAEFF7 46%,#6E7C93 60%,#AEBACB 74%,#F4F8FD)',
+  // 수 — 아쿠아 크롬 (기존 무채색 슬레이트에서 탈출)
+  임: 'linear-gradient(158deg,#F0FBFF,#7ED8F5 30%,#E8F8FF 46%,#1F7FA8 64%,#D6F1FD)',
+  계: 'linear-gradient(158deg,#F0FBFF,#7ED8F5 30%,#E8F8FF 46%,#1F7FA8 64%,#D6F1FD)',
 }
 function bannerGradient(stem?: string | null): string {
   return (stem && STEM_BANNER[stem]) || DEFAULT_BANNER
@@ -35,7 +49,7 @@ function bannerGradient(stem?: string | null): string {
 function CardIcon({ d, bg, color }: { d: string; bg: string; color: string }) {
   return (
     <span
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-ink shadow-gloss"
       style={{ background: bg, color }}
     >
       <svg
@@ -93,11 +107,31 @@ export default async function Home() {
       {/* 운세 배너 → 클릭 시 만세력 선택 시트 (design.md §5.6) */}
       <FortuneBannerClient profiles={profiles} isLoggedIn={!!user}>
         <section
-          className="relative flex min-h-[132px] items-center gap-3 overflow-hidden rounded-[18px] border-2 border-ink p-5 shadow-[4px_4px_0_#1A1A1A]"
+          className="relative flex min-h-[132px] items-center gap-3 overflow-hidden rounded-2xl border-2 border-ink p-5 shadow-brutal"
           style={{ background: bannerGradient(repStem) }}
         >
+          {/* 스펙큘러 밴드 — 금속 반사. 이게 없으면 그냥 색 그라데이션으로 읽힌다. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-[1] mix-blend-screen"
+            style={{ background: 'var(--specular)' }}
+          />
+          {/* 스캔 그리드 — Y2K 디지털 질감 */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-[1] opacity-15"
+            style={{
+              background:
+                'repeating-linear-gradient(0deg,var(--ink) 0 1px,transparent 1px 4px)',
+            }}
+          />
           <div className="relative z-10 min-w-0 flex-1 pr-28">
-            <h2 className="text-xl font-black leading-tight">{t('fortuneBannerCta')}</h2>
+            <h2
+              className="text-xl font-black leading-tight"
+              style={{ textShadow: '0 1px 0 rgba(255,255,255,.65)' }}
+            >
+              {t('fortuneBannerCta')}
+            </h2>
             <p className="mt-1.5 text-xs font-semibold text-ink">{fortuneSub}</p>
           </div>
           {/* 구슬 마스코트 — 우측 */}
