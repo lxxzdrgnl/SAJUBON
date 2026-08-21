@@ -16,8 +16,8 @@ from engine.calc.ten_gods import calculate_ten_gods_distribution
 _SUPPORT_GODS: set[str] = {"비견", "겁재", "정인", "편인"}
 
 _LEVEL_8_THRESHOLDS = [
-    (93, "극왕"), (87, "태강"), (80, "신강"), (60, "중화신강"),
-    (50, "중화신약"), (40, "신약"), (30, "태약"),
+    (90, "극왕"), (80, "태강"), (68, "신강"), (55, "중화신강"),
+    (45, "중화신약"), (32, "신약"), (20, "태약"),
 ]
 
 
@@ -32,15 +32,14 @@ def _get_level_8(score: int) -> str:
 def _month_branch_relation(day_element: str, month_branch: str) -> str:
     """월지 오행이 일간을 생하면 strong, 극하면 weak, 그 외 medium."""
     branch_el = BRANCHES_BY_KOREAN[month_branch]["element"]
-    if WUXING_GENERATION.get(branch_el) == day_element:
+    # 득령: 월지가 인성(나를 생) 또는 비겁(같은 오행)
+    if WUXING_GENERATION.get(branch_el) == day_element or branch_el == day_element:
         return "strong"
-    # 일간이 극하는 오행이 월지에 있으면 weak (재성이 강한 달)
-    from engine.data.wuxing import WUXING_DESTRUCTION
-    if WUXING_DESTRUCTION.get(day_element) == branch_el:
-        return "weak"
-    if branch_el == day_element:
-        return "strong"
-    return "medium"
+    # 식상 월(내가 생하는 오행): 설기 — 실령이되 재·관 월보다 완만
+    if WUXING_GENERATION.get(day_element) == branch_el:
+        return "medium"
+    # 재성 월(내가 극) · 관성 월(나를 극): 실령
+    return "weak"
 
 
 def _branch_ten_god_category(day_stem: str, branch: str) -> str:
@@ -65,62 +64,56 @@ def analyze_day_master_strength(saju: dict, ten_gods_dist: dict, branch_relation
     day_element = saju["day_pillar"]["stem_element"]
     month_branch = saju["month_pillar"]["branch"]
 
-    # 1. 월령 득실 (±30)
+    # 십성 분포 총 가중치 = 천간 3×1.0 + 월지 1.5 + 지지 3×0.5 = 6.0 (시주 없으면 4.5)
+    _total_w = sum(ten_gods_dist.values()) or 1.0
+
+    # 1. 월령 득실 (+8 / 식상월 −5 / 재관월 −8) — 월지는 생조 비율(가중 1.5)에도 들어가므로 과중 방지
     wol_relation = _month_branch_relation(day_element, month_branch)
     if wol_relation == "strong":
-        score += 15; factors["wol_ryeong"] = 15
+        score += 8; factors["wol_ryeong"] = 8
         reasons.append("월령을 득하여 강함")
     elif wol_relation == "medium":
-        score += 5;  factors["wol_ryeong"] = 5
-        reasons.append("월령 중립")
+        score -= 5;  factors["wol_ryeong"] = -5
+        reasons.append("식상 월령으로 설기되어 약함")
     else:
-        score -= 20; factors["wol_ryeong"] = -20
+        score -= 8; factors["wol_ryeong"] = -8
         reasons.append("월령을 실하여 약함")
 
-    # 2. 비겁 (±22)
-    bigeop = ten_gods_dist.get("비견", 0) + ten_gods_dist.get("겁재", 0)
-    if bigeop >= 4:
-        score += 22; factors["bigeop"] = 22;  reasons.append("비겁 과다")
-    elif bigeop >= 2:
-        score += 12; factors["bigeop"] = 12;  reasons.append("비겁 적절")
-    elif bigeop >= 1:
-        score += 5;  factors["bigeop"] = 5;   reasons.append("비겁 소량")
-    elif bigeop >= 0.5:
-        factors["bigeop"] = 0;               reasons.append("비겁 극소 (지지만)")
-    else:
-        score -= 10; factors["bigeop"] = -10; reasons.append("비겁 없음")
-
-    # 3. 인성 (+18)
+    # 2. 생조 비율 — (비겁+인성)/전체, 기대값 0.4를 중심으로 ±(연속형)
+    #    (예전엔 '비겁≥4·재관식상≥6' 같은 절대 개수 임계값이라 총가중치 6 기준에서 대부분 감점만 받았다)
+    bigeop  = ten_gods_dist.get("비견", 0) + ten_gods_dist.get("겁재", 0)
     inseong = ten_gods_dist.get("정인", 0) + ten_gods_dist.get("편인", 0)
-    if inseong >= 3:
-        score += 18; factors["inseong"] = 18; reasons.append("인성 과다")
-    elif inseong >= 2:
-        score += 8;  factors["inseong"] = 8;  reasons.append("인성 적절")
-    elif inseong >= 1:
-        score += 5;  factors["inseong"] = 5;  reasons.append("인성 소량")
+    seolgi  = sum(ten_gods_dist.get(g, 0) for g in ["정재", "편재", "정관", "편관", "식신", "상관"])
+    support_ratio = (bigeop + inseong) / _total_w
+    support_pts = round(40 * (support_ratio - 0.40))
+    score += support_pts; factors["support"] = support_pts
+    factors["bigeop"] = round(bigeop, 2); factors["inseong"] = round(inseong, 2); factors["seolgi"] = round(seolgi, 2)
+    if support_ratio >= 0.6:
+        reasons.append("비겁·인성이 많아 생조가 강함")
+    elif support_ratio >= 0.4:
+        reasons.append("생조와 설기가 균형")
+    elif support_ratio >= 0.2:
+        reasons.append("재관식상이 많아 설기됨")
     else:
-        factors["inseong"] = 0
+        reasons.append("생조가 거의 없어 매우 약함")
 
-    # 4. 재관식상 (설기, −22)
-    seolgi = sum(ten_gods_dist.get(g, 0) for g in
-                 ["정재", "편재", "정관", "편관", "식신", "상관"])
-    if seolgi >= 6:
-        score -= 22; factors["seolgi"] = -22; reasons.append("재관식상 과다")
-    elif seolgi >= 4:
-        score -= 18; factors["seolgi"] = -18; reasons.append("재관식상 많음")
-    elif seolgi >= 2:
-        score -= 5;  factors["seolgi"] = -5;  reasons.append("재관식상 있음")
-    else:
-        factors["seolgi"] = 0
+    # 3. 득지·득시 (일지·시지 본기가 비겁·인성)
+    _day_stem_tmp = saju["day_pillar"]["stem"]
+    if _branch_ten_god_category(_day_stem_tmp, saju["day_pillar"]["branch"]) in _SUPPORT_GODS:
+        score += 6; factors["deuk_ji"] = 6; reasons.append("득지")
+    if saju.get("hour_pillar") is not None and \
+       _branch_ten_god_category(_day_stem_tmp, saju["hour_pillar"]["branch"]) in _SUPPORT_GODS:
+        score += 4; factors["deuk_si"] = 4; reasons.append("득시")
 
     raw_score = score
     score = max(0, min(100, score))
 
-    if score >= 80:   level = "very_strong"
-    elif score >= 65: level = "strong"
-    elif score >= 40: level = "medium"
-    elif score >= 25: level = "weak"
-    else:             level = "very_weak"
+    # 5단계는 8단계 라벨과 정합되게 (42점=신약인데 medium으로 잡혀 용신이 어긋나던 문제)
+    if score >= 80:   level = "very_strong"   # 극왕·태강
+    elif score >= 68: level = "strong"        # 신강
+    elif score >= 45: level = "medium"        # 중화신강·중화신약
+    elif score >= 20: level = "weak"          # 신약·태약
+    else:             level = "very_weak"     # 극약
 
     # ── 득령/득지/득시/득세 ──────────────────────────────────────
     day_stem   = saju["day_pillar"]["stem"]

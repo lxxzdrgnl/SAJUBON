@@ -48,7 +48,7 @@ def select_yong_sin(saju: dict, strength: dict, ten_gods_dist: dict) -> dict:
     if level in ("very_strong", "strong"):
         primary = _generates(d_el)      # 식상(설기)
         secondary = _controls(d_el)     # 재성(극)
-        xi_sin = [primary, secondary]
+        xi_sin = [primary, secondary, _controls_me(d_el)]   # 식상·재성·관성 모두 희신 (신강 억부)
         ji_sin = [d_el, _generates_me(d_el)]
         logic_type = "overpowered_day_master_drain"
     elif level in ("very_weak", "weak"):
