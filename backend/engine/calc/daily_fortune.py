@@ -203,6 +203,24 @@ _CAUTION_BY_CATEGORY: dict[str, str] = {
 
 _CAUTION_CHUNG = "오늘은 예상치 못한 변화나 갈등이 생기기 쉬운 날입니다. 중요한 결정은 신중하게 내리고 무리한 행동은 자제하세요."
 
+# 카테고리 × 점수대 폴백 헤드라인 — 리라이트가 실패하거나 라벨("시험운")을 그대로 뱉을 때 방어
+_HEADLINE_FALLBACK: dict[str, list[tuple[int, str]]] = {
+    "exam":   [(80, "머리가 잘 돌아가는 날"), (60, "차근차근 쌓기 좋은 날"), (45, "복습 위주로 가볍게"), (0, "오늘은 쉬어가도 되는 날")],
+    "money":  [(80, "돈 흐름이 트이는 날"), (60, "실속 챙기기 좋은 날"), (45, "큰 지출은 미루는 날"), (0, "지갑 단속이 필요한 날")],
+    "love":   [(80, "마음이 잘 통하는 날"), (60, "먼저 다가가면 좋은 날"), (45, "말 한마디 조심하는 날"), (0, "거리 두고 숨 고르는 날")],
+    "career": [(80, "일이 술술 풀리는 날"), (60, "묵묵히 하면 인정받는 날"), (45, "실수 줄이기에 집중할 날"), (0, "큰 결정은 미루는 날")],
+    "health": [(80, "기운이 차오르는 날"), (60, "컨디션 무난한 날"), (45, "무리하면 탈 나는 날"), (0, "몸부터 챙겨야 하는 날")],
+    "social": [(80, "사람 덕을 보는 날"), (60, "관계가 편안한 날"), (45, "말보다 듣는 게 나은 날"), (0, "혼자만의 시간이 필요한 날")],
+}
+
+
+def _headline_for(cat: str, score: int) -> str:
+    for lo, text in _HEADLINE_FALLBACK[cat]:
+        if score >= lo:
+            return text
+    return _HEADLINE_FALLBACK[cat][-1][1]
+
+
 _CATEGORY_LABELS: dict[str, str] = {
     "exam":   "시험운",
     "money":  "재물운",
@@ -480,6 +498,54 @@ _WUXING_EL_MEANING: dict[str, str] = {
 }
 
 
+_TEN_GOD_PLAIN: dict[str, str] = {
+    "비견": "내 페이스대로 밀고 가기 좋은", "겁재": "경쟁과 변수가 섞이는",
+    "식신": "여유 있고 표현이 잘 되는",  "상관": "아이디어는 넘치지만 말이 앞서기 쉬운",
+    "편재": "움직인 만큼 생기는",       "정재": "꼼꼼하게 챙기면 실속이 남는",
+    "편관": "압박은 있지만 추진력이 붙는", "정관": "규칙대로 가면 인정받는",
+    "편인": "생각이 깊어지고 직관이 서는", "정인": "배우고 정리하기 좋은",
+}
+
+
+def _day_summary(ten_god: str, wx_bonus: int, chung_target: str, signals: list[dict],
+                 top_cat: str, worst_cat: str, avg: float) -> str:
+    """일진 카드용 일상어 요약 2~3문장 — 용어 없이 '오늘이 어떤 날인지'만."""
+    first = f"오늘은 {_TEN_GOD_PLAIN.get(ten_god, '평범한')} 날입니다."
+    hooks: list[str] = []
+    if chung_target:
+        hooks.append("계획이 틀어지기 쉬우니 약속과 이동은 여유를 두세요")
+    keys = {sg["key"] for sg in signals}
+    if "gwi_in" in keys:
+        hooks.append("도와주는 사람이 나타나기 쉬운 날이라 부탁이나 상담을 꺼내기 좋습니다")
+    if "do_hwa" in keys:
+        hooks.append("첫인상과 매력이 살아나 사람 앞에 서는 일이 유리합니다")
+    if "stem_hap" in keys:
+        hooks.append("제안이나 협업이 잘 붙습니다")
+    if "yeok_ma" in keys:
+        hooks.append("밖으로 움직일 일이 많고, 직접 가서 보는 쪽이 성과가 납니다")
+    if "gong_mang" in keys:
+        hooks.append("애쓴 만큼 결과가 바로 안 잡힐 수 있으니 마무리보다 준비에 쓰세요")
+    if "stem_chung" in keys:
+        hooks.append("고집이 부딪히기 쉬우니 반박은 하루 미루세요")
+    if "wun_weak" in keys:
+        hooks.append("기운이 처지는 날이라 회복을 우선하세요")
+    elif "wun_strong" in keys:
+        hooks.append("추진력이 붙어 미뤄둔 일을 몰아서 처리하기 좋습니다")
+    if not hooks:
+        if wx_bonus > 0:
+            hooks.append("전체적으로 나를 받쳐주는 기운이라 평소보다 한 발 더 나가도 됩니다")
+        elif wx_bonus < 0:
+            hooks.append("기운이 살짝 거스르는 날이라 욕심을 줄이면 편합니다")
+        else:
+            hooks.append("크게 걸리는 것 없이 평탄하게 흐릅니다")
+    second = hooks[0][0].upper() + hooks[0][1:] + "."
+    third = (
+        f"{_j(_CATEGORY_LABELS[top_cat][:-1], '은는')} 살리고, {_j(_CATEGORY_LABELS[worst_cat][:-1], '은는')} 조심하는 하루입니다."
+        if top_cat != worst_cat else ""
+    )
+    return " ".join(x for x in (first, second, third) if x)
+
+
 def _make_basis(
     ten_god: str,
     today_branch_el: str,
@@ -602,6 +668,7 @@ def compute_daily_fortune(calc: dict, target_date: _date | None = None) -> dict:
             "level": level,
             "text":  _TEXTS[cat][level],
             "label": _CATEGORY_LABELS[cat],
+            "headline": _headline_for(cat, score),
         }
 
     avg_score  = sum(f["score"] for f in fortunes.values()) / len(fortunes)
@@ -625,6 +692,7 @@ def compute_daily_fortune(calc: dict, target_date: _date | None = None) -> dict:
     action     = _pick_action(signals, has_chung, chung_target, top_cat, good_hours)
 
     public_signals = [{k: v for k, v in sg.items() if not k.startswith("_")} for sg in signals]
+    day_summary = _day_summary(ten_god, wx_bonus, chung_target, signals, top_cat, worst_cat, avg_score)
 
     return {
         "target_date":    today.isoformat(),
@@ -632,6 +700,7 @@ def compute_daily_fortune(calc: dict, target_date: _date | None = None) -> dict:
         "overall":        overall,
         "caution":        caution,
         "basis":          basis,
+        "day_summary":    day_summary,
         "signals":        public_signals,
         "good_hours":     good_hours,
         "action":         action,
