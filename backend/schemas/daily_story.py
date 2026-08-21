@@ -11,11 +11,12 @@ from schemas.saju import SajuCalcRequest
 # kind=category 카드의 category_key 및 엔진 카테고리 키
 CATEGORY_KEYS = ("exam", "money", "love", "career", "health", "social")
 
-StoryCardKind = Literal["intro", "overall", "category", "caution", "color", "summary"]
+# "color"는 구버전 저장 스냅샷 호환용 (신규 생성은 action)
+StoryCardKind = Literal["intro", "overall", "category", "caution", "action", "color", "summary"]
 
 
 class StoryCard(BaseModel):
-    """스토리 카드 1장 — intro → overall → category×6 → caution → color → summary."""
+    """스토리 카드 1장 — intro → overall → category×6 → caution → action → summary."""
 
     kind: StoryCardKind = Field(description="카드 종류")
     category_key: str | None = Field(

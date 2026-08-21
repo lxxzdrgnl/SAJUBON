@@ -30,7 +30,7 @@ def _fake_story(date: str) -> DailyStoryResponse:
     for c in cats:
         cards.append(StoryCard(kind="category", category_key=c, title=f"{c}운", score=70, headline="라벨", body="본문"))
     cards.append(StoryCard(kind="caution", title="주의", headline="조심", body="충동 금지"))
-    cards.append(StoryCard(kind="color", title="색", headline="흰색", body="안정"))
+    cards.append(StoryCard(kind="action", title="오늘의 한 수", headline="안부 한 통", body="사람 덕 보는 날"))
     cards.append(StoryCard(kind="summary", title="요약", score=68, headline="활력", body="무난"))
     return DailyStoryResponse(
         date=date,

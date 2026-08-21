@@ -30,7 +30,9 @@ def _engine_data() -> dict:
         "overall": "오늘은 전반적으로 무난한 하루입니다.",
         "caution": "충동적인 결정을 조심하세요.",
         "basis": "오늘 지지의 화 기운이 강합니다.",
-        "clothing_color": {"color": "흰색", "element": "금", "reason": "안정적인 하루를 돕습니다."},
+        "signals": [{"key": "gwi_in", "label": "천을귀인", "tone": "good", "desc": "오늘 지지 오는 내 일간 임의 천을귀인 → 도와주는 사람이 나타나는 날"}],
+        "good_hours": [{"branch": "사", "label": "오전 9시 반~11시 반", "element": "화"}],
+        "action": {"headline": "부탁할 일이 있다면 오늘 꺼내세요", "body": "천을귀인이 들어온 날입니다.", "good_hours": []},
         "fortunes": fortunes,
         "birth_day_pillar": {"stem": "임", "branch": "자", "stem_element": "수"},
     }
@@ -56,7 +58,7 @@ def test_assemble_produces_11_cards_in_order():
     assert kinds == [
         "intro", "overall",
         "category", "category", "category", "category", "category", "category",
-        "caution", "color", "summary",
+        "caution", "action", "summary",
     ]
     # category 카드는 6개 키 순서대로
     cat_keys = [c["category_key"] for c in cards if c["kind"] == "category"]

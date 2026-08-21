@@ -4,7 +4,8 @@ import type { SajuCalcRequest } from './types'
 // ── 공통 API 계약 타입 (plan §트랙B — 변경 금지) ──────────────────────────────
 
 export interface StoryCard {
-  kind: 'intro' | 'overall' | 'category' | 'caution' | 'color' | 'summary'
+  /** 'color'는 구버전 저장 스냅샷 호환용 (신규는 action) */
+  kind: 'intro' | 'overall' | 'category' | 'caution' | 'action' | 'color' | 'summary'
   category_key?: string      // kind=category: exam|money|love|career|health|social
   title: string              // 질문 라벨 — "오늘의 금전운"
   score?: number             // overall·category만

@@ -495,8 +495,8 @@ export function StoryCard({ card, dayGanji, profileName, palette, rank }: Props)
         </View>
       )}
 
-      {/* ── caution / color ── */}
-      {(card.kind === 'caution' || card.kind === 'color') && (
+      {/* ── caution / action / color(legacy) ── */}
+      {(card.kind === 'caution' || card.kind === 'action' || card.kind === 'color') && (
         <View style={{ flex: 1, justifyContent: 'center', gap: 24 }}>
           {/* color 카드: 추천 색 스와치 */}
           {swatches.length > 0 && (
