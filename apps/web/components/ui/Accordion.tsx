@@ -17,7 +17,7 @@ export default function Accordion({
     <div
       className={`overflow-hidden rounded-2xl bg-surface ${
         open
-          ? 'border-2 border-orange shadow-[4px_4px_0_#FF6B00]'
+          ? 'border-2 border-orange shadow-pop'
           : 'border-2 border-ink'
       }`}
     >

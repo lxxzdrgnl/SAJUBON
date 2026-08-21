@@ -24,7 +24,7 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
     const color = ohaengColor(el)
     return (
       <span
-        className={`inline-flex items-center gap-1.5 rounded-lg border-2 border-ink px-2.5 py-1 text-xs font-extrabold shadow-[2px_2px_0_#1A1A1A] ${dim ? 'bg-surface' : ''}`}
+        className={`inline-flex items-center gap-1.5 rounded-lg border-2 border-ink px-2.5 py-1 text-xs font-extrabold shadow-brutal-sm ${dim ? 'bg-surface' : ''}`}
         style={dim ? undefined : { background: `${color}1A` }}
       >
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
@@ -34,7 +34,7 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
   }
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
       <h3 className="mb-3 text-[15px] font-extrabold">{t('title')}</h3>
 
       {/* 레벨 + 점수 */}
@@ -86,7 +86,7 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
         {deuk.map((d) => (
           <span
             key={d.label}
-            className={`flex-1 rounded-lg border-2 border-ink py-1 text-center text-xs font-extrabold shadow-[2px_2px_0_#1A1A1A] ${d.on ? 'bg-teal-tint text-[#00665F]' : 'bg-surface text-text-sub opacity-50'}`}
+            className={`flex-1 rounded-lg border-2 border-ink py-1 text-center text-xs font-extrabold shadow-brutal-sm ${d.on ? 'bg-teal-tint text-[#00665F]' : 'bg-surface text-text-sub opacity-50'}`}
           >
             {d.label}
           </span>
@@ -96,7 +96,7 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
       {/* 격국 */}
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
         <span className="text-[11px] font-bold text-text-sub">{t('gyeokGuk')}</span>
-        <span className="rounded-lg border-2 border-ink bg-yellow px-2.5 py-1 text-xs font-extrabold shadow-[2px_2px_0_#1A1A1A]">{data.gyeok_guk.name}</span>
+        <span className="rounded-lg border-2 border-ink bg-yellow px-2.5 py-1 text-xs font-extrabold shadow-brutal-sm">{data.gyeok_guk.name}</span>
         {data.gyeok_guk.basis && <span className="text-[11px] text-text-sub">{data.gyeok_guk.basis}</span>}
       </div>
 
@@ -159,18 +159,18 @@ function StrengthDistChart({
       </div>
       <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full" style={{ overflow: 'visible' }} xmlns="http://www.w3.org/2000/svg">
         {/* 내 위치 강조 컬럼 */}
-        <rect x={me.x - (plotW / 7) / 2} y={MT} width={plotW / 7} height={plotH} fill="#EBE3D2" opacity={0.9} />
+        <rect x={me.x - (plotW / 7) / 2} y={MT} width={plotW / 7} height={plotH} fill="var(--border-soft)" opacity={0.9} />
         {/* Y 그리드 */}
         {yTicks.map((tick) => {
           const yy = MT + plotH - (tick / MAX_DIST) * plotH
           return (
             <g key={tick}>
-              <line x1={ML} y1={yy} x2={SVG_W - 10} y2={yy} stroke="#EBE3D2" strokeWidth={1} />
-              <text x={ML - 4} y={yy + 4} textAnchor="end" fontSize={9} fill="#8A8270">{tick}</text>
+              <line x1={ML} y1={yy} x2={SVG_W - 10} y2={yy} stroke="var(--border-soft)" strokeWidth={1} />
+              <text x={ML - 4} y={yy + 4} textAnchor="end" fontSize={9} fill="var(--text-sub)">{tick}</text>
             </g>
           )
         })}
-        <text x={ML - 4} y={SVG_H - 2} textAnchor="end" fontSize={8} fill="#8A8270">{unitLabel}</text>
+        <text x={ML - 4} y={SVG_H - 2} textAnchor="end" fontSize={8} fill="var(--text-sub)">{unitLabel}</text>
         {/* 면적 + 라인 */}
         <polygon points={areaPolygon} fill={ACCENT} opacity={0.12} />
         <polyline points={polyline} fill="none" stroke={ACCENT} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
@@ -189,7 +189,7 @@ function StrengthDistChart({
             y={SVG_H - 4}
             textAnchor="middle"
             fontSize={9}
-            fill={i === levelIdx ? ACCENT : '#8A8270'}
+            fill={i === levelIdx ? ACCENT : 'var(--text-sub)'}
             fontWeight={i === levelIdx ? 700 : 400}
           >
             {lv}

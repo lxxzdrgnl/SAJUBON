@@ -31,7 +31,7 @@ export default async function ManseIndex() {
       </div>
       <Link
         href="/manse/new"
-        className="mb-4 block rounded-xl border-2 border-ink bg-yellow py-3.5 text-center text-[15px] font-black text-ink shadow-[4px_4px_0_#1A1A1A]"
+        className="mb-4 block rounded-xl border-2 border-ink bg-yellow py-3.5 text-center text-[15px] font-black text-ink shadow-brutal"
       >
         {t('new')}
       </Link>

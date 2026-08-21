@@ -107,7 +107,7 @@ export default function ElementFlowDiagram({
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-2xl border-2 border-ink bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+    <div className="flex flex-col gap-5 rounded-2xl border-2 border-ink bg-surface p-5 shadow-brutal">
       <p className="text-[17px] font-extrabold text-teal">
         {t('elementFlow.title')}
       </p>

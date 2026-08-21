@@ -33,13 +33,13 @@ export default function YeonWolUn({ dayStem }: { dayStem: string }) {
   }, [tab, dayStem, currentYear, wol])
 
   const tabBtn = (key: 'yeon' | 'wol') =>
-    `rounded-lg border-2 border-ink px-3 py-1 text-xs font-extrabold ${tab === key ? 'bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]' : 'bg-surface text-text-sub'}`
+    `rounded-lg border-2 border-ink px-3 py-1 text-xs font-extrabold ${tab === key ? 'bg-yellow text-ink shadow-brutal-sm' : 'bg-surface text-text-sub'}`
 
   const list = tab === 'yeon' ? yeon : wol
   const loading = list === null && !error
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[15px] font-extrabold">{t('title')}</h3>
         <div className="flex gap-1.5">

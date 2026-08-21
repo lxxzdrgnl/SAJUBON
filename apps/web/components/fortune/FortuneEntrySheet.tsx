@@ -122,7 +122,7 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
 
       {/* 시트 */}
       <div
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-[22px] border-2 border-ink bg-surface shadow-[0_-4px_0_#1A1A1A]"
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-[22px] border-2 border-ink bg-surface shadow-brutal-up"
         style={{
           transform: visible ? 'translateY(0)' : 'translateY(100%)',
           opacity: visible ? 1 : 0,
@@ -169,7 +169,7 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                   return (
                     <li key={p.id}>
                       <button
-                        className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+                        className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
                         onClick={() => goFortune(manseNavQuery(profileToManseSource(p)))}
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
@@ -216,7 +216,7 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
                   return (
                     <li key={q}>
                       <button
-                        className="flex w-full items-center gap-3 rounded-2xl border-[1.5px] border-border-soft bg-surface p-4 text-left hover:border-ink hover:shadow-[2px_2px_0_#1A1A1A] transition-all"
+                        className="flex w-full items-center gap-3 rounded-2xl border-[1.5px] border-border-soft bg-surface p-4 text-left hover:border-ink hover:shadow-brutal-sm transition-all"
                         onClick={() => goFortune(q)}
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
@@ -247,7 +247,7 @@ export default function FortuneEntrySheet({ open, onClose, profiles, isLoggedIn 
 
           {/* 직접 입력하기 — 모달 내 폼 */}
           <button
-            className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-[4px_4px_0_#1A1A1A] font-extrabold transition-opacity hover:opacity-80"
+            className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-brutal font-extrabold transition-opacity hover:opacity-80"
             onClick={() => setShowForm(true)}
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface text-lg">

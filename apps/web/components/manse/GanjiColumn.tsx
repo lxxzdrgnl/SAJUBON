@@ -29,7 +29,7 @@ export default function GanjiColumn({
   const Tile = ({ ch, element }: { ch: string; element: string }) => (
     <div
       className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 ${
-        highlight ? 'border-orange shadow-[2px_2px_0_#FF6B00]' : 'border-ink'
+        highlight ? 'border-orange shadow-pop-sm' : 'border-ink'
       }`}
       style={{ background: highlight ? '#FFFFFF' : ohaengColor(element) }}
     >

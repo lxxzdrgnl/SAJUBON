@@ -46,18 +46,18 @@ export default async function WuxingFeatureTable({ data }: { data: SajuCalcRespo
                   <td className="py-2.5 pr-2">
                     <span className="flex items-center gap-1 whitespace-nowrap">
                       <span
-                        className="inline-flex h-6 w-6 items-center justify-center rounded-md border-[1.5px] border-ink text-sm font-black shadow-[1.5px_1.5px_0_#1A1A1A]"
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-md border-[1.5px] border-ink text-sm font-black shadow-brutal-xs"
                         style={{ color, background: `${color}20` }}
                       >
                         {f.el}
                       </span>
                       {isOver && (
-                        <span className="rounded-[8px] border-[1.5px] border-ink bg-orange-tint px-1.5 py-px text-[9px] font-extrabold text-[#B34800] shadow-[1.5px_1.5px_0_#1A1A1A]">
+                        <span className="rounded-[8px] border-[1.5px] border-ink bg-orange-tint px-1.5 py-px text-[9px] font-extrabold text-[#B34800] shadow-brutal-xs">
                           {t('over')}
                         </span>
                       )}
                       {isLack && (
-                        <span className="rounded-[8px] border-[1.5px] border-ink bg-teal-tint px-1.5 py-px text-[9px] font-extrabold text-[#00665F] shadow-[1.5px_1.5px_0_#1A1A1A]">
+                        <span className="rounded-[8px] border-[1.5px] border-ink bg-teal-tint px-1.5 py-px text-[9px] font-extrabold text-[#00665F] shadow-brutal-xs">
                           {t('lack')}
                         </span>
                       )}

@@ -213,7 +213,7 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
   // 주황이어도 크롬이 청록으로 남는다. 첫 페인트를 SSR theme-color(크림)와 맞춘다.
   const palette = currentCard
     ? cardPalette(currentCard.kind, (currentCard as { category_key?: string }).category_key, colorSeed)
-    : paletteFromBase('#FFFBF2')
+    : paletteFromBase('var(--bg-base)')
 
   // 카테고리 랭킹 번호 (오늘의 TOP 01·02…) — category 카드들 사이 순서
   const categoryRank = (() => {
@@ -240,7 +240,7 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
       else body.removeProperty('background')
       if (prevHtml) html.setProperty('background', prevHtml, prevHtmlPri || '')
       else html.removeProperty('background')
-      if (themeMeta) themeMeta.setAttribute('content', prevTheme || '#FFFBF2')
+      if (themeMeta) themeMeta.setAttribute('content', prevTheme || 'var(--bg-base)')
     }
   }, [])
 

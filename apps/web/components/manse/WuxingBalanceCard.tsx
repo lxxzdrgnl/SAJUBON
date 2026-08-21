@@ -21,7 +21,7 @@ function ToggleCheck({ checked, onToggle, label }: { checked: boolean; onToggle:
       >
         {checked && (
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </button>
@@ -61,15 +61,15 @@ function Pentagram({ pct, dayElement, t }: { pct: Record<string, number>; dayEle
             <path d="M0,0 L0,6 L8,3 z" fill="#00C2B8" opacity="0.7" />
           </marker>
         </defs>
-        <polygon points={polygon} fill="none" stroke="#EBE3D2" strokeWidth="1.5" strokeDasharray="4,3" />
+        <polygon points={polygon} fill="none" stroke="var(--border-soft)" strokeWidth="1.5" strokeDasharray="4,3" />
         {SANG_GEUK_PAIRS.map(([fi, ti], idx) => (
           <path key={`geuk-${idx}`} d={linePath(v, fi, ti)} stroke="#FF6B00" strokeWidth="1" strokeDasharray="4,3" opacity="0.25" fill="none" />
         ))}
         {SANG_SAENG_PAIRS.map(([fi, ti], idx) => (
           <path key={`saeng-${idx}`} d={arrowPath(v, pct, fi, ti)} stroke="#00C2B8" strokeWidth="1.5" opacity="0.5" fill="none" markerEnd="url(#wx-arrow)" />
         ))}
-        <circle cx="150" cy="150" r="24" fill="#FFFBF2" stroke="#1A1A1A" strokeWidth="1.5" />
-        <text x="150" y="145" textAnchor="middle" fontSize="9" fill="#8A8270">{t('dayLabel')}</text>
+        <circle cx="150" cy="150" r="24" fill="var(--bg-base)" stroke="var(--ink)" strokeWidth="1.5" />
+        <text x="150" y="145" textAnchor="middle" fontSize="9" fill="var(--text-sub)">{t('dayLabel')}</text>
         <text x="150" y="162" textAnchor="middle" fontSize="15" fontWeight="bold" fill={ohaengColor(dayElement)}>{dayElement}</text>
         {WUXING_ORDER.map((el, i) => {
           const color = ohaengColor(el)
@@ -111,10 +111,10 @@ export default function WuxingBalanceCard({ data }: { data: SajuCalcResponse }) 
       : t('balanced')
 
   const tabBtn = (key: 'bar' | 'penta') =>
-    `rounded-lg border-2 border-ink px-3 py-1 text-xs font-extrabold ${tab === key ? 'bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]' : 'bg-surface text-text-sub'}`
+    `rounded-lg border-2 border-ink px-3 py-1 text-xs font-extrabold ${tab === key ? 'bg-yellow text-ink shadow-brutal-sm' : 'bg-surface text-text-sub'}`
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[15px] font-extrabold">{t('title')}</h3>
         <div className="flex gap-1.5">

@@ -27,7 +27,7 @@ export default async function ChatPage() {
           <p className="text-sm text-text-sub">{t('loginDesc')}</p>
           <a
             href={GOOGLE_LOGIN_URL}
-            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] text-center block"
+            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal text-center block"
           >
             {t('loginWithGoogle')}
           </a>

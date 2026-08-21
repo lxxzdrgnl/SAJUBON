@@ -45,7 +45,7 @@ export default function ShareButton({
         type="button"
         onClick={handleShare}
         disabled={sharing}
-        className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-center text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] disabled:opacity-60"
+        className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-center text-sm font-extrabold text-white shadow-brutal disabled:opacity-60"
       >
         {sharing ? t('loading') : t('label')}
       </button>

@@ -2,8 +2,8 @@
 
 /* 디자인 토큰 — 원천: packages/design (docs/design.md) */
 :root {
-  --bg-base: #FFFBF2;
-  --ink: #1A1A1A;
+  --bg-base: #EEF1F6;
+  --ink: #14161C;
   --yellow: #FFD900;
   --yellow-tint: #FFF3B0;
   --amber: #FFB200;
@@ -13,10 +13,17 @@
   --teal-deep: #00857D;
   --teal-tint: #D7F7F4;
   --surface: #FFFFFF;
-  --border-soft: #EBE3D2;
-  --text-sub: #8A8270;
+  --border-soft: #C8D0DE;
+  --text-sub: #6B7488;
   --sky: #4DA8E8;
   --sky-tint: #DCEFFB;
+
+  /* Y2K 재료 — 크롬(금속 다단)·홀로그램(무지개 conic)·글로스(광택 inset).
+     중립을 쿨 실버(220°)로 옮긴 덕에 크롬이 배경과 같은 계열로 앉는다. */
+  --chrome: linear-gradient(158deg,#FDFEFF 0%,#CBD4E2 16%,#8E9BB0 32%,#EAEFF7 46%,
+                            #6E7C93 60%,#AEBACB 74%,#F4F8FD 100%);
+  --holo: conic-gradient(from 210deg,#6EE7FF,#C6F432,#FFD900,#FF5FD2,#A78BFA,#6EE7FF);
+  --specular: linear-gradient(102deg,transparent 34%,rgba(255,255,255,.85) 46%,transparent 56%);
 
   /* 모션 토큰 — 커브·지속시간 단일 출처.
      이름 앞에 --motion- 을 붙여 Tailwind 테마 네임스페이스(--ease-*)와 충돌을 피한다. */
@@ -53,6 +60,31 @@
 
   /* 모션 커브 — Tailwind 유틸(ease-out-strong / ease-in-out-strong / ease-drawer) 생성.
      내장 ease-out 은 기존 사용처가 그대로 동작해야 하므로 덮어쓰지 않는다. */
+  /* R값 축소 — Tailwind 기본 스케일을 덮어써서 기존 rounded-* 클래스가 그대로 작아진다.
+     굵은 잉크 보더(2~2.5px)에 뭉툭한 반경이 겹치면 물렁한 '소프트 브루탈'로 읽힌다.
+     날카롭게 당겨 Y2K 쪽으로 보낸다. (pill=rounded-full은 유지 — 알약은 알약대로) */
+  --radius-sm: 4px;    /* 6  → 4  */
+  --radius-md: 6px;    /* 8  → 6  */
+  --radius-lg: 8px;    /* 10 → 8  */
+  --radius-xl: 10px;   /* 12 → 10 */
+  --radius-2xl: 12px;  /* 16 → 12 */
+  --radius-3xl: 16px;  /* 24 → 16 */
+
+  /* 브루탈 섀도 — 잉크색을 var로 참조해야 팔레트를 바꿀 수 있다.
+     (이전엔 shadow-[4px_4px_0_#1A1A1A] 형태로 151곳 하드코딩돼 색 변경이 불가능했다) */
+  --shadow-brutal: 4px 4px 0 var(--ink);
+  --shadow-brutal-sm: 2px 2px 0 var(--ink);
+  --shadow-brutal-xs: 1.5px 1.5px 0 var(--ink);
+  --shadow-brutal-md: 2.5px 2.5px 0 var(--ink);
+  --shadow-brutal-lg: 3px 3px 0 var(--ink);
+  --shadow-brutal-up: 0 -4px 0 var(--ink);
+  --shadow-pop: 4px 4px 0 var(--orange);
+  --shadow-pop-sm: 2px 2px 0 var(--orange);
+  --shadow-pop-md: 2.5px 2.5px 0 var(--orange);
+  --shadow-pop-lg: 3px 3px 0 var(--orange);
+  /* 글로스 — 무광 브루탈 면에 광택을 얹어 캔디로 만든다 */
+  --shadow-gloss: inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -3px 8px rgba(20,22,28,.10);
+
   --ease-out-strong: var(--motion-ease-out);
   --ease-in-out-strong: var(--motion-ease-in-out);
   --ease-drawer: var(--motion-ease-drawer);

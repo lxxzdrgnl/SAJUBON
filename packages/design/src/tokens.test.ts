@@ -3,8 +3,8 @@ import { colors, ohaeng, ohaengTint, radius, shadow, toCssVariables } from './to
 
 describe('design tokens', () => {
   it('비비드 캔디 핵심 팔레트 값 (docs/design.md §2.1)', () => {
-    expect(colors.bgBase).toBe('#FFFBF2')
-    expect(colors.ink).toBe('#1A1A1A')
+    expect(colors.bgBase).toBe('#EEF1F6')   // 웜 크림 → 쿨 실버(탈노랑)
+    expect(colors.ink).toBe('#14161C')      // 웜 블랙 → 쿨 잉크
     expect(colors.yellow).toBe('#FFD900')
     expect(colors.amber).toBe('#FFB200')
     expect(colors.orange).toBe('#FF6B00')
@@ -24,16 +24,17 @@ describe('design tokens', () => {
   })
 
   it('브루탈 섀도와 radius 스케일', () => {
-    expect(shadow.brutal).toBe('4px 4px 0 #1A1A1A')
-    expect(radius.card).toBe('16px')
+    // 섀도는 잉크색을 var로 참조한다 — 하드코딩이면 팔레트를 바꿀 수 없다
+    expect(shadow.brutal).toBe('4px 4px 0 var(--ink)')
+    expect(radius.card).toBe('10px')
   })
 
   it('toCssVariables — colors를 kebab-case CSS 변수 :root 블록으로 변환', () => {
     const css = toCssVariables()
     expect(css).toMatch(/^:root \{/)
-    expect(css).toContain('--bg-base: #FFFBF2;')
+    expect(css).toContain('--bg-base: #EEF1F6;')
     expect(css).toContain('--teal-deep: #00857D;')
-    expect(css).toContain('--border-soft: #EBE3D2;')
+    expect(css).toContain('--border-soft: #C8D0DE;')
   })
 
   it('apps/web globals.css가 토큰 값과 드리프트하지 않는다', async () => {

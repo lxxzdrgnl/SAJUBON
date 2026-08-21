@@ -47,7 +47,7 @@ export default async function MyPage() {
           <p className="text-[15px] font-extrabold">{t('loginRequired')}</p>
           <a
             href={GOOGLE_LOGIN_URL}
-            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A]"
+            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal"
           >
             {t('loginWithGoogle')}
           </a>
@@ -81,7 +81,7 @@ export default async function MyPage() {
       <section className="mb-6">
         {repProfile ? (
           <div
-            className={`rounded-2xl border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A] ${repCardBg(repProfile.day_stem)}`}
+            className={`rounded-2xl border-2 border-ink p-4 shadow-brutal ${repCardBg(repProfile.day_stem)}`}
           >
             <div className="flex items-center gap-3">
               {/* 마스코트 아바타 — 중립 배경에 크게 (색은 마스코트 자체 틴팅) */}
@@ -105,7 +105,7 @@ export default async function MyPage() {
                 </p>
               </div>
               {/* 대표 뱃지 — 주황, 크게 */}
-              <span className="shrink-0 self-start rounded-full border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A]">
+              <span className="shrink-0 self-start rounded-full border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-brutal-sm">
                 {t('repCard.badge')}
               </span>
             </div>
@@ -121,7 +121,7 @@ export default async function MyPage() {
             </div>
             <Link
               href="/manse"
-              className="rounded-xl border-2 border-ink bg-yellow px-4 py-2 text-[13px] font-extrabold shadow-[3px_3px_0_#1A1A1A]"
+              className="rounded-xl border-2 border-ink bg-yellow px-4 py-2 text-[13px] font-extrabold shadow-brutal-lg"
             >
               {t('repCard.goManse')}
             </Link>

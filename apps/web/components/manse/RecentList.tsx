@@ -186,14 +186,14 @@ export default function RecentList({
                   <button
                     type="button"
                     onClick={(e) => handleDelete(e, i)}
-                    className="rounded-lg border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A]"
+                    className="rounded-lg border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-brutal-sm"
                   >
                     {t('recentDeleteConfirmYes')}
                   </button>
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); patchItemState(key, { confirmDelete: false }) }}
-                    className="rounded-lg border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]"
+                    className="rounded-lg border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-brutal-sm"
                   >
                     {t('recentDeleteConfirmCancel')}
                   </button>
@@ -209,7 +209,7 @@ export default function RecentList({
                     type="button"
                     disabled={state.saveState === 'busy' || state.saveState === 'done'}
                     onClick={(e) => handleSave(e, i)}
-                    className="flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
+                    className="flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-[11px] font-extrabold text-ink shadow-brutal-sm disabled:opacity-50"
                   >
                     <SaveIcon className="h-3 w-3 shrink-0" />
                     <span>{saveLabel}</span>
@@ -218,7 +218,7 @@ export default function RecentList({
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); setLoginPrompt(true) }}
-                    className="flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A]"
+                    className="flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-[11px] font-extrabold text-ink shadow-brutal-sm"
                   >
                     <SaveIcon className="h-3 w-3 shrink-0" />
                     <span>{t('recentSave')}</span>
@@ -228,7 +228,7 @@ export default function RecentList({
                   type="button"
                   onClick={(e) => { e.preventDefault(); patchItemState(key, { confirmDelete: true }) }}
                   title={t('recentDelete')}
-                  className="flex items-center justify-center rounded-lg border-2 border-ink bg-surface p-1.5 shadow-[2px_2px_0_#1A1A1A]"
+                  className="flex items-center justify-center rounded-lg border-2 border-ink bg-surface p-1.5 shadow-brutal-sm"
                 >
                   <TrashIcon className="h-4 w-4 text-ink" />
                 </button>
@@ -246,14 +246,14 @@ export default function RecentList({
         >
           <div className="absolute inset-0 bg-ink/40" aria-hidden="true" />
           <div
-            className="relative w-full max-w-[320px] rounded-2xl border-2 border-ink bg-surface p-5 text-center shadow-[4px_4px_0_#1A1A1A]"
+            className="relative w-full max-w-[320px] rounded-2xl border-2 border-ink bg-surface p-5 text-center shadow-brutal"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="mb-1 text-[16px] font-extrabold text-ink">{t('recentLoginTitle')}</p>
             <p className="mb-4 text-[13px] text-text-sub">{t('loginHint')}</p>
             <a
               href={GOOGLE_LOGIN_URL}
-              className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold text-ink shadow-[4px_4px_0_#1A1A1A]"
+              className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold text-ink shadow-brutal"
             >
               {t('recentLoginCta')}
             </a>

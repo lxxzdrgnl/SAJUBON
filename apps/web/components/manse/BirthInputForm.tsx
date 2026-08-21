@@ -227,7 +227,7 @@ export default function BirthInputForm({
     'min-w-0 bg-transparent text-center text-sm font-bold tabular-nums outline-none placeholder:font-normal placeholder:text-text-sub'
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+    <div className="flex flex-col gap-4 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
       {/* 이름 */}
       <label className="block">
         <span className="mb-1.5 block text-xs font-extrabold">
@@ -272,7 +272,7 @@ export default function BirthInputForm({
             )}
           </div>
           {cityOpen && (cityLoading || cityResults.length > 0) && (
-            <ul className="absolute z-10 mt-1 max-h-44 w-full overflow-y-auto rounded-xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A]">
+            <ul className="absolute z-10 mt-1 max-h-44 w-full overflow-y-auto rounded-xl border-2 border-ink bg-surface shadow-brutal">
               {cityLoading ? (
                 <li className="px-3 py-2 text-sm text-text-sub">{t('searching')}</li>
               ) : (
@@ -309,7 +309,7 @@ export default function BirthInputForm({
               type="checkbox"
               checked={timeUnknown}
               onChange={(e) => setTimeUnknown(e.target.checked)}
-              className="h-3.5 w-3.5 accent-[#1A1A1A]"
+              className="h-3.5 w-3.5 accent-[var(--ink)]"
             />
             {t('timeUnknown')}
           </label>
@@ -466,7 +466,7 @@ export default function BirthInputForm({
         type="button"
         onClick={submit}
         disabled={hasBlockingError || busy}
-        className="rounded-xl border-2 border-ink bg-orange py-3 text-[15px] font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] disabled:opacity-40"
+        className="rounded-xl border-2 border-ink bg-orange py-3 text-[15px] font-extrabold text-white shadow-brutal disabled:opacity-40"
       >
         {busy ? <span className="inline-block animate-pulse">…</span> : (submitLabel ?? t('submit'))}
       </button>

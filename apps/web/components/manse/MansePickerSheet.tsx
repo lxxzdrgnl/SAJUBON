@@ -153,7 +153,7 @@ export default function MansePickerSheet({
 
       {/* 시트 */}
       <div
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-[22px] border-2 border-ink bg-surface shadow-[0_-4px_0_#1A1A1A]"
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-[22px] border-2 border-ink bg-surface shadow-brutal-up"
         style={{
           transform: visible ? 'translateY(0)' : 'translateY(100%)',
           opacity: visible ? 1 : 0,
@@ -202,7 +202,7 @@ export default function MansePickerSheet({
                       <li key={p.id}>
                         <button
                           type="button"
-                          className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+                          className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
                           onClick={() => pickFromProfile(p)}
                         >
                           <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
@@ -240,7 +240,7 @@ export default function MansePickerSheet({
                       <li key={`${r.birth_date}|${r.birth_time ?? ''}|${r.gender}`}>
                         <button
                           type="button"
-                          className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+                          className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
                           onClick={() => pickFromRecent(r)}
                         >
                           <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
@@ -265,7 +265,7 @@ export default function MansePickerSheet({
               {/* 만세력 추가하기 */}
               <button
                 type="button"
-                className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-[4px_4px_0_#1A1A1A] font-extrabold transition-opacity hover:opacity-80"
+                className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-brutal font-extrabold transition-opacity hover:opacity-80"
                 onClick={() => setShowForm(true)}
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface text-lg">

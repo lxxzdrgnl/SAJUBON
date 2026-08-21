@@ -54,7 +54,7 @@ function DeleteModal({ sessionTitle, onConfirm, onClose, t }: DeleteModalProps) 
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="w-full max-w-[480px] rounded-t-3xl border-2 border-ink bg-surface p-6 shadow-[0_-4px_0_#1A1A1A] sm:rounded-3xl sm:shadow-[4px_4px_0_#1A1A1A]">
+      <div className="w-full max-w-[480px] rounded-t-3xl border-2 border-ink bg-surface p-6 shadow-brutal-up sm:rounded-3xl sm:shadow-brutal">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[15px] font-extrabold text-ink">{t('deleteConfirm')}</h2>
           <button
@@ -77,14 +77,14 @@ function DeleteModal({ sessionTitle, onConfirm, onClose, t }: DeleteModalProps) 
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-xl border-2 border-ink bg-surface py-3 text-sm font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="flex-1 rounded-xl border-2 border-ink bg-surface py-3 text-sm font-extrabold text-ink shadow-brutal-sm transition-opacity hover:opacity-80"
           >
             {t('deleteConfirmCancel')}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="flex-1 rounded-xl border-2 border-ink bg-ink py-3 text-sm font-extrabold text-surface shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="flex-1 rounded-xl border-2 border-ink bg-ink py-3 text-sm font-extrabold text-surface shadow-brutal-sm transition-opacity hover:opacity-80"
           >
             {t('deleteConfirmYes')}
           </button>
@@ -120,14 +120,14 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
         <div className="flex items-center gap-2">
           {sessions.length > 0 && (
             <button
-              className="rounded-xl border-2 border-ink bg-surface px-3 py-1.5 text-sm font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+              className="rounded-xl border-2 border-ink bg-surface px-3 py-1.5 text-sm font-extrabold text-ink shadow-brutal-sm transition-opacity hover:opacity-80"
               onClick={() => setEditMode((v) => !v)}
             >
               {editMode ? t('editDone') : t('editToggle')}
             </button>
           )}
           <button
-            className="rounded-xl border-2 border-teal bg-surface px-4 py-1.5 text-sm font-extrabold text-teal shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="rounded-xl border-2 border-teal bg-surface px-4 py-1.5 text-sm font-extrabold text-teal shadow-brutal-sm transition-opacity hover:opacity-80"
             onClick={() => setSheetOpen(true)}
           >
             {t('newSession')}
@@ -142,7 +142,7 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
           <p className="text-[15px] font-extrabold">{t('empty')}</p>
           <p className="text-sm text-text-sub">{t('emptyHint')}</p>
           <button
-            className="mt-1 rounded-xl border-2 border-teal bg-surface px-6 py-2.5 text-sm font-extrabold text-teal shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="mt-1 rounded-xl border-2 border-teal bg-surface px-6 py-2.5 text-sm font-extrabold text-teal shadow-brutal transition-opacity hover:opacity-80"
             onClick={() => setSheetOpen(true)}
           >
             {t('newSession')}
@@ -182,7 +182,7 @@ export default function ChatListClient({ sessions: initialSessions, profiles }: 
                 </Link>
                 {editMode && (
                   <button
-                    className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
+                    className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-brutal-sm transition-opacity hover:opacity-70"
                     onClick={() => setDeletingSession(s)}
                     aria-label={t('deleteConfirm')}
                   >
