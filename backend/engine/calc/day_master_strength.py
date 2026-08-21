@@ -87,7 +87,7 @@ def analyze_day_master_strength(saju: dict, ten_gods_dist: dict, branch_relation
     support_ratio = (bigeop + inseong) / _total_w
     support_pts = round(40 * (support_ratio - 0.40))
     score += support_pts; factors["support"] = support_pts
-    factors["bigeop"] = round(bigeop, 2); factors["inseong"] = round(inseong, 2); factors["seolgi"] = round(seolgi, 2)
+    # factors는 점수 기여분(int)만 — 응답 스키마가 dict[str, int]라 소수 개수를 넣으면 /saju/calc가 500을 낸다
     if support_ratio >= 0.6:
         reasons.append("비겁·인성이 많아 생조가 강함")
     elif support_ratio >= 0.4:

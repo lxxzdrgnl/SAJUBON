@@ -131,3 +131,10 @@ def test_dae_un_uses_jeol_not_junggi():
     d = calculate_dae_un(s)
     assert d[0]["start_age"] == 7
     assert d[0]["ganji_name"] == "임오"
+
+
+@pytest.mark.parametrize("date,time", [("1990-05-15", "14:30"), ("2001-08-17", "11:00"), ("1975-07-04", None)])
+def test_calc_output_validates_against_response_schema(date, time):
+    """/saju/calc 응답 스키마 검증 — factors에 소수가 들어가 500이 나던 회귀 방지."""
+    from schemas.saju import SajuCalcResponse
+    SajuCalcResponse(**handle_calculate_saju(date, time, "male"))
