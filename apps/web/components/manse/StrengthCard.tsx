@@ -34,7 +34,7 @@ export default async function StrengthCard({ data }: { data: SajuCalcResponse })
   }
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+    <section className="rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
       <h3 className="mb-3 text-[15px] font-extrabold">{t('title')}</h3>
 
       {/* 레벨 + 점수 */}

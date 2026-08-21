@@ -39,7 +39,7 @@ function DaeUnMini({ payload }: { payload: Record<string, unknown> }) {
           return (
             <div
               key={e.start_age}
-              className={`flex shrink-0 flex-col items-center gap-0.5 rounded-xl border-2 px-2.5 py-1.5 text-center ${
+              className={`flex shrink-0 flex-col items-center gap-0.5 rounded-lg border-2 px-2.5 py-1.5 text-center ${
                 isCurrent
                   ? 'border-orange bg-orange-tint font-extrabold'
                   : 'border-border-soft bg-surface'
@@ -96,7 +96,7 @@ function FortuneScoreCard({ payload }: { payload: Record<string, unknown> }) {
   return (
     <div className="flex items-center gap-3">
       {score !== undefined && (
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-yellow text-[20px] font-extrabold">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-ink bg-yellow text-[20px] font-extrabold">
           {score}
         </span>
       )}
@@ -187,7 +187,7 @@ function CompatibilityCard({ payload }: { payload: Record<string, unknown> }) {
   return (
     <div className="flex items-center gap-3">
       {score !== undefined && (
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-teal-tint text-[20px] font-extrabold text-teal-deep">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-ink bg-teal-tint text-[20px] font-extrabold text-teal-deep">
           {score}
         </span>
       )}
@@ -424,7 +424,7 @@ function TwelveUnSeongMini({ payload, t }: { payload: Record<string, unknown>; t
         {active.map(([key, label]) => {
           const p = pillarsWun[key]!
           return (
-            <div key={key} className="flex flex-1 flex-col items-center gap-0.5 rounded-xl border-[1.5px] border-border-soft bg-surface px-1.5 py-2 text-center">
+            <div key={key} className="flex flex-1 flex-col items-center gap-0.5 rounded-lg border-[1.5px] border-border-soft bg-surface px-1.5 py-2 text-center">
               <span className="text-[9px] font-bold text-text-sub">{label}주</span>
               <span className="font-serif text-base font-black leading-none text-ink">{p.stem}{p.branch}</span>
               <span className="mt-0.5 rounded-md bg-yellow-tint px-1.5 py-0.5 text-[10px] font-extrabold text-ink">{p.twelve_wun}</span>
@@ -721,7 +721,7 @@ export default function ToolCard({ tool, payload }: Props) {
         : tool
 
   return (
-    <div className="w-full min-w-0 rounded-2xl border-[1.5px] border-teal bg-teal-tint px-3 py-2.5 overflow-hidden">
+    <div className="w-full min-w-0 rounded-lg border-[1.5px] border-teal bg-teal-tint px-3 py-2.5 overflow-hidden">
       <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-teal-deep">
         {label}
       </p>

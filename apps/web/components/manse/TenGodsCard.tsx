@@ -13,7 +13,7 @@ export default async function TenGodsCard({ data }: { data: SajuCalcResponse }) 
   const { CX, CY } = DONUT_GEOMETRY
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+    <section className="rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
       <h3 className="mb-3 text-[15px] font-extrabold">{t('title')}</h3>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">

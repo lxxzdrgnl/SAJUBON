@@ -39,7 +39,7 @@ export default function YeonWolUn({ dayStem }: { dayStem: string }) {
   const loading = list === null && !error
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+    <section className="rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[15px] font-extrabold">{t('title')}</h3>
         <div className="flex gap-1.5">

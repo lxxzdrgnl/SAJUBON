@@ -51,7 +51,7 @@ function TabAccordion({
 
   return (
     <div
-      className={`overflow-hidden rounded-xl bg-surface transition-all ${
+      className={`overflow-hidden rounded-lg bg-surface transition-all ${
         open
           ? 'border-2 border-ink shadow-brutal'
           : 'border-2 border-ink shadow-brutal-sm'
@@ -207,7 +207,7 @@ export default function TabbedReport({
           <button
             type="button"
             onClick={onShare}
-            className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-brutal"
+            className="w-full rounded-lg border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-brutal"
           >
             {label}
           </button>

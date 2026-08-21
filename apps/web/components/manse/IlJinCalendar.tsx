@@ -36,7 +36,7 @@ export default function IlJinCalendar() {
   const go = (fn: typeof prevMonth) => { const n = fn(year, month); setYear(n.year); setMonth(n.month) }
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+    <section className="rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[15px] font-extrabold">{t('title')}</h3>
         <div className="flex items-center gap-2">

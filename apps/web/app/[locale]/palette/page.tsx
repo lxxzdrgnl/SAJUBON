@@ -21,7 +21,7 @@ export default function PaletteReviewPage() {
           return (
             <div
               key={hex}
-              className="overflow-hidden rounded-2xl border-2 border-ink p-6 shadow-brutal"
+              className="overflow-hidden rounded-lg border-2 border-ink p-6 shadow-brutal"
               style={{ background: p.bg }}
             >
               <div

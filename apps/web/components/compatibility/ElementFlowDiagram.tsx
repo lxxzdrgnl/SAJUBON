@@ -107,7 +107,7 @@ export default function ElementFlowDiagram({
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-2xl border-2 border-ink bg-surface p-5 shadow-brutal">
+    <div className="flex flex-col gap-5 rounded-lg border-2 border-ink bg-surface p-5 shadow-brutal">
       <p className="text-[17px] font-extrabold text-teal">
         {t('elementFlow.title')}
       </p>
@@ -117,15 +117,15 @@ export default function ElementFlowDiagram({
         <div className="flex flex-col gap-1">
           <SectionLabel>{t('elementFlow.stemHapLabel')}</SectionLabel>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="rounded-xl border-2 border-ink bg-yellow-tint px-3 py-1.5 text-[14px] font-extrabold text-ink">
+            <span className="rounded-lg border-2 border-ink bg-yellow-tint px-3 py-1.5 text-[14px] font-extrabold text-ink">
               {nameA}
             </span>
             <span className="text-[15px] font-black text-text-sub">+</span>
-            <span className="rounded-xl border-2 border-ink bg-yellow-tint px-3 py-1.5 text-[14px] font-extrabold text-ink">
+            <span className="rounded-lg border-2 border-ink bg-yellow-tint px-3 py-1.5 text-[14px] font-extrabold text-ink">
               {nameB}
             </span>
             <span className="text-[15px] font-black text-text-sub">→</span>
-            <span className="rounded-xl border-2 border-teal bg-teal-tint px-3 py-1.5 text-[14px] font-extrabold text-teal-deep">
+            <span className="rounded-lg border-2 border-teal bg-teal-tint px-3 py-1.5 text-[14px] font-extrabold text-teal-deep">
               {stem_hap}
             </span>
           </div>

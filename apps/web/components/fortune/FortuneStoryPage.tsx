@@ -429,7 +429,7 @@ export default function FortuneStoryPage({ initialStory }: FortuneStoryPageProps
             <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
               <p className="text-sm" style={{ color: palette.inkSoft }}>{error}</p>
               <button
-                className="mt-4 rounded-xl border-2 px-6 py-2 text-sm font-extrabold"
+                className="mt-4 rounded-lg border-2 px-6 py-2 text-sm font-extrabold"
                 style={{ borderColor: hexToRgba(palette.ink, 0.4), color: palette.ink }}
                 onClick={handleClose}
               >

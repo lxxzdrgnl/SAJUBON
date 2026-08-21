@@ -38,10 +38,10 @@ export default function InlinePartnerCard({ profiles, onSelect, onSubmitBirth }:
 
   return (
     <>
-      <div className="w-full rounded-2xl border-2 border-orange bg-yellow-tint px-3 py-3">
+      <div className="w-full rounded-lg border-2 border-orange bg-yellow-tint px-3 py-3">
         <p className="mb-2 text-[13px] font-extrabold text-ink">{t('inlinePartner.prompt')}</p>
         <button
-          className="rounded-xl border-2 border-ink bg-yellow px-4 py-2 text-[13px] font-extrabold shadow-brutal-sm transition-opacity hover:opacity-80"
+          className="rounded-lg border-2 border-ink bg-yellow px-4 py-2 text-[13px] font-extrabold shadow-brutal-sm transition-opacity hover:opacity-80"
           onClick={() => setSheetOpen(true)}
         >
           {t('inlinePartner.action')}

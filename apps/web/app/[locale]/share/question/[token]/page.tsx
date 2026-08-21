@@ -77,7 +77,7 @@ export default async function SharedConsultationPage({
       <h1 className="text-lg font-black">{tq('title')}</h1>
 
       {/* 질문 */}
-      <div className="rounded-2xl border-[1.5px] border-border-soft bg-surface p-4">
+      <div className="rounded-lg border-[1.5px] border-border-soft bg-surface p-4">
         <p className="mb-1 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
           {tq('questionHeader')}
         </p>
@@ -85,7 +85,7 @@ export default async function SharedConsultationPage({
       </div>
 
       {/* 상담 결과 — 채팅과 동일: content의 [[chart:...]] 마커를 인라인 ToolCard로 렌더 */}
-      <div className="rounded-2xl border-2 border-teal bg-surface p-5 shadow-brutal">
+      <div className="rounded-lg border-2 border-teal bg-surface p-5 shadow-brutal">
         <p className="mb-3 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
           {tq('resultLabel')}
         </p>
@@ -104,12 +104,12 @@ export default async function SharedConsultationPage({
       </div>
 
       {/* 나도 한줄상담 받기 CTA */}
-      <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+      <div className="mt-2 rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
         <p className="mb-1 text-[14px] font-extrabold text-ink">{t('ctaTitle')}</p>
         <p className="mb-3 text-[13px] text-text-sub">{t('ctaBody')}</p>
         <a
           href="/question"
-          className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal"
+          className="block w-full rounded-lg border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal"
         >
           {t('ctaButton')}
         </a>

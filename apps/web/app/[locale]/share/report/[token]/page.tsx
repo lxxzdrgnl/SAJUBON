@@ -71,7 +71,7 @@ export default async function SharedReportPage({
 
   return (
     <main className="flex flex-col gap-4">
-      <div className="rounded-2xl border-2 border-ink bg-surface p-3 text-[14px] font-bold text-ink shadow-brutal">
+      <div className="rounded-lg border-2 border-ink bg-surface p-3 text-[14px] font-bold text-ink shadow-brutal">
         {summaryLine}
       </div>
 
@@ -82,12 +82,12 @@ export default async function SharedReportPage({
       <p className="pb-2 text-center text-[13px] text-text-sub">각 제목을 클릭하면 해설이 펼쳐져요</p>
 
       {/* 나도 확인 CTA */}
-      <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
+      <div className="mt-2 rounded-lg border-2 border-ink bg-surface p-4 shadow-brutal">
         <p className="mb-1 text-[14px] font-extrabold text-ink">나도 내 사주가 궁금하다면?</p>
         <p className="mb-3 text-[13px] text-text-sub">생년월일시만 입력하면 무료로 만세력을 확인할 수 있어요.</p>
         <a
           href="/"
-          className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal"
+          className="block w-full rounded-lg border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal"
         >
           나도 확인해보기
         </a>
