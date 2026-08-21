@@ -66,11 +66,11 @@ def get_il_jin_calendar(year: int, month: int) -> dict:
     # 절기 정보 (ephem 기반) — 해당 년도 전체 절기에서 이 달 것만 필터
     try:
         all_terms = get_solar_terms_for_year(year)
-        # datetime 객체에서 월·일 추출해 {day: name} 매핑
+        # KST 기준 월·일로 {day: name} 매핑 (UTC 날짜를 쓰면 15시 UTC 이후 절기가 하루 밀린다)
         term_map: dict[int, str] = {
-            t["datetime"].day: t["name"]
+            t["datetime_kst"].day: t["name"]
             for t in all_terms
-            if t["datetime"].month == month
+            if t["datetime_kst"].month == month
         }
     except Exception as exc:
         logger.warning("절기 계산 실패 (%d-%d): %s", year, month, exc)
