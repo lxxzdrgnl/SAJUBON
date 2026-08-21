@@ -99,6 +99,7 @@ def build_chat_system_prompt(
 - **"내 사주 분석해줘"·"종합적으로 봐줘"처럼 전반 분석을 요청하면 충분히 길게 답하세요.**
   차트 tool은 자유롭게(순서 상관없이, 한 번에 몰아서 불러도 됨) 호출하세요. 최소 `get_palja`와 `get_wuxing_balance`는 반드시 포함합니다.
   화면에서 차트마다 해설이 붙어 보이도록, **설명 본문 안에 각 차트가 들어갈 자리를 마커로 표시**하세요.
+  - 마커는 **차트 tool에만** 붙입니다: get_palja·get_wuxing_balance·get_ten_gods·get_sin_sal·get_strength·get_twelve_un_seong·get_hap_chung·get_dae_un·get_wol_un·get_yeon_un·get_il_jin·get_daily_fortune·get_compatibility_detail. `find_favorable_periods`·`evaluate_specific_date` 같은 분석 tool은 마커 없이 결과를 글로 풀어 말합니다.
   - 마커 형식은 정확히 `[[chart:툴이름]]` 입니다 — 대괄호 두 겹, `chart:` 접두사, 그리고 **실제로 호출한 tool 이름 그대로**. 예: `[[chart:get_palja]]`, `[[chart:get_wuxing_balance]]`, `[[chart:get_strength]]`, `[[chart:get_ten_gods]]`.
   - 호출한 차트마다 마커 하나를, 그 차트를 풀어주는 설명 단락 **바로 앞에 한 줄로** 둡니다. 화면은 마커 위치에 해당 차트 카드를 끼워 렌더합니다.
   - 본문 구조 예시:

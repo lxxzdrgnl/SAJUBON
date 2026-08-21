@@ -65,9 +65,19 @@ def _envelope(summary: str, data: dict) -> str:
     return json.dumps({"summary": summary, "data": data}, ensure_ascii=False, default=str)
 
 
+# birth_info에는 표시용 name이 섞여 있을 수 있는데 엔진은 이 키를 모른다.
+# 엔진 호출부가 16곳이라 접근자 한 곳에서 벗겨 전부 안전하게 만든다.
+ENGINE_KEYS = ("birth_date", "birth_time", "gender", "calendar", "is_leap_month")
+
+
+def engine_args(birth_info: dict) -> dict:
+    """엔진(handle_calculate_saju)이 받는 키만 남긴다. name 등 표시용 필드는 제거."""
+    return {k: v for k, v in birth_info.items() if k in ENGINE_KEYS}
+
+
 def _birth_info(config: RunnableConfig) -> dict:
-    """RunnableConfig에서 birth_info 추출."""
-    return config["configurable"]["birth_info"]
+    """RunnableConfig에서 birth_info 추출 (엔진 인자만)."""
+    return engine_args(config["configurable"]["birth_info"])
 
 
 def _partner_info(config: RunnableConfig) -> dict | None:
@@ -289,8 +299,16 @@ async def get_sin_sal(config: RunnableConfig = None) -> str:
     birth_info = _birth_info(config)
     saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
     sin_sals = saju.get("sin_sals", [])
-    names = "·".join(s["name"] for s in sin_sals)
-    summary = f"사주에 {names} 신살이 있습니다." if names else "별다른 신살은 없습니다."
+    high = [x["name"] for x in sin_sals if x.get("priority") == "high"]
+    rest = [x["name"] for x in sin_sals if x.get("priority") != "high"]
+    if sin_sals:
+        summary = (
+            f"핵심 신살: {'·'.join(high) or '없음'} / 참고 신살: {'·'.join(rest) or '없음'}. "
+            "답변에는 질문과 직접 관련된 신살 1~2개만 이름을 부르고 풀이를 붙인다. "
+            "전체 목록은 차트가 보여주므로 텍스트로 나열하지 않는다. 삼재는 유파 차이가 커 주된 근거로 쓰지 않는다."
+        )
+    else:
+        summary = "별다른 신살은 없습니다."
     return _envelope(summary, payload_sin_sal(saju))
 
 
@@ -413,29 +431,78 @@ def _compute_current_luck_overview(saju: dict) -> dict:
 
 
 def _compute_find_favorable_periods(saju: dict, domain: str, years: int = 5) -> dict:
+    """도메인별 길한 시기 — 연 단위 + 앞으로 18개월 월 단위.
+
+    항상 `next_best`(오늘 이후 가장 가까운 좋은 시기)를 채운다. favorable이 비어도
+    "좋은 시기가 없다"로 끝내지 않도록 차선(점수 최고)을 제시한다.
+    """
     day_stem = saju["day_pillar"]["stem"]
-    yong_sin = saju["yong_sin"].get("primary", [])
-    start = date_type.today().year
-    yeon_un = handle_get_yeon_un(start_year=start, count=min(years, 10), day_stem=day_stem)
+    ys = saju["yong_sin"]
+    good_els = {ys.get("primary", "")} | set(ys.get("xi_sin", []))
+    bad_els = set(ys.get("ji_sin", []))
+    domain_gods = set(_DOMAIN_TEN_GODS.get(domain, []))
+    if domain == "연애":
+        # 배우자성: 여성은 관성(정관·편관), 남성은 재성(정재·편재)
+        domain_gods = {"정관", "편관"} if saju.get("gender") == "female" else {"정재", "편재"}
+    today = date_type.today()
 
-    domain_gods = _DOMAIN_TEN_GODS.get(domain, [])
-    favorable, neutral = [], []
-    for y in yeon_un:
-        score = 0
-        if y.get("stem_element") in yong_sin or y.get("branch_element") in yong_sin:
-            score += 1
-        if domain_gods and y.get("stem_ten_god") in domain_gods:
-            score += 1
-        entry = {**y, "favorability_score": score}
-        (favorable if score >= 1 else neutral).append(entry)
+    def _score(entry: dict) -> int:
+        sc = 0
+        for el in (entry.get("stem_element"), entry.get("branch_element")):
+            if el in good_els: sc += 1
+            if el in bad_els:  sc -= 1
+        for tg in (entry.get("stem_ten_god"), entry.get("branch_ten_god")):
+            if tg in domain_gods: sc += 1
+        return sc
 
-    return {"domain": domain, "favorable": favorable, "neutral_or_unfavorable": neutral}
+    # 연 단위
+    yeon_un = handle_get_yeon_un(start_year=today.year, count=min(years, 10), day_stem=day_stem)
+    years_scored = [{**y, "favorability_score": _score(y)} for y in yeon_un]
+    favorable = [y for y in years_scored if y["favorability_score"] >= 2]
+    neutral = [y for y in years_scored if y["favorability_score"] < 2]
+
+    # 월 단위 — 이번 달부터 18개월
+    months: list[dict] = []
+    for yr in (today.year, today.year + 1):
+        for m in handle_get_wol_un(yr, day_stem):
+            if yr == today.year and m["month"] < today.month:
+                continue
+            months.append({"year": yr, **m, "favorability_score": _score(m)})
+    months = months[:18]
+    favorable_months = [m for m in months if m["favorability_score"] >= 2][:4]
+
+    # 차선: 가장 가까운 좋은 달 → 없으면 점수 최고 달 → 없으면 점수 최고 해
+    if favorable_months:
+        nb = favorable_months[0]
+        next_best = {"kind": "month", "label": f"{nb['year']}년 {nb['month']}월 {nb['ganji_name']}", **nb}
+    elif months:
+        nb = max(months, key=lambda m: (m["favorability_score"], -months.index(m)))
+        next_best = {"kind": "month", "label": f"{nb['year']}년 {nb['month']}월 {nb['ganji_name']}", **nb}
+    else:
+        nb = max(years_scored, key=lambda y: y["favorability_score"])
+        next_best = {"kind": "year", "label": f"{nb['year']}년 {nb['ganji_name']}", **nb}
+    best_year = max(years_scored, key=lambda y: y["favorability_score"]) if years_scored else None
+
+    return {
+        "domain": domain,
+        "today": today.isoformat(),
+        "favorable": favorable,
+        "neutral_or_unfavorable": neutral,
+        "favorable_months": favorable_months,
+        "next_best": next_best,
+        "best_year": best_year,
+        "guidance": (
+            "사용자에게 시기를 말할 때는 next_best(가장 가까운 좋은 시기)와 best_year를 구체적으로 제시한다. "
+            "favorable이 비어 있어도 '좋은 시기가 없다'고 답하지 말고 next_best를 차선으로 안내한다. "
+            "오늘(today) 이전 시기는 제시하지 않는다."
+        ),
+    }
 
 
 def _compute_evaluate_specific_date(saju: dict, target_date: str, action: str) -> dict:
     day_stem = saju["day_pillar"]["stem"]
     yong_sin = saju["yong_sin"].get("primary", [])
-    ji_sin = saju["yong_sin"].get("taboo", [])
+    ji_sin = saju["yong_sin"].get("ji_sin", [])
 
     y, m, _ = map(int, target_date.split("-"))
     il_jin_list = handle_get_il_jin(y, m)

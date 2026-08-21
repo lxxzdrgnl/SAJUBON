@@ -137,7 +137,7 @@
       "timeUnknownDisplay": "Time unknown",
       "searching": "Searching...",
       "correctionLabel": "{minutes} min correction",
-      "timeUnknownNote": "Hour pillar (時柱) omitted — analyses tied to it (children/late-life fortune, hour-based sinsal) are skipped.",
+      "timeUnknownNote": "Hour pillar (時柱) omitted. Analyses tied to it (children and late-life fortune, hour-based sinsal) are skipped.",
       "errorName": "Please enter a name.",
       "errorDateRequired": "Please enter a date of birth.",
       "errorYearRange": "Year must be between 1900 and 2100.",
@@ -357,7 +357,7 @@
     "topicsPlaceholder": "Career change timing, parents' health, wealth this year",
     "topicsHint": "Separate multiple topics with commas",
     "submit": "Generate Report",
-    "loadingNote": "AI is analyzing your Saju. This usually takes 30–60 seconds.",
+    "loadingNote": "AI is analyzing your Saju. This usually takes 30-60 seconds.",
     "errorMissingBirth": "Birth info is missing. Please try again from the Saju chart page.",
     "errorLogin": "Please sign in to continue.",
     "errorLimit": "You've reached today's report limit. Try again tomorrow.",
@@ -406,7 +406,7 @@
   },
   "question": {
     "title": "One-Line Reading",
-    "desc": "Enter your birth info and question — AI answers in one insight.",
+    "desc": "Enter your birth info and question. AI answers in one insight.",
     "birthLabel": "Select Saju",
     "birthPlaceholder": "Select a saved chart or enter manually",
     "questionLabel": "{name}'s question",
@@ -438,7 +438,7 @@
       "notFoundTitle": "Share link not found.",
       "notFoundBody": "The link may have expired or is invalid.",
       "ctaTitle": "Want your own quick reading?",
-      "ctaBody": "Just enter your birth info and question — AI answers right away.",
+      "ctaBody": "Just enter your birth info and question. AI answers right away.",
       "ctaButton": "Get my quick reading"
     }
   },

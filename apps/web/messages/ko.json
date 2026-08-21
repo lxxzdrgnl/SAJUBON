@@ -137,7 +137,7 @@
       "timeUnknownDisplay": "시간 모름",
       "searching": "검색 중...",
       "correctionLabel": "{minutes}분 보정",
-      "timeUnknownNote": "시주(時柱) 미산출 — 자녀·노년운, 시신살 등 시주 관련 분석이 생략됩니다.",
+      "timeUnknownNote": "시주(時柱)를 산출하지 않았습니다. 자녀·노년운, 시신살 등 시주 관련 분석은 생략됩니다.",
       "errorName": "이름을 입력해 주세요.",
       "errorDateRequired": "생년월일을 입력해 주세요.",
       "errorYearRange": "연도는 1900년 ~ 2100년 사이여야 합니다.",
