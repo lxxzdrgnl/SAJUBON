@@ -19,6 +19,12 @@ from datetime import datetime
 
 from engine.handlers.calculate_saju import handle_calculate_saju
 from engine.handlers.get_wol_un import handle_get_wol_un
+from engine.handlers.get_il_jin import handle_get_il_jin
+from engine.calc.ten_gods import calculate_ten_god, get_branch_ten_god
+from engine.data.heavenly_stems import STEMS_BY_KOREAN
+from engine.data.earthly_branches import BRANCHES_BY_KOREAN, CHUNG_PAIRS
+
+_CHUNG_SETS = {frozenset(p) for p in CHUNG_PAIRS}
 from engine.handlers.get_yeon_un import handle_get_yeon_un
 from llm.guard import guard_and_classify
 from llm.reranker import rerank_chunks, build_question_query, CATEGORY_QUERY_HINT, CATEGORY_TAG_MAP
@@ -44,6 +50,9 @@ _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="question-pipel
 
 # 시기 분석이 유의미한 카테고리
 _TIMING_CATEGORIES = {"love", "career", "money"}
+# 택일(擇日) 질문 — 이사·계약·결혼식·개업·면접일처럼 "며칠이 좋나"를 묻는 경우 일진 데이터를 붙인다
+_TAEKIL_KW = ("며칠", "몇일", "몇 일", "날짜", "택일", "길일", "좋은 날", "이사", "계약", "결혼식", "상견례", "개업", "오픈", "입주", "잔금", "면접 날")
+_PAST_RE = re.compile(r"(작년|재작년|지난해|(\d{4})년|(\d+)년 전)")
 
 # content에 박힌 [[chart:툴이름]] 마커
 _CHART_MARKER_RE = re.compile(r"\[\[chart:([a-z_]+)\]\]")
@@ -250,9 +259,49 @@ def _build_question_rag(
         se_un  = []
         wol_un = []
 
+    # 택일 질문 → 이번 달 남은 날 + 다음 달 일진 (일간 기준 십성·용신 여부까지 계산해 압축)
+    il_jin: list[dict] = []
+    if any(kw in question for kw in _TAEKIL_KW):
+        good_els = {ys.get("primary", "")} | set(ys.get("xi_sin", []))
+        bad_els = set(ys.get("ji_sin", []))
+        next_m = (today.year + (today.month // 12), today.month % 12 + 1)
+        if any(kw in question for kw in ("다음 달", "다음달", "내달", "담달")):
+            months = [next_m]                       # 질문이 다음 달이면 이번 달 날짜는 후보에서 제외
+        else:
+            months = [(today.year, today.month), next_m]
+        for yy, mm in months:
+            for d in handle_get_il_jin(yy, mm):
+                if d["date"] < today.strftime("%Y-%m-%d"):
+                    continue
+                s_el = STEMS_BY_KOREAN[d["stem"]]["element"]; b_el = BRANCHES_BY_KOREAN[d["branch"]]["element"]
+                il_jin.append({
+                    "date": d["date"], "ganji": d["ganji_name"],
+                    "stem_ten_god": calculate_ten_god(day_stem, d["stem"]),
+                    "branch_ten_god": get_branch_ten_god(day_stem, d["branch"]),
+                    "good": (s_el in good_els) + (b_el in good_els) - (s_el in bad_els) - (b_el in bad_els),
+                    "chung_with_day": frozenset({d["branch"], dp.get("branch", "")}) in _CHUNG_SETS,
+                })
+
+    # 과거 질문 → 해당 연도 세운을 따로 붙인다 (없으면 모델이 '올해 대운'으로 얼버무린다)
+    past_years: list[dict] = []
+    m = _PAST_RE.search(question)
+    if m:
+        if m.group(2):
+            yr = int(m.group(2))
+        elif m.group(3):
+            yr = today.year - int(m.group(3))
+        elif "재작년" in m.group(1):
+            yr = today.year - 2
+        else:
+            yr = today.year - 1
+        if 1900 < yr < today.year:
+            past_years = handle_get_yeon_un(yr, 1, day_stem)
+
     return {
         "chunks":           reranked,
         "ilju":             ilju,
+        "il_jin":           il_jin,
+        "past_years":       past_years,
         "strength":         dms.get("level_8"),
         "yong_sin_summary": f"용신:{ys.get('primary','')} ({ys.get('logic_type','')}), 희신:{xi}",
         "se_un":            se_un,
@@ -260,6 +309,28 @@ def _build_question_rag(
         "current_month":    today.month,
         "today":            today.strftime("%Y-%m-%d"),
     }
+
+
+_LEADING_MARKER_RE = re.compile(r"^\s*((?:\[\[chart:[a-z_]+\]\]\s*)+)", re.S)
+
+
+def _demote_leading_marker(content: str) -> str:
+    """content가 차트 마커로 시작하면 첫 문단 뒤로 옮긴다 — 답보다 차트가 먼저 보이는 화면 방지."""
+    m = _LEADING_MARKER_RE.match(content or "")
+    if not m:
+        return content
+    markers = m.group(1).strip()
+    rest = content[m.end():].lstrip()
+    paras = rest.split("\n\n", 1)
+    if len(paras) == 1:
+        # 한 문단뿐이면 둘째 문장 뒤에 끼운다 (맨 끝 배치 방지)
+        ends = [m_.end() for m_ in re.finditer(r"[.!?。]\s+", paras[0])]
+        if len(ends) >= 2:
+            cut = ends[1]
+            return f"{paras[0][:cut].rstrip()}\n\n{markers}\n\n{paras[0][cut:].lstrip()}"
+        return f"{paras[0]}\n\n{markers}"
+    first, tail = paras
+    return f"{first}\n\n{markers}\n\n{tail}"
 
 
 async def run_question_consultation(
@@ -292,6 +363,12 @@ async def run_question_consultation(
         else:
             headline, content = "잠깐만요", guard_msg or ""
         return {"headline": headline, "content": content, "category": category, "charts": [], "more": []}
+
+    if guard_msg in ("CRISIS", "OFFTOPIC"):
+        from llm.guard import CRISIS_RESPONSE, OFFTOPIC_RESPONSE
+        fixed = CRISIS_RESPONSE if guard_msg == "CRISIS" else OFFTOPIC_RESPONSE
+        logger.info("Guard fixed response (%s): %s", guard_msg, question[:30])
+        return {**fixed, "category": category, "charts": [], "more": []}
 
     is_medical = (guard_msg == "MEDICAL")
     if is_medical:
@@ -333,16 +410,28 @@ async def run_question_consultation(
     logger.info("Question RAG 완료: chunks=%d", len(rag_ctx.get("chunks", [])))
 
     # 3. Writer
-    effective_question = (
-        f"{question}\n\n[주의사항]\n"
-        f"1. 수술·치료법 선택 등 의료적 결정에 대한 권고는 절대 하지 마세요.\n"
-        f"2. 신살(귀문관살 등)을 특정 질병의 원인으로 직접 연결하지 마세요.\n"
-        f"3. 계절·시기 언급은 월운 데이터가 제공된 경우에만 하세요. 지어내지 마세요.\n"
-        f"4. 사주의 에너지 흐름(용신·대운 기준)만 이야기하세요.\n"
-        f"5. 마지막 문장은 반드시 '구체적인 치료 결정은 의료진과 상담하세요'로 끝내세요."
-        if is_medical else question
-    )
+    if is_medical:
+        effective_question = (
+            f"{question}\n\n[주의사항 — 의료]\n"
+            f"1. 수술·치료를 **할지 말지, 언제 할지, 미룰지**에 대한 권고는 절대 하지 마세요. "
+            f"'내년 초가 적기', '하반기에 재평가' 같은 시기 지시도 금지입니다.\n"
+            f"2. 질문의 의학적 전제가 틀렸다면(예: 과민성대장증후군은 수술로 치료하지 않음) 첫 문장에서 부드럽게 바로잡으세요.\n"
+            f"3. 신살(귀문관살·공망 등)을 질병·피로의 원인으로 연결하지 마세요. 신살 이름을 아예 쓰지 마세요.\n"
+            f"4. 사주로 말할 수 있는 것은 '이 시기 컨디션·회복력 흐름과 생활 관리 포인트'까지입니다.\n"
+            f"5. 마지막 문장은 반드시 '구체적인 치료 결정은 의료진과 상담하세요'로 끝내세요."
+        )
+    elif category == "money":
+        effective_question = (
+            f"{question}\n\n[주의사항 — 재물]\n"
+            f"1. 특정 자산(코인·주식·부동산)을 사라/팔라, 얼마나(비중·금액) 넣어라, 몇 월부터 늘려라 같은 **투자 실행 지시는 금지**입니다.\n"
+            f"2. 사주로 말할 수 있는 것은 '이 사람의 재물 성향(공격/보수)과 이 시기의 재물 흐름(안정/변동)'까지입니다.\n"
+            f"3. 시기를 말하더라도 '결정을 내리기 좋은 시기/신중할 시기'로 표현하고, 매수·매도 타이밍으로 쓰지 마세요.\n"
+            f"4. 큰 금액이 걸린 질문이면 한 문장으로 '투자 판단은 본인 책임이며 사주는 참고 지표'임을 덧붙이세요."
+        )
+    else:
+        effective_question = question
     output = await generate_consultation(saju, rag_ctx, effective_question, category, llm_provider, language)
+    output.content = _demote_leading_marker(output.content)
 
     # 4. 차트 — writer가 content에 박은 [[chart:...]] 마커를 추출해 payload 빌드(리포트와 동일).
     # MEDICAL은 차트 없음. LLM이 차트를 빠뜨렸어도 질문이 명백히 차트가 필요한 유형이면
@@ -351,7 +440,8 @@ async def run_question_consultation(
     if not is_medical and not charts:
         fb = _fallback_chart_tool(question, category)
         if fb:
-            output.content = f"[[chart:{fb}]]\n\n{output.content}"
+            # 첫 문단(답) 뒤에 끼운다 — 맨 앞에 붙이면 화면에서 답보다 차트가 먼저 보인다
+            output.content = _demote_leading_marker(f"[[chart:{fb}]]\n\n{output.content}")
             charts = _charts_from_markers(output.content, saju)
     more: list[dict] = []
     logger.info("차트 선별 완료: charts=%d (마커 기반, category=%s)", len(charts), category)
