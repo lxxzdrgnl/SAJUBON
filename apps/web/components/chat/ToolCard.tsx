@@ -179,6 +179,11 @@ function CompatibilityCard({ payload }: { payload: Record<string, unknown> }) {
   const score = (payload.score ?? payload.compatibility_score ?? payload.total_score) as number | undefined
   const summary = (payload.summary ?? payload.description ?? payload.score_label) as string | undefined
 
+  // 상대 만세력 없이 궁합 tool이 불린 경우 payload는 {need_partner:true}뿐이라
+  // 점수·요약이 비어 "궁합"이라는 제목만 붙은 빈 카드가 떴다. 렌더를 건너뛴다.
+  // (라이브 SSE는 need_partner를 request_partner로 바꾸지만, 히스토리 재로드 경로는 그대로 넘어온다)
+  if (score === undefined && !summary) return null
+
   return (
     <div className="flex items-center gap-3">
       {score !== undefined && (
