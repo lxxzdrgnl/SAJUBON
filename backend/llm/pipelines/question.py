@@ -238,7 +238,14 @@ def _build_question_rag(
     day_stem = dp.get("stem", "")
     if category in _TIMING_CATEGORIES:
         se_un  = handle_get_yeon_un(today.year, 2, day_stem)
-        wol_un = handle_get_wol_un(today.year, day_stem)
+        # 지난 달은 제외하고, 남은 달이 4개 미만이면 내년 월운을 이어 붙인다
+        # (8월에 "3월에 고백하라"처럼 지난 시점을 추천하던 문제 방지)
+        wol_un = [
+            {**m, "year": today.year}
+            for m in handle_get_wol_un(today.year, day_stem) if m["month"] >= today.month
+        ]
+        if len(wol_un) < 4:
+            wol_un += [{**m, "year": today.year + 1} for m in handle_get_wol_un(today.year + 1, day_stem)[:6]]
     else:
         se_un  = []
         wol_un = []
@@ -251,6 +258,7 @@ def _build_question_rag(
         "se_un":            se_un,
         "wol_un":           wol_un,
         "current_month":    today.month,
+        "today":            today.strftime("%Y-%m-%d"),
     }
 
 
