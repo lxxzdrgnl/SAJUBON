@@ -11,8 +11,23 @@ from crud import chat as chat_crud
 from crud.profile import get_profile_or_404
 from db.models import ChatSession, ChatReport
 from engine.handlers.calculate_saju import handle_calculate_saju
-from llm.tools.saju_tools import extract_summary
+from llm.tools.saju_tools import extract_summary, engine_args
 from schemas.chat import PartnerAttachRequest
+
+
+def _with_identity(birth_info: dict, saju: dict) -> dict:
+    """birth_info에 표시용 일간·일주를 얹는다.
+
+    칩·시트가 "누구 사주인지"를 마스코트 오행색과 일주로 보여준다. 사주는 어차피
+    여기서 계산하므로 프론트가 다시 계산하지 않게 결과를 실어 보낸다.
+    엔진 인자에는 engine_args()가 이 키들을 벗겨서 넘긴다.
+    """
+    day = saju.get("day_pillar") or {}
+    return {
+        **birth_info,
+        "day_stem": day.get("stem"),
+        "ilju": f"{day.get('stem', '')}{day.get('branch', '')}" or None,
+    }
 
 
 async def create_chat_session(
@@ -29,10 +44,11 @@ async def create_chat_session(
     4. ChatSession DB 저장
     """
     try:
-        saju = await asyncio.to_thread(handle_calculate_saju, **birth_info)
+        saju = await asyncio.to_thread(handle_calculate_saju, **engine_args(birth_info))
     except ValueError as e:
         raise CalcFailedException(str(e)) from e
 
+    birth_info = _with_identity(birth_info, saju)
     saju_summary = extract_summary(saju)
     session_id = uuid.uuid4()
 
@@ -80,6 +96,41 @@ async def generate_chat_report(
         advice=report_output.advice,
         topics_covered=report_output.topics_covered,
     )
+
+
+async def replace_session_profile(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+    user_id: int,
+    birth_info: dict,
+    checkpointer,
+) -> ChatSession:
+    """세션이 보고 있는 만세력을 교체한다.
+
+    사주를 다시 계산해 LangGraph state의 saju_summary까지 갈아끼워야 한다.
+    DB만 바꾸면 에이전트는 이전 사람의 사주로 계속 답한다.
+    (대화 기록은 남는다 — 앞선 답변은 교체 전 사주 기준이라는 점을 UI가 안내한다)
+    """
+    session = await chat_crud.get_session_or_404(db, session_id, user_id)
+
+    try:
+        saju = await asyncio.to_thread(handle_calculate_saju, **engine_args(birth_info))
+    except ValueError as e:
+        raise CalcFailedException(str(e)) from e
+
+    birth_info = _with_identity(birth_info, saju)
+
+    from llm.pipelines.chat import build_chat_graph
+    graph = build_chat_graph(checkpointer)
+    config = {"configurable": {"thread_id": str(session_id), "birth_info": birth_info}}
+    await graph.aupdate_state(
+        config, {"birth_info": birth_info, "saju_summary": extract_summary(saju)}
+    )
+
+    session.birth_info = birth_info
+    await db.commit()
+    await db.refresh(session)
+    return session
 
 
 async def _resolve_partner_birth(
