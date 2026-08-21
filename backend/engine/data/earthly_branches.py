@@ -31,19 +31,20 @@ BRANCHES_ORDER: list[str] = [b["korean"] for b in EARTHLY_BRANCHES]
 # 지장간(支藏干) — 지지 안에 숨은 천간
 # primary: 정기(正氣), secondary: 중기(中氣), residual: 여기(餘氣)
 # ──────────────────────────────────────────
+# 지장간 (표준 월률분야): primary=정기(본기) · secondary=중기 · residual=여기
 JI_JANG_GAN: dict[str, dict] = {
-    "자": {"primary": "계"},
+    "자": {"primary": "계",  "residual": "임"},
     "축": {"primary": "기",  "secondary": "신", "residual": "계"},
     "인": {"primary": "갑",  "secondary": "병", "residual": "무"},
-    "묘": {"primary": "을"},
+    "묘": {"primary": "을",  "residual": "갑"},
     "진": {"primary": "무",  "secondary": "계", "residual": "을"},
     "사": {"primary": "병",  "secondary": "경", "residual": "무"},
-    "오": {"primary": "정",  "secondary": "기"},
+    "오": {"primary": "정",  "secondary": "기", "residual": "병"},
     "미": {"primary": "기",  "secondary": "을", "residual": "정"},
     "신": {"primary": "경",  "secondary": "임", "residual": "무"},
-    "유": {"primary": "신"},
-    "술": {"primary": "무",  "secondary": "신", "residual": "정"},
-    "해": {"primary": "임",  "secondary": "갑"},
+    "유": {"primary": "신",  "residual": "경"},
+    "술": {"primary": "무",  "secondary": "정", "residual": "신"},
+    "해": {"primary": "임",  "secondary": "갑", "residual": "무"},
 }
 
 # ──────────────────────────────────────────
@@ -140,22 +141,17 @@ PA_PAIRS: list[tuple] = [
 ]
 
 # ──────────────────────────────────────────
-# 공망(空亡) — 일주 기준 빈 지지 쌍
+# 공망(空亡) — 일주(천간+지지)의 순(旬) 기준 빈 지지 쌍
+# 갑자순→술해 · 갑술순→신유 · 갑신순→오미 · 갑오순→진사 · 갑진순→인묘 · 갑인순→자축
+# (지지만으로는 결정되지 않는다 — 병인일은 갑자순이라 술해, 갑인일은 갑인순이라 자축)
 # ──────────────────────────────────────────
-GONG_MANG_TABLE: dict[str, list] = {
-    "자": ["술", "해"],
-    "축": ["술", "해"],
-    "인": ["자", "축"],
-    "묘": ["자", "축"],
-    "진": ["인", "묘"],
-    "사": ["인", "묘"],
-    "오": ["진", "사"],
-    "미": ["진", "사"],
-    "신": ["오", "미"],
-    "유": ["오", "미"],
-    "술": ["신", "유"],
-    "해": ["신", "유"],
-}
+def get_gong_mang(day_stem: str, day_branch: str) -> list[str]:
+    """일주 기준 공망 지지 2개 반환."""
+    from engine.data.heavenly_stems import STEMS_BY_KOREAN
+    s_idx = STEMS_BY_KOREAN[day_stem]["index"]
+    b_idx = BRANCHES_BY_KOREAN[day_branch]["index"]
+    start = (b_idx - s_idx) % 12
+    return [BRANCHES_ORDER[(start + 10) % 12], BRANCHES_ORDER[(start + 11) % 12]]
 
 
 def get_branch_by_index(index: int) -> dict:
@@ -284,13 +280,13 @@ def check_sam_hyeong(branches: list[str]) -> list[str]:
     return result
 
 
-def check_gong_mang(day_branch: str, branches: list[str]) -> list[str]:
-    """공망 확인. 일주 기준 공망인 지지 목록 반환"""
-    gong_mang = GONG_MANG_TABLE[day_branch]
+def check_gong_mang(day_stem: str, day_branch: str, branches: list[str]) -> list[str]:
+    """공망 확인. 일주(천간+지지) 기준 공망인 지지 목록 반환"""
+    gong_mang = get_gong_mang(day_stem, day_branch)
     return [b for b in branches if b in gong_mang]
 
 
-def analyze_branch_relations(branches: list[str], day_branch: str, labels: list[str] | None = None) -> dict:
+def analyze_branch_relations(branches: list[str], day_branch: str, labels: list[str] | None = None, day_stem: str | None = None) -> dict:
     """4기둥 지지 전체 관계 종합 분석"""
     return {
         "sam_hap":    check_sam_hap(branches),
@@ -301,5 +297,5 @@ def analyze_branch_relations(branches: list[str], day_branch: str, labels: list[
         "sam_hyeong": check_sam_hyeong(branches),
         "yuk_hae":    check_yuk_hae(branches, labels),
         "won_jin":    check_won_jin(branches, labels),
-        "gong_mang":  check_gong_mang(day_branch, branches),
+        "gong_mang":  check_gong_mang(day_stem, day_branch, branches) if day_stem else [],
     }

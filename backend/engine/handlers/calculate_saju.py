@@ -20,7 +20,7 @@ from engine.data.timezone_history import (
     get_solar_correction_for_location,
 )
 from engine.data.wuxing import WUXING_GENERATION, WUXING_DESTRUCTION
-from engine.data.earthly_branches import SAM_HYEONG as _SAM_HYEONG, GONG_MANG_TABLE
+from engine.data.earthly_branches import SAM_HYEONG as _SAM_HYEONG
 from engine.data.earthly_branches import BRANCHES_ORDER as _BRANCHES_ORDER
 from engine.data.earthly_branches import BRANCHES_BY_KOREAN as _BRANCHES_BY_KOREAN
 from engine.analysis.structure_patterns import detect_structure_patterns
@@ -71,7 +71,7 @@ def handle_calculate_saju(
             **p,
             "stem_ten_god": ten_gods_list[i],
             "branch_ten_god": get_branch_ten_god(day_stem, p["branch"]),
-            "twelve_wun": get_twelve_wun(p["stem"], p["branch"]),
+            "twelve_wun": get_twelve_wun(day_stem, p["branch"]),  # 일간 기준 (자좌 아님)
             "twelve_sin_sal": twelve_sin_sal.get(short, ""),
         }
     pillars_enriched["hour_pillar"] = pillars_enriched.get("hour_pillar")  # None if unknown
@@ -283,7 +283,7 @@ def handle_calculate_saju(
             **d,
             "stem_ten_god":   calculate_ten_god(day_stem, d["stem"]),
             "branch_ten_god": get_branch_ten_god(day_stem, d["branch"]),
-            "twelve_wun":     get_twelve_wun(d["stem"], d["branch"]),
+            "twelve_wun":     get_twelve_wun(day_stem, d["branch"]),
         }
         for d in _raw_dae_un
     ]

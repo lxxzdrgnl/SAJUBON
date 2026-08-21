@@ -386,7 +386,7 @@ def _compute_current_luck_overview(saju: dict) -> dict:
         "year": today.year,
         "stem_ten_god":   calculate_ten_god(day_stem, se_un_ganji["stem"]),
         "branch_ten_god": get_branch_ten_god(day_stem, se_un_ganji["branch"]),
-        "twelve_wun":     get_twelve_wun(se_un_ganji["stem"], se_un_ganji["branch"]),
+        "twelve_wun":     get_twelve_wun(day_stem, se_un_ganji["branch"]),
         "interaction_with_day_master": get_element_interaction(se_un_ganji["stem_element"], day_el),
         "interaction_with_yong_sin":   get_element_interaction(
             se_un_ganji["stem_element"], yong_sin[0] if yong_sin else ""
@@ -399,7 +399,7 @@ def _compute_current_luck_overview(saju: dict) -> dict:
         "month": today.month,
         "stem_ten_god":   calculate_ten_god(day_stem, wol_ganji["stem"]),
         "branch_ten_god": get_branch_ten_god(day_stem, wol_ganji["branch"]),
-        "twelve_wun":     get_twelve_wun(wol_ganji["stem"], wol_ganji["branch"]),
+        "twelve_wun":     get_twelve_wun(day_stem, wol_ganji["branch"]),
         "interaction_with_day_master": get_element_interaction(wol_ganji["stem_element"], day_el),
     }
 
