@@ -58,43 +58,44 @@ function YearFlowSection({
         <span className="text-ink">{yearFlow.year}</span>
       </h2>
 
-      {/* 상/하반기 카드 */}
-      <div className="flex gap-2">
-        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-brutal">
-          <p className="mb-1 text-[12px] font-extrabold text-teal">{t('page.firstHalf')}</p>
-          <p className="text-[14px] leading-relaxed text-ink">{yearFlow.first_half}</p>
-        </div>
-        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-brutal">
-          <p className="mb-1 text-[12px] font-extrabold text-teal">{t('page.secondHalf')}</p>
-          <p className="text-[14px] leading-relaxed text-ink">{yearFlow.second_half}</p>
-        </div>
+      {/* 상/하반기 — 세로 스택.
+          2열로 두면 390px 화면에서 한 열이 170px이라 산문이 줄당 11자로 끊긴다. */}
+      <div className="flex flex-col gap-2">
+        {[
+          { label: t('page.firstHalf'), text: yearFlow.first_half },
+          { label: t('page.secondHalf'), text: yearFlow.second_half },
+        ].map(({ label, text }) => (
+          <div key={label} className="rounded-lg border-2 border-ink bg-surface p-3.5 shadow-brutal-sm">
+            <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wider text-teal-deep">
+              {label}
+            </p>
+            <p className="text-[14px] leading-relaxed text-ink">{text}</p>
+          </div>
+        ))}
       </div>
 
-      {/* 월별 표 */}
-      <div className="overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-brutal">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b-2 border-ink">
-              <th className="px-3 py-2 text-left text-[12px] font-extrabold text-ink">{t('page.monthCol')}</th>
-              <th className="px-3 py-2 text-left text-[12px] font-extrabold text-ink">{t('page.keywordCol')}</th>
-              <th className="px-3 py-2 text-left text-[12px] font-extrabold text-ink">{t('page.memoCol')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map(m => (
-              <tr key={m.month} className="border-b-[1px] border-ink last:border-0">
-                <td className="px-3 py-2 text-[13px] font-extrabold text-orange">{m.month}월</td>
-                <td className="w-[88px] min-w-[88px] whitespace-nowrap px-3 py-2 text-[13px] font-bold text-ink">{m.keyword}</td>
-                <td className="px-3 py-2 text-[13px] leading-snug text-ink">{m.memo}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* 월별 흐름 — 표가 아니라 행 목록.
+          표는 '월' 칼럼이 좁아 "2/월"로 쪼개지고 매 행 보더가 눈을 어지럽혔다.
+          리포트 아코디언과 같은 언어(모노 칩 + 굵은 제목 + 보조 설명)로 맞춘다. */}
+      <div className="overflow-hidden rounded-lg border-2 border-ink bg-surface shadow-brutal">
+        <ul className="divide-y divide-border-soft">
+          {visible.map(m => (
+            <li key={m.month} className="flex items-start gap-2.5 px-3.5 py-2.5">
+              <span className="mt-px shrink-0 rounded-md border-2 border-ink bg-bg-base px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums leading-none text-ink">
+                {m.month}월
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13.5px] font-extrabold leading-snug text-ink">{m.keyword}</p>
+                <p className="mt-0.5 text-[12.5px] leading-snug text-text-sub">{m.memo}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
         {!expanded && months.length > 4 && (
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="w-full border-t-[1px] border-ink py-2 text-[13px] font-bold text-ink hover:bg-surface"
+            className="w-full border-t-2 border-ink bg-bg-base py-2.5 text-[13px] font-extrabold text-ink transition-colors hover:bg-yellow-tint"
           >
             {t('page.showMore')} ({months.length - 4})
           </button>
@@ -126,7 +127,7 @@ function DaeUnSection({
 
       <div className="flex flex-col gap-2">
         {/* 현재 대운 — 오렌지 강조 */}
-        <div className="rounded-2xl border-2 border-orange bg-surface p-3 shadow-pop">
+        <div className="rounded-lg border-2 border-orange bg-surface p-3 shadow-pop">
           <p className="mb-1 text-[12px] font-extrabold text-orange">{t('page.currentDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.current.ganji}</p>
           <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.current.period}</p>
@@ -134,7 +135,7 @@ function DaeUnSection({
         </div>
 
         {/* 다음 대운 — 일반 */}
-        <div className="rounded-2xl border-2 border-ink bg-surface p-3 shadow-brutal">
+        <div className="rounded-lg border-2 border-ink bg-surface p-3 shadow-brutal">
           <p className="mb-1 text-[12px] font-extrabold text-ink">{t('page.nextDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.next.ganji}</p>
           <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.next.period}</p>
@@ -143,7 +144,7 @@ function DaeUnSection({
       </div>
 
       {/* 주의점 */}
-      <div className="rounded-2xl border-2 border-ink bg-surface px-4 py-3 shadow-brutal-sm">
+      <div className="rounded-lg border-2 border-ink bg-surface px-4 py-3 shadow-brutal-sm">
         <p className="mb-1 text-[12px] font-extrabold text-orange">{t('page.cautionLabel')}</p>
         <p className="text-[14px] leading-relaxed text-ink">{daeUn.caution}</p>
       </div>
