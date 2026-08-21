@@ -81,7 +81,9 @@ class TestLoveVsCompatibility:
 
     def test_상대_없이_궁합tool_호출을_금지한다(self):
         p = build_chat_system_prompt(SUMMARY)
-        assert "상대가 이미 첨부돼 있을 때만" in p
+        # 첨부되거나 사용자가 말한 생년월일을 인자로 넘길 때만 — 둘 다 없으면 금지
+        assert "둘 다 없이 부르면 빈 카드" in p
+        assert "partner_birth_date" in p
 
     def test_연애운_분석에_쓸_도구가_명시돼_있다(self):
         p = build_chat_system_prompt(SUMMARY)
