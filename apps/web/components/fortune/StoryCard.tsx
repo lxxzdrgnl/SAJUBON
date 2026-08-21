@@ -149,10 +149,15 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
 
   return (
     <div className="relative flex flex-1 flex-col px-6 py-4 select-none overflow-hidden">
-      <div className="relative z-0 flex flex-1 flex-col">
-        {/* 질문 라벨 */}
+      {/* 라벨과 본문을 한 덩어리로 세로 중앙 정렬한다.
+          예전엔 라벨만 최상단에 고정되고 본문이 '남은 공간'에서 중앙 정렬돼,
+          화면이 길수록 둘 사이가 수백 px 벌어져 라벨이 홀로 떠 보였다.
+          safe center — 내용이 화면보다 길면 중앙정렬이 위쪽을 잘라먹는다(가로 모드 등).
+          safe는 넘칠 때 자동으로 start 정렬로 떨어져 라벨이 살아남는다. */}
+      <div className="relative z-0 flex min-h-0 flex-1 flex-col [justify-content:safe_center]">
+        {/* 질문 라벨 — 자기가 소개하는 본문 바로 위 */}
         <p
-          className="mb-3 text-[13px] font-extrabold tracking-[0.18em] uppercase"
+          className="mb-3 shrink-0 text-[13px] font-extrabold tracking-[0.18em] uppercase"
           style={{ color: inkSoft }}
         >
           {card.title}
@@ -160,7 +165,7 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
 
         {/* intro: 마스코트(일간색 틴팅) + 일진 초대형 타이포 */}
         {card.kind === 'intro' && (
-          <div className="story-stagger flex flex-1 flex-col items-center justify-center gap-6">
+          <div className="story-stagger flex flex-col items-center gap-6">
             <div className="story-pop">
               <MascotTinted stem={dayGanji.stem} width={120} height={120} />
             </div>
@@ -191,7 +196,7 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
 
         {/* overall: 점수 초대형 카운트업 + 헤드라인 + 본문 + 컨페티 */}
         {card.kind === 'overall' && (
-          <div className="story-stagger flex flex-1 flex-col justify-center gap-5">
+          <div className="story-stagger flex flex-col gap-5">
             {card.score !== undefined && (
               <div className="relative w-fit" ref={confettiRef as React.RefObject<HTMLDivElement>}>
                 <div className="flex items-end gap-2">
@@ -259,7 +264,7 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
 
         {/* category: "오늘의 TOP" 랭킹 번호 + 점수 + 헤드라인 + 본문 */}
         {card.kind === 'category' && (
-          <div className="story-stagger flex flex-1 flex-col justify-center gap-4">
+          <div className="story-stagger flex flex-col gap-4">
             {/* 초대형 랭킹 번호 */}
             {rank !== null && (
               <div className="flex items-end gap-4" ref={confettiRef as React.RefObject<HTMLDivElement>}>
@@ -318,7 +323,7 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
 
         {/* caution / action / color(legacy): 헤드라인 + 본문 (color는 색 스와치) */}
         {(card.kind === 'caution' || card.kind === 'action' || card.kind === 'color') && (
-          <div className="story-stagger flex flex-1 flex-col justify-center gap-6">
+          <div className="story-stagger flex flex-col gap-6">
             {/* color 카드: 추천 색 스와치 */}
             {swatches.length > 0 && (
               <div className="flex items-center gap-3">
