@@ -438,7 +438,8 @@ def _compute_find_favorable_periods(saju: dict, domain: str, years: int = 5) -> 
     """
     day_stem = saju["day_pillar"]["stem"]
     ys = saju["yong_sin"]
-    good_els = {ys.get("primary", "")} | set(ys.get("xi_sin", []))
+    _primary = ys.get("primary", "")
+    good_els = set(_primary if isinstance(_primary, (list, tuple, set)) else [_primary]) | set(ys.get("xi_sin", []))
     bad_els = set(ys.get("ji_sin", []))
     domain_gods = set(_DOMAIN_TEN_GODS.get(domain, []))
     if domain == "연애":
@@ -628,19 +629,49 @@ async def request_partner_profile(config: RunnableConfig = None) -> str:
 
 
 @tool
-async def get_compatibility_detail(config: RunnableConfig = None) -> str:
-    """본인과 첨부된 상대방의 궁합 점수 상세 분석.
+async def get_compatibility_detail(
+    partner_birth_date: str | None = None,
+    partner_birth_time: str | None = None,
+    partner_gender: str | None = None,
+    partner_name: str | None = None,
+    config: RunnableConfig = None,
+) -> str:
+    """본인과 상대방의 궁합 점수 상세 분석.
 
-    상대 만세력이 첨부돼 있어야 한다. 없으면 상대 정보가 필요하다는 신호를 반환한다.
+    상대 정보는 두 경로 중 하나:
+      1) 첨부된 상대 만세력 (partner_info) — 인자 없이 호출
+      2) 사용자가 대화에서 말한 생년월일 — partner_birth_date="YYYY-MM-DD"로 직접 전달.
+         출생 시간은 몰라도 된다(partner_birth_time=None → 시주 없이 계산). 성별을 모르면 비워 두면 된다.
+         "1살 연상"처럼 나이만 말했으면 사용자 생년 기준으로 연도를 계산해 넣는다.
+    둘 다 없을 때만 request_partner_profile로 입력 카드를 띄운다.
     """
+    birth_info = _birth_info(config)
     partner = _partner_info(config)
+    assumptions: list[str] = []
+
+    if not partner and partner_birth_date:
+        gender = partner_gender
+        if gender not in ("male", "female"):
+            # 성별 미상 — 사주 계산엔 대운 방향에만 쓰이므로 궁합 점수에 영향이 거의 없다. 가정하고 명시한다.
+            gender = "male" if birth_info.get("gender") == "female" else "female"
+            assumptions.append(f"상대 성별은 {'남성' if gender == 'male' else '여성'}으로 가정")
+        if not partner_birth_time:
+            assumptions.append("출생 시간을 몰라 시주(時柱) 없이 계산")
+        partner = {
+            "name": partner_name or "상대방",
+            "birth_date": partner_birth_date,
+            "birth_time": partner_birth_time or None,
+            "gender": gender,
+            "calendar": "solar",
+        }
+
     if not partner:
         return _envelope(
-            "상대 정보가 필요합니다. request_partner_profile로 상대 만세력을 먼저 요청하세요.",
+            "상대 정보가 없습니다. 사용자가 대화에서 생년월일을 말했다면 partner_birth_date로 다시 호출하고, "
+            "전혀 없을 때만 request_partner_profile로 입력 카드를 띄우세요.",
             {"need_partner": True},
         )
 
-    birth_info = _birth_info(config)
     partner_name = partner.get("name") or "상대방"
     person2 = {k: v for k, v in partner.items() if k != "name"}
 
@@ -651,5 +682,9 @@ async def get_compatibility_detail(config: RunnableConfig = None) -> str:
         f"(일주 {result['day_pillar_score']} / 오행조화 {result['element_harmony_score']} / "
         f"지지관계 {result['branch_relation_score']} / 십성 {result['ten_gods_score']})"
     )
-    data = {**result, "partner_name": partner_name, "score_label": label, "need_partner": False}
+    if assumptions:
+        summary += " (" + " · ".join(assumptions) + " — 사용자에게 이 가정을 한 문장으로 알려줄 것)"
+    data = {**result, "partner_name": partner_name, "score_label": label, "need_partner": False,
+            "partner_birth": {k: person2.get(k) for k in ("birth_date", "birth_time", "gender")},
+            "assumptions": assumptions}
     return _envelope(summary, data)
