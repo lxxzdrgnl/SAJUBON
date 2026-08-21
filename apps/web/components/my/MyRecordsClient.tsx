@@ -79,7 +79,7 @@ function DeleteModal({ label, onConfirm, onClose, t }: DeleteModalProps) {
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="w-full max-w-[480px] rounded-t-3xl border-2 border-ink bg-surface p-6 shadow-brutal-up sm:rounded-lg sm:shadow-brutal">
+      <div className="w-full max-w-[480px] rounded-t-lg border-2 border-ink bg-surface p-6 shadow-brutal-up sm:rounded-lg sm:shadow-brutal">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[15px] font-extrabold text-ink">{t('delete.confirm')}</h2>
           <button

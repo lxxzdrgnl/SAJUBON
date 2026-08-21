@@ -153,7 +153,7 @@ export default function MansePickerSheet({
 
       {/* 시트 */}
       <div
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-[22px] border-2 border-ink bg-surface shadow-brutal-up"
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[640px] rounded-t-lg border-2 border-ink bg-surface shadow-brutal-up"
         style={{
           transform: visible ? 'translateY(0)' : 'translateY(100%)',
           opacity: visible ? 1 : 0,
