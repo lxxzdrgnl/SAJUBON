@@ -367,7 +367,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
       {/* 헤더 */}
       <div className="flex shrink-0 items-center gap-2 border-b-2 border-border-soft pb-3">
         <button
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface shadow-brutal-sm transition-opacity hover:opacity-70"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-2 border-ink bg-surface shadow-brutal-sm transition-opacity hover:opacity-70"
           onClick={() => router.push('/chat')}
           aria-label="back"
         >
@@ -387,7 +387,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
             <button
               type="button"
               onClick={() => setAttachOpen(true)}
-              className="inline-flex items-center gap-1 rounded-[10px] border-2 border-teal bg-teal-tint px-2.5 py-1 text-xs font-extrabold text-teal-deep shadow-brutal-sm transition-opacity hover:opacity-70"
+              className="inline-flex items-center gap-1 rounded-lg border-2 border-teal bg-teal-tint px-2.5 py-1 text-xs font-extrabold text-teal-deep shadow-brutal-sm transition-opacity hover:opacity-70"
             >
               {t('chip.my')}
             </button>
@@ -396,7 +396,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
             <button
               type="button"
               onClick={() => setPartnerChipExpanded((v) => !v)}
-              className="inline-flex items-center gap-1 rounded-[10px] border-2 border-ink bg-yellow-tint px-2.5 py-1 text-xs font-extrabold text-ink shadow-brutal-sm transition-opacity hover:opacity-80"
+              className="inline-flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow-tint px-2.5 py-1 text-xs font-extrabold text-ink shadow-brutal-sm transition-opacity hover:opacity-80"
               aria-label={t('chip.partnerToggle')}
             >
               {t('chip.partner')}: {partnerName}
@@ -441,7 +441,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                     return (
                       <div
                         key={bi}
-                        className="rounded-2xl border-2 border-teal bg-surface px-4 py-2.5 text-sm leading-relaxed text-ink"
+                        className="rounded-lg border-2 border-teal bg-surface px-4 py-2.5 text-sm leading-relaxed text-ink"
                       >
                         <span className="inline-block animate-pulse">▋</span>
                       </div>
@@ -452,7 +452,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                     return (
                       <div
                         key={bi}
-                        className="rounded-2xl px-4 py-2.5 text-sm font-bold leading-relaxed whitespace-pre-wrap break-words border-2 border-ink bg-yellow text-ink shadow-brutal-sm"
+                        className="rounded-lg px-4 py-2.5 text-sm font-bold leading-relaxed whitespace-pre-wrap break-words border-2 border-ink bg-yellow text-ink shadow-brutal-sm"
                       >
                         {block}
                       </div>
@@ -464,7 +464,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                     renderText: (text, key) => (
                       <div
                         key={key}
-                        className="rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
+                        className="rounded-lg px-4 py-2.5 text-sm font-medium leading-relaxed break-words border-2 border-teal bg-surface text-ink"
                       >
                         <Markdown>{text}</Markdown>
                       </div>
@@ -495,7 +495,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
                   return (
                     <div
                       key={bi}
-                      className="flex items-center gap-2 rounded-2xl border-2 border-ink bg-yellow-tint px-3 py-2.5 text-[13px] font-extrabold text-ink shadow-brutal-sm"
+                      className="flex items-center gap-2 rounded-lg border-2 border-ink bg-yellow-tint px-3 py-2.5 text-[13px] font-extrabold text-ink shadow-brutal-sm"
                     >
                       <span className="text-base">📎</span>
                       <span>{t('partnerAttached', { name: block.name })}</span>
@@ -549,7 +549,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
           {/* 텍스트 입력 */}
           <textarea
             ref={textRef}
-            className="flex-1 resize-none rounded-2xl border-2 border-ink bg-surface px-3 py-2 text-base text-ink outline-none"
+            className="flex-1 resize-none rounded-lg border-2 border-ink bg-surface px-3 py-2 text-base text-ink"
             rows={1}
             placeholder={t('input.placeholder')}
             value={input}

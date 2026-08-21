@@ -25,6 +25,15 @@
   --holo: conic-gradient(from 210deg,#6EE7FF,#C6F432,#FFD900,#FF5FD2,#A78BFA,#6EE7FF);
   --specular: linear-gradient(102deg,transparent 34%,rgba(255,255,255,.85) 46%,transparent 56%);
 
+  /* 오행별 크롬 — 운세 배너가 일간 오행을 따른다.
+     각 그라데이션은 밝음-어두움을 번갈아 배치해 금속 반사처럼 읽히게 한다. */
+  --chrome-mok:  linear-gradient(158deg,#F2FFF8,#8FE3B8 34%,#EAFFF3 48%,#3FA875 66%,#DFFBEC);
+  --chrome-hwa:  linear-gradient(158deg,#FFF4EC,#FFAE7A 32%,#FFEDE0 47%,#E2551F 64%,#FFE3D0);
+  --chrome-to:   linear-gradient(158deg,#FFFBEA,#FFE066 32%,#FFF8DB 47%,#C79A00 64%,#FFF2C2);
+  --chrome-geum: var(--chrome);
+  --chrome-su:   linear-gradient(158deg,#F0FBFF,#7ED8F5 30%,#E8F8FF 46%,#1F7FA8 64%,#D6F1FD);
+  --chrome-default: linear-gradient(158deg,#FFF6C9,#FFD900 30%,#FFF3AE 46%,#E09A00 64%,#FFE98A);
+
   /* 모션 토큰 — 커브·지속시간 단일 출처.
      이름 앞에 --motion- 을 붙여 Tailwind 테마 네임스페이스(--ease-*)와 충돌을 피한다. */
   --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -113,6 +122,23 @@ body {
   .animate-spin {
     animation: none !important;
   }
+}
+
+/* 키보드 포커스 링 — 접근성 필수(WCAG 2.4.7).
+   브루탈 UI는 2.5px 잉크 보더를 두르고 있어 브라우저 기본 포커스 링이 보더에 묻힌다.
+   보더 바깥으로 오렌지 링을 띄워 확실히 분리한다. 오렌지는 이미 '호버/프레스·강조'
+   역할이라 포커스에 써도 색 역할이 어긋나지 않는다.
+   :focus-visible이라 마우스 클릭에는 뜨지 않고 키보드 이동에만 뜬다. */
+:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 2px;
+}
+
+/* 보더 없는 투명 입력(생년월일 세그먼트·도시 검색)은 자기 자신이 아니라
+   감싼 카드가 포커스를 표시해야 한다. */
+.focus-ring-within:has(:focus-visible) {
+  outline: 3px solid var(--orange);
+  outline-offset: 2px;
 }
 
 /* iOS Safari는 포커스된 입력의 font-size가 16px 미만이면 페이지를 강제 확대한다.
