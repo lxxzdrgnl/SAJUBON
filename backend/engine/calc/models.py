@@ -14,7 +14,7 @@ class BirthInput(BaseModel):
     """사주 계산 공통 입력 스키마."""
 
     birth_date: str        # "YYYY-MM-DD"
-    birth_time: str        # "HH:MM"
+    birth_time: str | None = None   # "HH:MM" — 모르면 None (시주 없이 계산)
     gender: str            # "male" | "female"
     calendar: str = "solar"       # "solar" | "lunar"
     is_leap_month: bool = False

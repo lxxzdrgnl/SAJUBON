@@ -41,7 +41,7 @@ _BRANCH_CLASH_SET: set[frozenset] = {
 
 
 def _get_all_branches(calc: dict) -> list[str]:
-    return [calc[k]["branch"] for k in ["year_pillar", "month_pillar", "day_pillar", "hour_pillar"]]
+    return [calc[k]["branch"] for k in ["year_pillar", "month_pillar", "day_pillar", "hour_pillar"] if calc.get(k)]
 
 
 def compute_synastry(calc1: dict, calc2: dict) -> dict:

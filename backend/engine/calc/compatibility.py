@@ -61,11 +61,12 @@ def _element_harmony_score(saju1: dict, saju2: dict) -> int:
 
 def _branch_relation_score(saju1: dict, saju2: dict) -> tuple[int, list[str]]:
     """지지 관계 점수 + 충 쌍 목록."""
+    # 시주는 출생 시간을 모르면 None — 있는 기둥만 쓴다
     branches = [
-        saju1["year_pillar"]["branch"], saju1["month_pillar"]["branch"],
-        saju1["day_pillar"]["branch"],  saju1["hour_pillar"]["branch"],
-        saju2["year_pillar"]["branch"], saju2["month_pillar"]["branch"],
-        saju2["day_pillar"]["branch"],  saju2["hour_pillar"]["branch"],
+        saju[k]["branch"]
+        for saju in (saju1, saju2)
+        for k in ("year_pillar", "month_pillar", "day_pillar", "hour_pillar")
+        if saju.get(k)
     ]
     branch_set = set(branches)
     score = 70
