@@ -5,7 +5,7 @@
  * iOS Safari 제약 대응:
  *   - 링크 생성(await) 이후 모달 오픈 → 복사/공유는 각 버튼의 새 제스처에서 실행.
  *   - navigator.clipboard.writeText 불가 시 hidden input + execCommand('copy') 폴백.
- * 브루탈 디자인: border-2 border-ink, shadow-[4px_4px_0_#1A1A1A].
+ * 브루탈 디자인: border-2 border-ink, shadow-brutal.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -107,7 +107,7 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
     >
       {/* 모달 패널 — 브루탈 */}
       <div
-        className="w-full max-w-sm rounded-2xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A]"
+        className="w-full max-w-sm rounded-2xl border-2 border-ink bg-surface shadow-brutal"
         role="dialog"
         aria-modal="true"
         aria-label={title ?? t('title')}
@@ -156,8 +156,8 @@ export default function ShareModal({ open, url, title, onClose }: ShareModalProp
             type="button"
             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-ink py-3 text-[14px] font-black transition-all duration-100 active:translate-y-[1px]"
             style={{
-              background: copied ? '#1A1A1A' : 'transparent',
-              color: copied ? '#FFFBF0' : '#1A1A1A',
+              background: copied ? 'var(--ink)' : 'transparent',
+              color: copied ? 'var(--bg-base)' : 'var(--ink)',
             }}
             onClick={handleCopy}
           >

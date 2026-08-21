@@ -39,7 +39,7 @@ export const viewport: Viewport = {
   // theme-color는 크롬 틴트에 반영하지 않지만, '기존' 메타의 content 갱신은 반영한다.
   // 운세 스토리(SPA 진입)가 이 메타를 카드 색으로 갱신해 상하 크롬을 맞춘다.
   // 기본값은 앱 배경(크림) — 다른 페이지의 상태바/툴바를 청록 샘플링 대신 일관되게 한다.
-  themeColor: '#FFFBF2',
+  themeColor: 'var(--bg-base)',
 }
 
 export default async function LocaleLayout({

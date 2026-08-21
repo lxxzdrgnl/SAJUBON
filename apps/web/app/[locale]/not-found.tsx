@@ -6,7 +6,7 @@ export default async function NotFound() {
   const t = await getTranslations('notFound')
   return (
     <main className="flex min-h-[62vh] flex-col items-center justify-center gap-5 text-center">
-      <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-ink bg-yellow shadow-[4px_4px_0_#1A1A1A]">
+      <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-ink bg-yellow shadow-brutal">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/mascot.svg" alt="" width={64} height={64} />
       </div>
@@ -17,7 +17,7 @@ export default async function NotFound() {
       </div>
       <Link
         href="/"
-        className="rounded-xl border-2 border-ink bg-yellow px-6 py-3 text-sm font-black shadow-[4px_4px_0_#1A1A1A]"
+        className="rounded-xl border-2 border-ink bg-yellow px-6 py-3 text-sm font-black shadow-brutal"
       >
         {t('home')}
       </Link>

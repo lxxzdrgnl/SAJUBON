@@ -17,7 +17,7 @@ export default function LanguageToggleCompact() {
   }
 
   return (
-    <div className="inline-flex shrink-0 items-center overflow-hidden rounded-full border-2 border-ink shadow-[2px_2px_0_#1A1A1A]">
+    <div className="inline-flex shrink-0 items-center overflow-hidden rounded-full border-2 border-ink shadow-brutal-sm">
       <Seg active={locale === 'ko'} onClick={() => setLocale('ko')} label="한국어">
         한
       </Seg>

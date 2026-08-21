@@ -36,13 +36,13 @@ export default function IlJinCalendar() {
   const go = (fn: typeof prevMonth) => { const n = fn(year, month); setYear(n.year); setMonth(n.month) }
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[15px] font-extrabold">{t('title')}</h3>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => go(prevMonth)} className="rounded-lg border-2 border-ink bg-surface px-2 py-1 text-sm font-black shadow-[2px_2px_0_#1A1A1A]">‹</button>
+          <button type="button" onClick={() => go(prevMonth)} className="rounded-lg border-2 border-ink bg-surface px-2 py-1 text-sm font-black shadow-brutal-sm">‹</button>
           <span className="min-w-[88px] text-center text-sm font-extrabold">{year} {MONTH_NAMES[month - 1]}</span>
-          <button type="button" onClick={() => go(nextMonth)} className="rounded-lg border-2 border-ink bg-surface px-2 py-1 text-sm font-black shadow-[2px_2px_0_#1A1A1A]">›</button>
+          <button type="button" onClick={() => go(nextMonth)} className="rounded-lg border-2 border-ink bg-surface px-2 py-1 text-sm font-black shadow-brutal-sm">›</button>
         </div>
       </div>
 

@@ -29,7 +29,7 @@ export default function SaveButton({ input }: { input: ProfileCreateRequest }) {
       type="button"
       onClick={onClick}
       disabled={state === 'busy' || state === 'done'}
-      className="mt-1 w-full rounded-xl border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] disabled:opacity-60"
+      className="mt-1 w-full rounded-xl border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal disabled:opacity-60"
     >
       {label}
     </button>

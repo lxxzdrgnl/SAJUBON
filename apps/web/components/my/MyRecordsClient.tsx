@@ -28,7 +28,7 @@ function ChipButton({ active, onClick, children }: { active: boolean; onClick: (
       type="button"
       onClick={onClick}
       className={
-        'shrink-0 whitespace-nowrap rounded-xl border-2 border-ink px-3 py-1.5 text-[13px] font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity ' +
+        'shrink-0 whitespace-nowrap rounded-xl border-2 border-ink px-3 py-1.5 text-[13px] font-extrabold shadow-brutal-sm transition-opacity ' +
         (active ? 'bg-yellow text-ink' : 'bg-surface text-text-sub hover:opacity-80')
       }
     >
@@ -43,7 +43,7 @@ function EditToggleButton({ editMode, onToggle, t }: { editMode: boolean; onTogg
   return (
     <button
       type="button"
-      className="rounded-xl border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+      className="rounded-xl border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-brutal-sm transition-opacity hover:opacity-80"
       onClick={onToggle}
     >
       {editMode ? t('editDone') : t('editToggle')}
@@ -79,7 +79,7 @@ function DeleteModal({ label, onConfirm, onClose, t }: DeleteModalProps) {
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="w-full max-w-[480px] rounded-t-3xl border-2 border-ink bg-surface p-6 shadow-[0_-4px_0_#1A1A1A] sm:rounded-3xl sm:shadow-[4px_4px_0_#1A1A1A]">
+      <div className="w-full max-w-[480px] rounded-t-3xl border-2 border-ink bg-surface p-6 shadow-brutal-up sm:rounded-3xl sm:shadow-brutal">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[15px] font-extrabold text-ink">{t('delete.confirm')}</h2>
           <button
@@ -102,14 +102,14 @@ function DeleteModal({ label, onConfirm, onClose, t }: DeleteModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-xl border-2 border-ink bg-surface py-3 text-sm font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="flex-1 rounded-xl border-2 border-ink bg-surface py-3 text-sm font-extrabold text-ink shadow-brutal-sm transition-opacity hover:opacity-80"
           >
             {t('delete.cancel')}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="flex-1 rounded-xl border-2 border-ink bg-ink py-3 text-sm font-extrabold text-surface shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="flex-1 rounded-xl border-2 border-ink bg-ink py-3 text-sm font-extrabold text-surface shadow-brutal-sm transition-opacity hover:opacity-80"
           >
             {t('delete.yes')}
           </button>
@@ -125,7 +125,7 @@ function DeleteIconButton({ label, onClick }: { label: string; onClick: () => vo
   return (
     <button
       type="button"
-      className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-70"
+      className="shrink-0 rounded-xl border-2 border-ink bg-surface p-2 shadow-brutal-sm transition-opacity hover:opacity-70"
       onClick={onClick}
       aria-label={label}
     >
@@ -260,7 +260,7 @@ export default function MyRecordsClient({ records: initial, previewCount = PREVI
           {filtered.length > preview.length && (
             <Link
               href="/my/history"
-              className="mt-3 block rounded-xl border-2 border-teal bg-surface py-3 text-center text-[13px] font-extrabold text-teal-deep shadow-[2px_2px_0_#1A1A1A] transition-opacity hover:opacity-80"
+              className="mt-3 block rounded-xl border-2 border-teal bg-surface py-3 text-center text-[13px] font-extrabold text-teal-deep shadow-brutal-sm transition-opacity hover:opacity-80"
             >
               {t('viewAllHistory')} →
             </Link>

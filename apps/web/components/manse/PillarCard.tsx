@@ -15,7 +15,7 @@ export default function PillarCard({
   const element = kind === 'stem' ? pillar.stem_element : pillar.branch_element
   const tenGod = kind === 'stem' ? pillar.stem_ten_god : pillar.branch_ten_god
   const color = ohaengColor(element)
-  const border = isDay ? 'border-orange shadow-[2.5px_2.5px_0_#FF6B00]' : 'border-ink shadow-[2.5px_2.5px_0_#1A1A1A]'
+  const border = isDay ? 'border-orange shadow-pop-md' : 'border-ink shadow-brutal-md'
   return (
     <div className={`flex-1 rounded-xl border-2 ${border} px-1 py-2 text-center`}
       style={{ background: ohaengTintColor(element) }}>

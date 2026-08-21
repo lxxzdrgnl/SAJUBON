@@ -64,7 +64,7 @@ export default async function DetailAccordion({ data }: { data: SajuCalcResponse
                           return (
                             <span
                               key={sal.name}
-                              className={`inline-block rounded-[8px] border-[1.5px] border-ink px-1.5 py-px text-[10px] font-extrabold shadow-[1.5px_1.5px_0_#1A1A1A] ${
+                              className={`inline-block rounded-[8px] border-[1.5px] border-ink px-1.5 py-px text-[10px] font-extrabold shadow-brutal-xs ${
                                 isLucky
                                   ? 'bg-teal-tint text-[#00665F]'
                                   : isUnlucky

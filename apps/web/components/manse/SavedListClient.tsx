@@ -144,7 +144,7 @@ export default function SavedListClient({
                   type="button"
                   disabled={loadingId === p.id || isPending}
                   onClick={(e) => handleDeleteConfirm(e, p.id)}
-                  className="rounded-lg border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
+                  className="rounded-lg border-2 border-ink bg-orange px-3 py-1 text-[12px] font-extrabold text-white shadow-brutal-sm disabled:opacity-50"
                 >
                   {t('deleteConfirmYes')}
                 </button>
@@ -152,7 +152,7 @@ export default function SavedListClient({
                   type="button"
                   disabled={loadingId === p.id}
                   onClick={(e) => { e.preventDefault(); setConfirmDeleteId(null) }}
-                  className="rounded-lg border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
+                  className="rounded-lg border-2 border-ink bg-surface px-3 py-1 text-[12px] font-extrabold text-ink shadow-brutal-sm disabled:opacity-50"
                 >
                   {t('deleteConfirmCancel')}
                 </button>
@@ -169,7 +169,7 @@ export default function SavedListClient({
                   disabled={loadingId !== null || isPending}
                   onClick={(e) => handleSetRepresentative(e, p.id)}
                   title={t('setRepresentative')}
-                  className="flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-[11px] font-extrabold text-ink shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-lg border-2 border-ink bg-yellow px-2 py-1 text-[11px] font-extrabold text-ink shadow-brutal-sm disabled:opacity-50"
                 >
                   <StarIcon className="h-3 w-3 shrink-0" />
                   <span>{t('setRepresentative')}</span>
@@ -180,7 +180,7 @@ export default function SavedListClient({
                 disabled={loadingId !== null || isPending}
                 onClick={(e) => { e.preventDefault(); setConfirmDeleteId(p.id) }}
                 title={t('delete')}
-                className="flex items-center justify-center rounded-lg border-2 border-ink bg-surface p-1.5 shadow-[2px_2px_0_#1A1A1A] disabled:opacity-50"
+                className="flex items-center justify-center rounded-lg border-2 border-ink bg-surface p-1.5 shadow-brutal-sm disabled:opacity-50"
               >
                 <TrashIcon className="h-4 w-4 text-ink" />
               </button>

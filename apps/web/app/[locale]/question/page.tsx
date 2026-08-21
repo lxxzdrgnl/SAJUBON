@@ -114,7 +114,7 @@ export default function QuestionPage() {
       <main className="flex flex-col gap-5">
         <h1 className="text-lg font-black">{t('title')}</h1>
 
-        <div className="rounded-2xl border-2 border-teal bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+        <div className="rounded-2xl border-2 border-teal bg-surface p-5 shadow-brutal">
           <p className="mb-3 text-[11px] font-extrabold uppercase tracking-widest text-text-sub">
             {t('resultLabel')}
           </p>
@@ -136,12 +136,12 @@ export default function QuestionPage() {
             type="button"
             onClick={handleShare}
             disabled={sharing}
-            className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] transition-opacity disabled:opacity-60 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
+            className="w-full rounded-xl border-2 border-ink bg-teal py-3 text-sm font-extrabold text-white shadow-brutal transition-opacity disabled:opacity-60 active:translate-x-[2px] active:translate-y-[2px] active:shadow-brutal-sm"
           >
             {sharing ? t('sharing') : t('share')}
           </button>
           <button
-            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
+            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal active:translate-x-[2px] active:translate-y-[2px] active:shadow-brutal-sm"
             onClick={() => { setResult(null); setQuestion(''); close() }}
           >
             {t('askAgain')}
@@ -178,7 +178,7 @@ export default function QuestionPage() {
       <div className="flex flex-col gap-1.5">
         <p className="text-[13px] font-extrabold">{t('birthLabel')}</p>
         {selectedInput ? (
-          <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface overflow-hidden">
               <MascotTinted stem={selectedInput.day_stem ?? null} width={38} height={38} />
             </span>
@@ -197,7 +197,7 @@ export default function QuestionPage() {
         ) : (
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+            className="flex w-full items-center gap-3 rounded-2xl border-2 border-ink bg-yellow p-4 text-left shadow-brutal transition-opacity hover:opacity-80"
             onClick={() => setSheetOpen(true)}
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-surface text-lg font-extrabold">
@@ -220,7 +220,7 @@ export default function QuestionPage() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder={t('questionPlaceholder')}
-              className="w-full resize-none rounded-xl border-2 border-black bg-surface px-4 py-3 text-sm leading-relaxed outline-none shadow-[4px_4px_0_#1A1A1A]"
+              className="w-full resize-none rounded-xl border-2 border-black bg-surface px-4 py-3 text-sm leading-relaxed outline-none shadow-brutal"
               rows={3}
               minLength={10}
               maxLength={200}
@@ -237,7 +237,7 @@ export default function QuestionPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] transition-opacity disabled:opacity-60 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
+            className="w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-sm font-extrabold text-white shadow-brutal transition-opacity disabled:opacity-60 active:translate-x-[2px] active:translate-y-[2px] active:shadow-brutal-sm"
           >
             {loading ? t('submitting') : t('submit')}
           </button>

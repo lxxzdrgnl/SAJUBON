@@ -14,7 +14,7 @@ export default function BrutalCard({
   // soft도 회색 테두리 금지 — 잉크 보더(그림자 없음)로 저강도 표현
   const style =
     intensity === 'full'
-      ? 'border-2 border-ink shadow-[4px_4px_0_#1A1A1A]'
+      ? 'border-2 border-ink shadow-brutal'
       : 'border-2 border-ink'
   return <div className={`${base} ${style} ${className}`}>{children}</div>
 }

@@ -13,7 +13,7 @@ export default async function TenGodsCard({ data }: { data: SajuCalcResponse }) 
   const { CX, CY } = DONUT_GEOMETRY
 
   return (
-    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+    <section className="rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
       <h3 className="mb-3 text-[15px] font-extrabold">{t('title')}</h3>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
@@ -22,8 +22,8 @@ export default async function TenGodsCard({ data }: { data: SajuCalcResponse }) 
             {arcs.map((a) => (
               <path key={a.ss} d={a.d} fill={a.color} stroke="#FFFFFF" strokeWidth="1.5" />
             ))}
-            <text x={CX} y={CY - 3} textAnchor="middle" fontSize="9" fontWeight="700" fill="#8A8270">{t('core')}</text>
-            <text x={CX} y={CY + 10} textAnchor="middle" fontSize="11" fontWeight="800" fill="#1A1A1A">
+            <text x={CX} y={CY - 3} textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--text-sub)">{t('core')}</text>
+            <text x={CX} y={CY + 10} textAnchor="middle" fontSize="11" fontWeight="800" fill="var(--ink)">
               {dominant.join('·') || '—'}
             </text>
           </svg>

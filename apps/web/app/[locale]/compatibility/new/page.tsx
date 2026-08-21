@@ -118,13 +118,13 @@ export default function CompatibilityNewPage() {
     return (
       <main className="flex flex-col gap-5">
         <h1 className="text-lg font-black">{t('new.title')}</h1>
-        <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-ink bg-surface p-6 text-center shadow-[4px_4px_0_#1A1A1A]">
+        <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-ink bg-surface p-6 text-center shadow-brutal">
           <Image src="/mascot.svg" alt="" width={56} height={56} />
           <p className="text-[15px] font-extrabold">{t('new.loginRequired')}</p>
           <p className="text-[13px] text-text-sub">{t('new.loginDesc')}</p>
           <a
             href={GOOGLE_LOGIN_URL}
-            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A]"
+            className="w-full rounded-xl border-2 border-ink bg-yellow py-3 text-sm font-extrabold shadow-brutal"
           >
             {t('new.loginWithGoogle')}
           </a>
@@ -153,7 +153,7 @@ export default function CompatibilityNewPage() {
           value={topics}
           onChange={(e) => setTopics(e.target.value)}
           placeholder={t('new.topicsPlaceholder')}
-          className="w-full rounded-xl border-2 border-ink bg-surface px-4 py-3 text-sm outline-none shadow-[4px_4px_0_#1A1A1A]"
+          className="w-full rounded-xl border-2 border-ink bg-surface px-4 py-3 text-sm outline-none shadow-brutal"
           maxLength={100}
         />
         <p className="text-[12px] text-text-sub">{t('new.topicsHint')}</p>

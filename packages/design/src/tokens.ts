@@ -1,8 +1,8 @@
 /** 사주구리 디자인 토큰 — 단일 진실 원천: docs/design.md */
 
 export const colors = {
-  bgBase: '#FFFBF2',
-  ink: '#1A1A1A',
+  bgBase: '#EEF1F6',
+  ink: '#14161C',
   yellow: '#FFD900',
   yellowTint: '#FFF3B0',
   amber: '#FFB200',
@@ -12,8 +12,8 @@ export const colors = {
   tealDeep: '#00857D',
   tealTint: '#D7F7F4',
   surface: '#FFFFFF',
-  borderSoft: '#EBE3D2',
-  textSub: '#8A8270',
+  borderSoft: '#C8D0DE',
+  textSub: '#6B7488',
   sky: '#4DA8E8',
   skyTint: '#DCEFFB',
 } as const
@@ -45,17 +45,30 @@ export const story = {
 } as const
 
 export const radius = {
-  card: '16px',
-  button: '11px',
-  chip: '10px',
+  card: '10px',
+  button: '8px',
+  chip: '8px',
   pill: '999px',
-  sheet: '22px',
+  sheet: '16px',
 } as const
 
 export const shadow = {
-  brutal: '4px 4px 0 #1A1A1A',
-  brutalSm: '2px 2px 0 #1A1A1A',
-  brutalOrange: '4px 4px 0 #FF6B00',
+  brutal: '4px 4px 0 var(--ink)',
+  brutalSm: '2px 2px 0 var(--ink)',
+  brutalOrange: '4px 4px 0 var(--orange)',
+} as const
+
+/** Y2K 재료 — 크롬(금속 다단)·홀로그램(무지개 conic)·글로스(광택 inset) */
+export const y2k = {
+  chrome:
+    'linear-gradient(158deg,#FDFEFF 0%,#CBD4E2 16%,#8E9BB0 32%,#EAEFF7 46%,' +
+    '#6E7C93 60%,#AEBACB 74%,#F4F8FD 100%)',
+  holo:
+    'conic-gradient(from 210deg,#6EE7FF,#C6F432,#FFD900,#FF5FD2,#A78BFA,#6EE7FF)',
+  gloss:
+    'inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -3px 8px rgba(20,22,28,.10)',
+  specular:
+    'linear-gradient(102deg,transparent 34%,rgba(255,255,255,.85) 46%,transparent 56%)',
 } as const
 
 /** 차트 점수 색 의미: 피크=orange, 중간=yellow, 저점=tealTint */

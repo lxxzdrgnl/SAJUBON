@@ -85,13 +85,13 @@ export default async function ManseResult({
       <div className="mt-1 flex gap-2">
         <Link
           href={`/report/new?${birthQuery}`}
-          className="flex-1 rounded-xl border-2 border-ink bg-orange py-3 text-center text-sm font-extrabold text-white shadow-[4px_4px_0_#1A1A1A]"
+          className="flex-1 rounded-xl border-2 border-ink bg-orange py-3 text-center text-sm font-extrabold text-white shadow-brutal"
         >
           {tc('report')}
         </Link>
         <Link
           href="/chat"
-          className="flex-1 rounded-xl border-2 border-teal bg-teal-tint py-3 text-center text-sm font-extrabold text-teal-deep shadow-[4px_4px_0_#1A1A1A]"
+          className="flex-1 rounded-xl border-2 border-teal bg-teal-tint py-3 text-center text-sm font-extrabold text-teal-deep shadow-brutal"
         >
           {tc('chat')}
         </Link>

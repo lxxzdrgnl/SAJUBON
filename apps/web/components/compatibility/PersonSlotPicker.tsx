@@ -61,7 +61,7 @@ function SlotCard({ pick, onOpen, t }: SlotCardProps) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-surface p-3 text-center shadow-[4px_4px_0_#1A1A1A] transition-opacity hover:opacity-80"
+      className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-ink bg-surface p-3 text-center shadow-brutal transition-opacity hover:opacity-80"
     >
       {pick ? (
         <>
@@ -143,7 +143,7 @@ export default function PersonSlotPicker({ profiles, onComplete }: Props) {
         type="button"
         disabled={!bothFilled}
         onClick={handleComplete}
-        className="mt-2 w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-[15px] font-extrabold text-white shadow-[4px_4px_0_#1A1A1A] transition-opacity disabled:opacity-40 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#1A1A1A]"
+        className="mt-2 w-full rounded-xl border-2 border-ink bg-orange py-3.5 text-[15px] font-extrabold text-white shadow-brutal transition-opacity disabled:opacity-40 active:translate-x-[2px] active:translate-y-[2px] active:shadow-brutal-sm"
       >
         {t('viewCompatibility')}
       </button>

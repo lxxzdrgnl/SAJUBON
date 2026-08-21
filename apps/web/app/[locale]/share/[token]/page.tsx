@@ -86,12 +86,12 @@ export default async function SharedMansePage({
       )}
 
       {/* 공유 모드 CTA — 나도 내 사주 보기 */}
-      <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_#1A1A1A]">
+      <div className="mt-2 rounded-2xl border-2 border-ink bg-surface p-4 shadow-brutal">
         <p className="mb-1 text-[14px] font-extrabold text-ink">{t('ctaTitle')}</p>
         <p className="mb-3 text-[13px] text-text-sub">{t('ctaBody')}</p>
         <Link
           href="/manse"
-          className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-[4px_4px_0_#1A1A1A]"
+          className="block w-full rounded-xl border-2 border-ink bg-yellow py-3 text-center text-sm font-extrabold shadow-brutal"
         >
           {t('ctaButton')}
         </Link>

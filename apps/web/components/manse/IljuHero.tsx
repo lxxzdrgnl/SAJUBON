@@ -12,7 +12,7 @@ export default async function IljuHero({ dayPillar, label }: { dayPillar: Pillar
 
   return (
     <section
-      className="rounded-2xl border-2 border-ink p-4 shadow-[4px_4px_0_#1A1A1A]"
+      className="rounded-2xl border-2 border-ink p-4 shadow-brutal"
       style={{ background: nick.bg }}
     >
       <div className="flex items-center justify-between">
@@ -28,7 +28,7 @@ export default async function IljuHero({ dayPillar, label }: { dayPillar: Pillar
             </span>
           )}
         </div>
-        <div className="ml-3 flex h-[84px] w-[84px] shrink-0 items-center justify-center rounded-2xl border-2 border-ink bg-surface/70 shadow-[3px_3px_0_#1A1A1A]">
+        <div className="ml-3 flex h-[84px] w-[84px] shrink-0 items-center justify-center rounded-2xl border-2 border-ink bg-surface/70 shadow-brutal-lg">
           <MascotTinted stem={dayPillar.stem} width={64} height={64} />
         </div>
       </div>

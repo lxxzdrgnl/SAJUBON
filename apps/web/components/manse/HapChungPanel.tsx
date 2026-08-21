@@ -61,7 +61,7 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A]">
+    <section className="overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-brutal">
       <h3 className="px-4 pt-4 text-[15px] font-extrabold">{t('title')}</h3>
 
       <div className="flex flex-wrap gap-1.5 px-4 py-3">
@@ -75,9 +75,9 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
               onClick={() => setTab(tabDef.key)}
               className={`rounded-full border-2 px-2.5 py-0.5 text-[11px] font-extrabold ${
                 isActive
-                  ? 'border-ink bg-yellow text-ink shadow-[2px_2px_0_#1A1A1A]'
+                  ? 'border-ink bg-yellow text-ink shadow-brutal-sm'
                   : has
-                    ? 'border-ink bg-surface text-ink shadow-[2px_2px_0_#1A1A1A]'
+                    ? 'border-ink bg-surface text-ink shadow-brutal-sm'
                     : 'border-ink bg-surface text-text-sub'
               }`}
             >
@@ -100,9 +100,9 @@ export default function HapChungPanel({ data }: { data: SajuCalcResponse }) {
             {entries.map((e, i) => (
               <div key={i} className="flex flex-col gap-1.5">
                 <p className="text-sm leading-snug text-ink [&_b]:font-black [&_b]:text-orange" dangerouslySetInnerHTML={{ __html: e.text }} />
-                {e.broken && <span className="w-fit rounded-[10px] border-2 border-ink bg-orange-tint px-2 py-0.5 text-[11px] font-extrabold text-[#B34800] shadow-[2px_2px_0_#1A1A1A]">{t('broken')}</span>}
+                {e.broken && <span className="w-fit rounded-[10px] border-2 border-ink bg-orange-tint px-2 py-0.5 text-[11px] font-extrabold text-[#B34800] shadow-brutal-sm">{t('broken')}</span>}
                 {e.resultEl && !e.broken && (
-                  <span className="w-fit rounded-[10px] border-2 border-ink px-2 py-0.5 text-[11px] font-extrabold shadow-[2px_2px_0_#1A1A1A]" style={{ color: ohaengColor(e.resultEl), background: `${ohaengColor(e.resultEl)}1A` }}>
+                  <span className="w-fit rounded-[10px] border-2 border-ink px-2 py-0.5 text-[11px] font-extrabold shadow-brutal-sm" style={{ color: ohaengColor(e.resultEl), background: `${ohaengColor(e.resultEl)}1A` }}>
                     → {e.resultEl}화(化)
                   </span>
                 )}

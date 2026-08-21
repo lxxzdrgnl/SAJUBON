@@ -104,7 +104,7 @@ export default function ScoreOverview({ score, nameA, nameB }: ScoreOverviewProp
   ] as const
 
   return (
-    <div className="rounded-2xl border-2 border-ink bg-surface p-5 shadow-[4px_4px_0_#1A1A1A]">
+    <div className="rounded-2xl border-2 border-ink bg-surface p-5 shadow-brutal">
       {/* 이름 레이블 */}
       {(nameA || nameB) && (
         <p className="mb-3 text-[13px] font-extrabold tracking-[0.14em] text-ink">

@@ -40,7 +40,7 @@ export default async function ReportDetailPage({
   return (
     <main className="flex flex-col gap-4">
       {/* 원국 한 줄 요약 — 마스코트 아바타 포함 */}
-      <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
+      <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-surface p-3 shadow-brutal">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-ink bg-surface">
           <MascotTinted width={40} height={40} />
         </span>

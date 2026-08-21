@@ -60,18 +60,18 @@ function YearFlowSection({
 
       {/* 상/하반기 카드 */}
       <div className="flex gap-2">
-        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
+        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-brutal">
           <p className="mb-1 text-[12px] font-extrabold text-teal">{t('page.firstHalf')}</p>
           <p className="text-[14px] leading-relaxed text-ink">{yearFlow.first_half}</p>
         </div>
-        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
+        <div className="flex-1 rounded-2xl border-2 border-ink bg-surface p-3 shadow-brutal">
           <p className="mb-1 text-[12px] font-extrabold text-teal">{t('page.secondHalf')}</p>
           <p className="text-[14px] leading-relaxed text-ink">{yearFlow.second_half}</p>
         </div>
       </div>
 
       {/* 월별 표 */}
-      <div className="overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-[4px_4px_0_#1A1A1A]">
+      <div className="overflow-hidden rounded-2xl border-2 border-ink bg-surface shadow-brutal">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b-2 border-ink">
@@ -126,7 +126,7 @@ function DaeUnSection({
 
       <div className="flex flex-col gap-2">
         {/* 현재 대운 — 오렌지 강조 */}
-        <div className="rounded-2xl border-2 border-orange bg-surface p-3 shadow-[4px_4px_0_#FF6B00]">
+        <div className="rounded-2xl border-2 border-orange bg-surface p-3 shadow-pop">
           <p className="mb-1 text-[12px] font-extrabold text-orange">{t('page.currentDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.current.ganji}</p>
           <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.current.period}</p>
@@ -134,7 +134,7 @@ function DaeUnSection({
         </div>
 
         {/* 다음 대운 — 일반 */}
-        <div className="rounded-2xl border-2 border-ink bg-surface p-3 shadow-[4px_4px_0_#1A1A1A]">
+        <div className="rounded-2xl border-2 border-ink bg-surface p-3 shadow-brutal">
           <p className="mb-1 text-[12px] font-extrabold text-ink">{t('page.nextDaeUn')}</p>
           <p className="mb-0.5 font-serif text-xl font-extrabold text-ink">{daeUn.next.ganji}</p>
           <p className="mb-2 text-[12px] font-semibold text-ink opacity-60">{daeUn.next.period}</p>
@@ -143,7 +143,7 @@ function DaeUnSection({
       </div>
 
       {/* 주의점 */}
-      <div className="rounded-2xl border-2 border-ink bg-surface px-4 py-3 shadow-[2px_2px_0_#1A1A1A]">
+      <div className="rounded-2xl border-2 border-ink bg-surface px-4 py-3 shadow-brutal-sm">
         <p className="mb-1 text-[12px] font-extrabold text-orange">{t('page.cautionLabel')}</p>
         <p className="text-[14px] leading-relaxed text-ink">{daeUn.caution}</p>
       </div>

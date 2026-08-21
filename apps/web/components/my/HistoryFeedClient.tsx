@@ -19,7 +19,7 @@ function ChipButton({ active, onClick, children }: { active: boolean; onClick: (
       type="button"
       onClick={onClick}
       className={
-        'shrink-0 whitespace-nowrap rounded-xl border-2 border-ink px-3 py-1.5 text-[13px] font-extrabold shadow-[2px_2px_0_#1A1A1A] transition-opacity ' +
+        'shrink-0 whitespace-nowrap rounded-xl border-2 border-ink px-3 py-1.5 text-[13px] font-extrabold shadow-brutal-sm transition-opacity ' +
         (active ? 'bg-yellow text-ink' : 'bg-surface text-text-sub hover:opacity-80')
       }
     >
