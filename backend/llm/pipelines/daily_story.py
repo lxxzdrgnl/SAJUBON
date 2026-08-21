@@ -171,16 +171,17 @@ async def _rewrite(cards: list[dict], language: str = "ko", facts: list[str] | N
 
     from langchain_core.messages import HumanMessage, SystemMessage
 
-    llm = get_llm("openai", temperature=0.8, model="gpt-4.1-nano")
+    # nano는 장면(공감 훅)을 못 만들고 템플릿을 그대로 다듬어 돌려준다 → mini (카드 11장, 3장씩 병렬이라 비용 부담 작음)
+    llm = get_llm("openai", temperature=0.8, model="gpt-4.1-mini")
     system_prompt = build_daily_story_system_prompt(language)
 
-    async def rewrite_chunk(chunk: list[dict]) -> bool:
+    async def rewrite_chunk(chunk: list[dict], chunk_facts: list[str]) -> bool:
         """청크(카드 dict 참조 리스트)를 제자리 리라이트. format_daily_story_message가
         부여하는 id는 청크 내 0-based이므로 chunk[idx]에 그대로 적용된다."""
         try:
             messages = [
                 SystemMessage(content=system_prompt),
-                HumanMessage(content=format_daily_story_message(chunk, facts=facts)),
+                HumanMessage(content=format_daily_story_message(chunk, facts=chunk_facts)),
             ]
             resp = await llm.ainvoke(messages)
             raw = resp.content if hasattr(resp, "content") else str(resp)
@@ -199,7 +200,10 @@ async def _rewrite(cards: list[dict], language: str = "ko", facts: list[str] | N
 
     size = 3
     chunks = [cards[i : i + size] for i in range(0, len(cards), size)]
-    results = await asyncio.gather(*(rewrite_chunk(c) for c in chunks))
+    # 같은 신호("지지 묘가 도화")가 모든 카드에 반복되지 않게, 청크마다 다른 신호 하나씩만 준다.
+    facts = facts or []
+    chunk_facts = [[facts[i % len(facts)]] if facts else [] for i in range(len(chunks))]
+    results = await asyncio.gather(*(rewrite_chunk(c, f) for c, f in zip(chunks, chunk_facts)))
     return any(results)
 
 
