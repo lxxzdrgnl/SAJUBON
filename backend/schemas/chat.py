@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 class ChatSessionCreate(BaseModel):
     profile_id: int | None = Field(default=None, description="저장된 프로필 ID")
+    name: str | None = Field(default=None, description="표시용 이름(칩·시트에 노출)", examples=["이용재"])
     birth_date: str | None = Field(default=None, description="생년월일 (YYYY-MM-DD)", examples=["1990-03-15"])
     birth_time: str | None = Field(default=None, description="태어난 시간 (HH:MM)", examples=["14:30"])
     gender: str | None = Field(default=None, description="성별 (male/female)", examples=["male"])
@@ -39,6 +40,17 @@ class PartnerAttachRequest(BaseModel):
 
 class PartnerAttachResponse(BaseModel):
     partner_name: str
+
+
+class SessionProfileRequest(BaseModel):
+    """세션이 보고 있는 만세력 교체 — 저장 프로필 또는 직접 입력."""
+    profile_id: int | None = Field(default=None, description="저장된 프로필 ID")
+    birth_date: str | None = Field(default=None, description="생년월일 (YYYY-MM-DD)", examples=["2001-08-17"])
+    birth_time: str | None = Field(default=None, description="태어난 시간 (HH:MM)", examples=["11:00"])
+    gender: str | None = Field(default=None, description="성별 (male/female)", examples=["male"])
+    calendar: str = Field(default="solar", description="양력/음력")
+    is_leap_month: bool = Field(default=False)
+    name: str | None = Field(default=None, description="표시용 이름", examples=["이용재"])
 
 
 class ChatMessageRequest(BaseModel):

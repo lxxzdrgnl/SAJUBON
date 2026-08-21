@@ -3,7 +3,7 @@
  * SSE 파서는 @sajuguri/core (RN 재사용) — 여기선 fetch 스트림 반환만 담당.
  */
 import type { ApiClient } from './client'
-import type { ChatSession, ChatSessionCreate } from './types'
+import type { ChatSession, ChatSessionCreate, SessionProfileRequest } from './types'
 
 // ── 신규 타입 ────────────────────────────────────────────────────────────────
 
@@ -77,6 +77,26 @@ export async function detachPartner(_api: ApiClient, sessionId: string): Promise
     method: 'DELETE',
     credentials: 'include',
   })
+}
+
+/**
+ * PUT /api/chat/{id}/profile — 이 상담이 보고 있는 만세력을 교체.
+ * 백엔드가 사주를 다시 계산해 에이전트 state까지 갈아끼운다.
+ * (ApiClient에 put이 없어 직접 fetch — detachPartner와 동일 패턴)
+ */
+export async function replaceSessionProfile(
+  _api: ApiClient,
+  sessionId: string,
+  body: SessionProfileRequest,
+): Promise<ChatSession> {
+  const res = await fetch(`/api/chat/${sessionId}/profile`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error('replace_profile_failed')
+  return res.json() as Promise<ChatSession>
 }
 
 // ── SSE 스트림 ───────────────────────────────────────────────────────────────

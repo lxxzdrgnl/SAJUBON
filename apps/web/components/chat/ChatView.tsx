@@ -12,11 +12,12 @@ import { useRouter } from 'next/navigation'
 import { parseSSEStream } from '@sajuguri/core'
 import type { ChatStreamEvent } from '@sajuguri/core'
 import type { ProfileResponse } from '@sajuguri/api-client'
-import { getHistory, attachPartner, detachPartner, sendMessage as apiSendMessage } from '@sajuguri/api-client'
+import { getHistory, attachPartner, detachPartner, replaceSessionProfile, sendMessage as apiSendMessage } from '@sajuguri/api-client'
 import { api } from '@/lib/api'
 import type { ChatMessage } from '@sajuguri/api-client'
 import ToolCard from './ToolCard'
 import AttachSheet from './AttachSheet'
+import MyManseSheet from './MyManseSheet'
 import InlinePartnerCard from './InlinePartnerCard'
 import CompatibilityReportCTA from './CompatibilityReportCTA'
 import ChatNavCTA from './ChatNavCTA'
@@ -91,6 +92,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
   const q = manseNavQuery(birthInfo ?? {})
   const reportHref = q ? `/report/new?${q}` : '/report/new'
   const fortuneHref = q ? `/fortune?${q}` : '/fortune'
+  const manseHref = q ? `/manse/result?${q}` : '/manse'
 
   const [title, setTitle] = useState(initialTitle)
   const [messages, setMessages] = useState<DisplayMessage[]>([])
@@ -98,6 +100,19 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [attachOpen, setAttachOpen] = useState(false)
+  const [myManseOpen, setMyManseOpen] = useState(false)
+  const [sessionManse, setSessionManse] = useState<Record<string, unknown>>(birthInfo ?? {})
+
+  // 칩·시트에 쓸 이름. 세션 birth_info의 name이 우선이고, 없으면 생일이 같은 저장 만세력에서 찾는다
+  // (name 저장 이전에 만들어진 세션 호환).
+  const myName =
+    (sessionManse.name as string | undefined) ??
+    profiles.find(
+      (p) =>
+        p.birth_date === sessionManse.birth_date &&
+        (p.birth_time ?? null) === ((sessionManse.birth_time as string | null) ?? null),
+    )?.name ??
+    null
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [partnerChipExpanded, setPartnerChipExpanded] = useState(false)
@@ -312,6 +327,15 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
     }
   }, [sessionId])
 
+  // 이 상담의 만세력 교체 — 백엔드가 사주를 재계산하고 에이전트 state까지 갈아끼운다
+  const handleReplaceManse = useCallback(
+    async (body: import('@sajuguri/api-client').SessionProfileRequest) => {
+      const session = await replaceSessionProfile(api, sessionId, body)
+      setSessionManse(session.birth_info ?? {})
+    },
+    [sessionId],
+  )
+
   // textarea 자동 높이
   const autoResize = useCallback(() => {
     if (textRef.current) {
@@ -381,17 +405,15 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
       </div>
 
       {/* 첨부 칩 줄 */}
-      {(profiles.length > 0 || partnerName) && (
-        <div className="flex shrink-0 flex-wrap gap-1.5 border-b border-border-soft py-2">
-          {profiles.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setAttachOpen(true)}
-              className="inline-flex items-center gap-1 rounded-lg border-2 border-teal bg-teal-tint px-2.5 py-1 text-xs font-extrabold text-teal-deep shadow-brutal-sm transition-opacity hover:opacity-70"
-            >
-              {t('chip.my')}
-            </button>
-          )}
+      <div className="flex shrink-0 flex-wrap gap-1.5 border-b border-border-soft py-2">
+          <button
+            type="button"
+            onClick={() => setMyManseOpen(true)}
+            aria-haspopup="dialog"
+            className="inline-flex items-center gap-1 rounded-full border-2 border-teal bg-teal-tint px-2.5 py-1 text-xs font-extrabold text-teal-deep shadow-brutal-sm transition-opacity hover:opacity-70"
+          >
+            {myName ? `${t('chip.my')}: ${myName}` : t('chip.my')}
+          </button>
           {partnerName && (
             <button
               type="button"
@@ -412,8 +434,7 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
               )}
             </button>
           )}
-        </div>
-      )}
+      </div>
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1 flex flex-col gap-3">
@@ -572,7 +593,25 @@ export default function ChatView({ sessionId, initialTitle, profiles, partnerNam
         </div>
       </div>
 
-      {/* 첨부 시트 */}
+      {/* 이 상담의 만세력 — 헤더 칩에서 열린다 (상대 첨부와 분리) */}
+      <MyManseSheet
+        open={myManseOpen}
+        onClose={() => setMyManseOpen(false)}
+        manse={{
+          name: myName,
+          birth_date: sessionManse.birth_date as string | undefined,
+          birth_time: sessionManse.birth_time as string | null | undefined,
+          gender: sessionManse.gender as string | undefined,
+          calendar: sessionManse.calendar as string | undefined,
+          day_stem: sessionManse.day_stem as string | undefined,
+          ilju: sessionManse.ilju as string | undefined,
+        }}
+        profiles={profiles}
+        onReplace={handleReplaceManse}
+        detailHref={manseHref}
+      />
+
+      {/* 상대 만세력 첨부 시트 — + 버튼과 인라인 카드에서 열린다 */}
       <AttachSheet
         open={attachOpen}
         onClose={() => setAttachOpen(false)}

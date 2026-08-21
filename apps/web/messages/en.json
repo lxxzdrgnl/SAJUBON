@@ -87,7 +87,10 @@
     "fortuneSub": "How's your day?",
     "sectionTitle": "What about these?",
     "cards": {
-      "manse": { "title": "View Saju Chart", "desc": "Your full natal chart at a glance" },
+      "manse": {
+        "title": "View Saju Chart",
+        "desc": "Your full natal chart at a glance"
+      },
       "report": {
         "title": "My Full Saju Report",
         "badge": "10 tabs",
@@ -469,7 +472,7 @@
       "send": "Send"
     },
     "attach": {
-      "title": "Attach chart",
+      "title": "Attach partner's chart",
       "replaceMy": "Replace my chart",
       "attachPartner": "Attach partner chart"
     },
@@ -551,6 +554,24 @@
         "twelveUnSeong": "12-stage cycle = which life phase each pillar's energy is in",
         "hapChung": "Comb./Clash = whether pillars attract each other (combination) or collide (clash)"
       }
+    },
+    "myManse": {
+      "title": "Chart for this consultation",
+      "unnamed": "Unnamed chart",
+      "ilju": "{ganji} day pillar",
+      "birth": "Birth date and time",
+      "detail": "Details",
+      "timeUnknown": "Time unknown",
+      "male": "Male",
+      "female": "Female",
+      "solar": "Solar",
+      "lunar": "Lunar",
+      "replace": "Switch to another chart",
+      "replacing": "Switching",
+      "replaceNote": "Answers from here on use the new chart. Earlier messages stay as they are.",
+      "replaceError": "Could not switch the chart. Try again.",
+      "viewDetail": "View full chart",
+      "pickerTitle": "Which chart should this use?"
     }
   },
   "fortune": {

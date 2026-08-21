@@ -19,10 +19,12 @@ from schemas.chat import (
     ChatSessionCreate, ChatSessionResponse,
     ChatMessageRequest, ChatHistoryResponse, ChatHistoryMessage,
     ChatReportResponse, PartnerAttachRequest, PartnerAttachResponse,
+    SessionProfileRequest,
 )
 from services.chat import (
     create_chat_session, generate_chat_report,
     attach_partner, detach_partner, maybe_generate_title,
+    replace_session_profile,
 )
 
 router = APIRouter(prefix="/api/chat", tags=["채팅 에이전트"])
@@ -48,6 +50,8 @@ async def create_session(
             "gender": profile.gender,
             "calendar": profile.calendar,
             "is_leap_month": profile.is_leap_month,
+            # 표시용 — 엔진은 이 키를 모르므로 engine_args()가 벗겨서 넘긴다
+            "name": req.name or profile.name,
         }
     else:
         birth_info = {
@@ -56,6 +60,7 @@ async def create_session(
             "gender": req.gender,
             "calendar": req.calendar,
             "is_leap_month": req.is_leap_month,
+            "name": req.name,
         }
 
     session = await create_chat_session(
@@ -93,6 +98,40 @@ async def attach_partner_profile(
         db=db, session_id=session_id, user_id=user.id, req=req
     )
     return PartnerAttachResponse(partner_name=partner_name)
+
+
+@router.put("/{session_id}/profile", response_model=ChatSessionResponse)
+async def replace_profile(
+    session_id: uuid.UUID,
+    req: SessionProfileRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    checkpointer=Depends(_get_checkpointer),
+):
+    """이 상담이 보고 있는 만세력을 교체한다 (사주 재계산 + 에이전트 state 갱신)."""
+    if req.profile_id:
+        profile = await get_profile_or_404(db, req.profile_id, user.id)
+        birth_info = {
+            "birth_date": str(profile.birth_date),
+            "birth_time": profile.birth_time.strftime("%H:%M") if profile.birth_time else None,
+            "gender": profile.gender,
+            "calendar": profile.calendar,
+            "is_leap_month": profile.is_leap_month,
+            "name": req.name or profile.name,
+        }
+    else:
+        birth_info = {
+            "birth_date": req.birth_date,
+            "birth_time": req.birth_time,
+            "gender": req.gender,
+            "calendar": req.calendar,
+            "is_leap_month": req.is_leap_month,
+            "name": req.name,
+        }
+    return await replace_session_profile(
+        db=db, session_id=session_id, user_id=user.id,
+        birth_info=birth_info, checkpointer=checkpointer,
+    )
 
 
 @router.delete("/{session_id}/partner", status_code=status.HTTP_204_NO_CONTENT)

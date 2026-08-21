@@ -87,7 +87,10 @@
     "fortuneSub": "너의 하루는?",
     "sectionTitle": "이런 건 어때?",
     "cards": {
-      "manse": { "title": "만세력 보기", "desc": "내 사주 원국을 한눈에" },
+      "manse": {
+        "title": "만세력 보기",
+        "desc": "내 사주 원국을 한눈에"
+      },
       "report": {
         "title": "내 사주 풀리포트",
         "badge": "10탭",
@@ -431,7 +434,7 @@
       "send": "전송"
     },
     "attach": {
-      "title": "만세력 첨부",
+      "title": "상대 만세력 첨부",
       "replaceMy": "내 만세력 교체",
       "attachPartner": "상대 만세력 첨부"
     },
@@ -513,6 +516,24 @@
         "twelveUnSeong": "12운성 = 각 기둥의 기운이 어느 생애 단계에 있는지",
         "hapChung": "합충 = 기둥끼리 끌어당기거나(합) 부딪히는(충) 관계"
       }
+    },
+    "myManse": {
+      "title": "이 상담의 만세력",
+      "unnamed": "이름 없는 만세력",
+      "ilju": "{ganji}일주",
+      "birth": "생년월일시",
+      "detail": "구분",
+      "timeUnknown": "시간 모름",
+      "male": "남성",
+      "female": "여성",
+      "solar": "양력",
+      "lunar": "음력",
+      "replace": "다른 만세력으로 바꾸기",
+      "replacing": "바꾸는 중",
+      "replaceNote": "바꾸면 지금부터의 답변이 새 만세력 기준이 됩니다. 앞선 대화는 그대로 남습니다.",
+      "replaceError": "만세력을 바꾸지 못했어요. 다시 시도해 주세요.",
+      "viewDetail": "만세력 자세히 보기",
+      "pickerTitle": "어떤 만세력으로 바꿀까요?"
     }
   },
   "question": {

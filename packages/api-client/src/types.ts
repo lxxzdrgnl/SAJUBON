@@ -325,8 +325,20 @@ export interface ChatReport {
   created_at: string
 }
 
+/** PUT /api/chat/{id}/profile — 이 상담이 보고 있는 만세력 교체 */
+export interface SessionProfileRequest {
+  profile_id?: number
+  birth_date?: string
+  birth_time?: string | null
+  gender?: string
+  calendar?: string
+  is_leap_month?: boolean
+  name?: string
+}
+
 export interface ChatSessionCreate {
   profile_id?: number
+  name?: string
   birth_date?: string
   birth_time?: string | null
   gender?: string
