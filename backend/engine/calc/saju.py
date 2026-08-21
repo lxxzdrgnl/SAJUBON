@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 import functools
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from engine.data.heavenly_stems import get_stem_by_index, STEMS_BY_KOREAN
 from engine.data.earthly_branches import (
@@ -47,13 +47,18 @@ def _pillar(stem_idx: int, branch_idx: int) -> dict:
 # ─── 4기둥 계산 ───────────────────────────────────────────────
 
 
-def _calc_year_pillar(adjusted: datetime) -> dict:
-    """연주(年柱) 계산. 입춘 이전이면 전년도."""
-    year = adjusted.year
-    term = get_current_solar_term(adjusted)
+def _calc_year_pillar(local: datetime) -> dict:
+    """연주(年柱) 계산. 입춘 이전이면 전년도.
 
-    # 1~2월이고 아직 입춘이 안 지났으면 전년도
-    if adjusted.month <= 2 and term == "대한":
+    local: 한국 법정 표준시 벽시계 시각(naive). 절기 비교는 solar_terms 쪽에서 UTC로 변환한다.
+    """
+    year = local.year
+    term = get_current_solar_term(local)
+
+    # 1~2월이고 아직 입춘이 안 지났으면 전년도.
+    # 입춘 이전 구간의 절기는 동지·소한·대한 셋이다 (자월 후반 + 축월).
+    # "대한"만 보면 1/1~1/20(동지·소한 구간)이 새해 간지로 잘못 잡힌다.
+    if local.month <= 2 and term in ("동지", "소한", "대한"):
         year -= 1
 
     # 갑자(甲子)년 기준: 1984년
@@ -62,9 +67,9 @@ def _calc_year_pillar(adjusted: datetime) -> dict:
     return _pillar(stem_idx, branch_idx)
 
 
-def _calc_month_pillar(adjusted: datetime, year_pillar: dict) -> dict:
-    """월주(月柱) 계산."""
-    term = get_current_solar_term(adjusted)
+def _calc_month_pillar(local: datetime, year_pillar: dict) -> dict:
+    """월주(月柱) 계산. local: 법정 표준시 벽시계 시각(naive)."""
+    term = get_current_solar_term(local)
     month_idx = get_solar_term_month_index(term)   # 0=인월 ... 11=축월
 
     branch_idx = (month_idx + 2) % 12   # 인(寅) = index 2
@@ -80,10 +85,8 @@ def _calc_month_pillar(adjusted: datetime, year_pillar: dict) -> dict:
 
 
 def _calc_day_pillar(adjusted: datetime) -> dict:
-    """일주(日柱) 계산. 기준: 1900-01-01 = 갑술일."""
-    base = datetime(1900, 1, 1, tzinfo=timezone.utc)
-    if adjusted.tzinfo is None:
-        adjusted = adjusted.replace(tzinfo=timezone.utc)
+    """일주(日柱) 계산. 기준: 1900-01-01 = 갑술일. adjusted: 진태양시(naive)."""
+    base = datetime(1900, 1, 1)
     diff_days = (adjusted - base).days
 
     stem_idx = (0 + diff_days) % 10    # 갑(0) 시작
@@ -150,15 +153,15 @@ def calculate_saju(
 
     y, mo, d = map(int, solar_date.split("-"))
     hh, mm = (12, 0) if birth_time is None else map(int, birth_time.split(":"))
-    dt = datetime(y, mo, d, hh, mm, tzinfo=timezone.utc)
+    # 법정 표준시(KST, 역사적 변경·DST 포함) 벽시계 시각 — 연주·월주 절기 비교용
+    local = datetime(y, mo, d, hh, mm)
 
-    # 진태양시 보정 (한국 표준시 역사 기반, 서울 경도 126.97° 기준)
-    dt_naive = datetime(y, mo, d, hh, mm)
-    correction = get_solar_correction_minutes(dt_naive)
-    adjusted = dt + timedelta(minutes=correction)
+    # 진태양시 보정 (서울 경도 126.97° 기준) — 일주·시주 경계용
+    correction = get_solar_correction_minutes(local)
+    adjusted = local + timedelta(minutes=correction)
 
-    year_p = _calc_year_pillar(adjusted)
-    month_p = _calc_month_pillar(adjusted, year_p)
+    year_p = _calc_year_pillar(local)
+    month_p = _calc_month_pillar(local, year_p)
     day_p = _calc_day_pillar(adjusted)
     hour_p = None if birth_time is None else _calc_hour_pillar(adjusted, day_p)
 
@@ -171,7 +174,7 @@ def calculate_saju(
 
     _ji_labels = ["year", "month", "day"] + (["hour"] if hour_p is not None else [])
     branches = [p["branch"] for p in known_pillars]
-    branch_relations = analyze_branch_relations(branches, day_p["branch"], _ji_labels)
+    branch_relations = analyze_branch_relations(branches, day_p["branch"], _ji_labels, day_stem=day_p["stem"])
     ji_jang_gan = {
         label: get_ji_jang_gan(p["branch"])
         for label, p in zip(_ji_labels, known_pillars)

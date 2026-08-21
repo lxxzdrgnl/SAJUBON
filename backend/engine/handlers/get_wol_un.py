@@ -40,6 +40,6 @@ def handle_get_wol_un(year: int, day_stem: str) -> list[dict]:
             "ganji_name":      ganji["ganji_name"],
             "stem_ten_god":    calculate_ten_god(day_stem, ganji["stem"]),
             "branch_ten_god":  get_branch_ten_god(day_stem, ganji["branch"]),
-            "twelve_wun":      get_twelve_wun(ganji["stem"], ganji["branch"]),
+            "twelve_wun":      get_twelve_wun(day_stem, ganji["branch"]),
         })
     return result

@@ -4,19 +4,28 @@ Daily Fortune Engine — AI 없는 명리 기반 오늘의 운세.
 scoring flow:
   base 50
   + ten_god_bonus(category)          # 오늘 천간의 십성이 카테고리에 미치는 영향
-  + wuxing_bonus(yong/xi/ji)         # 오늘 지지 오행의 희신/기신 여부
-  + branch_bonus(일지·월지 충합)     # 오늘 지지 vs 사주 지지 관계
-  → compress(50 + (raw-50)*1.7) → clamp(0,100) → level(5점 단위) → text
+  + 0.6 × ten_god_bonus(지지 본기)   # 오늘 지지 본기(本氣) 십성
+  + wuxing_bonus(yong/xi/ji)         # 오늘 지지 오행의 용신/희신/기신 여부
+  + branch_bonus(일지·월지 충합형파해) # 오늘 지지 vs 사주 지지 관계
+  + signal_bonus(category)           # 천간 합/충 · 12운성 · 도화/역마/귀인/화개 · 공망
+  → compress(53 + (raw-50)*k, k=1.4 상향/1.0 하향) → clamp(0,100) → level(5점 단위) → text
+
+부가 산출:
+  signals     — 위 근거를 구조화한 목록 (프론트 칩·LLM 리라이트 사실 근거)
+  good_hours  — 용신·합 기준 오늘 움직이기 좋은 시진 1~2개 (진태양시 보정 반영)
+  action      — 신호 우선순위로 고른 "오늘의 한 수" (구체 행동 1개)
 """
 
 from __future__ import annotations
 from datetime import date as _date, datetime, timezone, timedelta
 
-from engine.calc.ten_gods import calculate_ten_god
+from engine.calc.ten_gods import calculate_ten_god, get_branch_ten_god
+from engine.calc.twelve_wun import get_twelve_wun
 from engine.calc.daily_flow import _today_day_ganji
 from engine.data.earthly_branches import (
-    BRANCHES_BY_KOREAN,
+    BRANCHES_BY_KOREAN, BRANCHES_ORDER,
     CHUNG_PAIRS, YUK_HAP, YUK_HAE, PA_PAIRS, SAM_HYEONG,
+    get_gong_mang,
 )
 
 # ── 카테고리별 십성 점수 ─────────────────────────────────────────────────────
@@ -203,14 +212,32 @@ _CATEGORY_LABELS: dict[str, str] = {
     "social": "대인관계운",
 }
 
-# ── 오행 → 추천 옷 색깔 ──────────────────────────────────────────────────────
-_ELEMENT_COLORS: dict[str, dict] = {
-    "목": {"color": "초록·청록·하늘",  "reason": "목(木) 용신 기운을 강화합니다."},
-    "화": {"color": "빨강·오렌지·분홍", "reason": "화(火) 용신 기운을 강화합니다."},
-    "토": {"color": "황토·베이지·노랑", "reason": "토(土) 용신 기운을 강화합니다."},
-    "금": {"color": "흰색·은색·회색",   "reason": "금(金) 용신 기운을 강화합니다."},
-    "수": {"color": "검정·진남색·파랑", "reason": "수(水) 용신 기운을 강화합니다."},
+# ── 천간 합·충 (일간 vs 오늘 천간) ─────────────────────────────────────────
+_STEM_HAP: list[frozenset] = [frozenset(p) for p in (("갑","기"),("을","경"),("병","신"),("정","임"),("무","계"))]
+_STEM_CHUNG: list[frozenset] = [frozenset(p) for p in (("갑","경"),("을","신"),("병","임"),("정","계"))]
+
+# ── 신살 그룹 (연지·일지 삼합 그룹 기준) ───────────────────────────────────
+_SAM_HAP_GROUPS: list[set[str]] = [{"인","오","술"}, {"사","유","축"}, {"신","자","진"}, {"해","묘","미"}]
+_DO_HWA:  dict[frozenset, str] = {frozenset({"인","오","술"}): "묘", frozenset({"사","유","축"}): "오", frozenset({"신","자","진"}): "유", frozenset({"해","묘","미"}): "자"}
+_YEOK_MA: dict[frozenset, str] = {frozenset({"인","오","술"}): "신", frozenset({"사","유","축"}): "해", frozenset({"신","자","진"}): "인", frozenset({"해","묘","미"}): "사"}
+_HWA_GAE: dict[frozenset, str] = {frozenset({"인","오","술"}): "술", frozenset({"사","유","축"}): "축", frozenset({"신","자","진"}): "진", frozenset({"해","묘","미"}): "미"}
+_CHEON_EUL: dict[str, list[str]] = {
+    "갑": ["축", "미"], "을": ["자", "신"], "병": ["해", "유"], "정": ["해", "유"], "무": ["축", "미"],
+    "기": ["자", "신"], "경": ["축", "미"], "신": ["인", "오"], "임": ["사", "묘"], "계": ["사", "묘"],
 }
+
+# 12운성 → 에너지 단계
+_WUN_STRONG = {"장생", "건록", "제왕"}
+_WUN_WEAK   = {"병", "사", "묘", "절"}
+
+# 시진 라벨 (진태양시 보정 -30분 반영: 자시 23:30~01:30)
+_HOUR_LABELS: dict[str, str] = {
+    "자": "밤 11시 반~새벽 1시 반", "축": "새벽 1시 반~3시 반", "인": "새벽 3시 반~5시 반",
+    "묘": "새벽 5시 반~아침 7시 반", "진": "아침 7시 반~9시 반", "사": "오전 9시 반~11시 반",
+    "오": "오전 11시 반~오후 1시 반", "미": "오후 1시 반~3시 반", "신": "오후 3시 반~5시 반",
+    "유": "오후 5시 반~7시 반", "술": "저녁 7시 반~9시 반", "해": "밤 9시 반~11시 반",
+}
+_DAYTIME = ["묘", "진", "사", "오", "미", "신", "유", "술"]   # 길시 후보 (활동 시간대)
 
 # ── 운세 근거 레이블 ─────────────────────────────────────────────────────────
 _TEN_GOD_LABEL: dict[str, str] = {
@@ -289,22 +316,153 @@ def _wuxing_bonus(today_branch_element: str, yong_sin: dict) -> int:
 
 
 def _compress_score(raw: float) -> int:
-    """점수 압축: 중간(50)에서의 편차를 1.7배 확대하여 고득점/저득점이 더 강조되게."""
-    compressed = 50 + (raw - 50) * 1.7
+    """점수 압축: 기준점 53, 상향 편차 ×1.4 · 하향 편차 ×1.0 (비대칭)."""
+    # 비대칭 + 기준점 53: 좋은 날은 ×1.4로 더 띄우고, 나쁜 날은 ×1.0 그대로.
+    # (40명×73일 시뮬: 평균 61, ≥90점 10.4%, ≥80점 21%, 100점 3.8%, 50점 미만 31%, ≤30점 5.7%)
+    k = 1.4 if raw >= 50 else 1.0
+    compressed = 53 + (raw - 50) * k
     return max(0, min(100, round(compressed)))
 
 
-def _clothing_color(yong_sin: dict) -> dict:
-    """용신/희신 오행 기반 추천 옷 색깔."""
+def _j(word: str, pair: str) -> str:
+    """한글 조사 선택: _j("신", "은는") → "신은". pair는 (받침O, 받침X) 순."""
+    if not word:
+        return word
+    code = ord(word[-1])
+    has_final = 0xAC00 <= code <= 0xD7A3 and (code - 0xAC00) % 28 != 0
+    return word + (pair[0] if has_final else pair[1])
+
+
+def _sig(key: str, label: str, tone: str, desc: str, bonus: dict[str, int] | None = None, all_: int = 0) -> dict:
+    b = {c: all_ for c in _TEN_GOD_SCORES}
+    for c, v in (bonus or {}).items():
+        b[c] += v
+    return {"key": key, "label": label, "tone": tone, "desc": desc, "_bonus": b}
+
+
+def _collect_signals(calc: dict, today_stem: str, today_branch: str) -> list[dict]:
+    """천간 합충·12운성·신살·공망 → 구조화 신호 + 카테고리 보너스."""
+    dm       = calc["day_pillar"]["stem"]
+    d_branch = calc["day_pillar"]["branch"]
+    y_branch = calc["year_pillar"]["branch"]
+    out: list[dict] = []
+
+    pair = frozenset({dm, today_stem})
+    if pair in _STEM_HAP:
+        out.append(_sig("stem_hap", "천간합", "good",
+                        f"오늘 천간 {_j(today_stem, '이가')} 내 일간 {_j(dm, '과와')} 합 → 사람·제안이 잘 붙는 날",
+                        {"love": 4, "social": 3}, all_=5))
+    elif pair in _STEM_CHUNG:
+        out.append(_sig("stem_chung", "천간충", "bad",
+                        f"오늘 천간 {_j(today_stem, '이가')} 내 일간 {_j(dm, '과와')} 충 → 정면충돌·고집 주의",
+                        {"career": -3, "health": -3}, all_=-5))
+
+    wun = get_twelve_wun(dm, today_branch)
+    if wun in _WUN_STRONG:
+        out.append(_sig("wun_strong", f"12운성 {wun}", "good",
+                        f"내 일간 {_j(dm, '이가')} 오늘 지지 {today_branch}에서 {wun} → 기력이 차오르는 날",
+                        {"health": 3, "exam": 2}, all_=5))
+    elif wun in _WUN_WEAK:
+        out.append(_sig("wun_weak", f"12운성 {wun}", "bad",
+                        f"내 일간 {_j(dm, '이가')} 오늘 지지 {today_branch}에서 {wun} → 에너지가 처지는 날, 회복 우선",
+                        {"health": -3}, all_=-5))
+    elif wun == "목욕":
+        out.append(_sig("wun_bath", "12운성 목욕", "neutral",
+                        f"오늘 지지 {_j(today_branch, '은는')} 내 일간의 목욕지 → 감정·충동이 앞서기 쉬움",
+                        {"love": 3, "money": -2}))
+
+    for base_label, base in (("일지", d_branch), ("연지", y_branch)):
+        grp = next((frozenset(g) for g in _SAM_HAP_GROUPS if base in g), None)
+        if grp is None:
+            continue
+        if _DO_HWA[grp] == today_branch and not any(x["key"] == "do_hwa" for x in out):
+            out.append(_sig("do_hwa", "도화", "good",
+                            f"오늘 지지 {_j(today_branch, '은는')} 내 {base_label} 기준 도화 → 매력·첫인상이 살아나는 날",
+                            {"love": 8, "social": 4}))
+        if _YEOK_MA[grp] == today_branch and not any(x["key"] == "yeok_ma" for x in out):
+            out.append(_sig("yeok_ma", "역마", "neutral",
+                            f"오늘 지지 {_j(today_branch, '은는')} 내 {base_label} 기준 역마 → 이동·변동이 많은 날",
+                            {"career": 3, "social": 2, "health": -2}))
+        if _HWA_GAE[grp] == today_branch and not any(x["key"] == "hwa_gae" for x in out):
+            out.append(_sig("hwa_gae", "화개", "neutral",
+                            f"오늘 지지 {_j(today_branch, '은는')} 내 {base_label} 기준 화개 → 혼자 몰입하기 좋은 날",
+                            {"exam": 4, "love": -2, "social": -3}))
+
+    if today_branch in _CHEON_EUL.get(dm, []):
+        out.append(_sig("gwi_in", "천을귀인", "good",
+                        f"오늘 지지 {_j(today_branch, '은는')} 내 일간 {dm}의 천을귀인 → 도와주는 사람이 나타나는 날",
+                        {"career": 6, "social": 6, "exam": 3}))
+
+    if today_branch in get_gong_mang(dm, d_branch):
+        out.append(_sig("gong_mang", "공망", "bad",
+                        f"오늘 지지 {_j(today_branch, '은는')} 내 일주 공망 → 애쓴 만큼 결과가 안 잡히기 쉬운 날, 과정에 집중",
+                        {"money": -6, "career": -3}))
+
+    return out
+
+
+def _good_hours(calc: dict, today_branch: str, yong_sin: dict) -> list[dict]:
+    """오늘 움직이기 좋은 시진 1~2개 — 용신/희신 오행 + 일지·오늘 지지와의 합, 충은 감점."""
     primary = yong_sin.get("primary", "")
     xi_sin  = yong_sin.get("xi_sin", [])
+    ji_sin  = yong_sin.get("ji_sin", [])
+    d_branch = calc["day_pillar"]["branch"]
+    hap_pairs = [frozenset(h["pair"]) for h in YUK_HAP]
+    chung_pairs = [frozenset(p) for p in CHUNG_PAIRS]
 
-    el = primary or (xi_sin[0] if xi_sin else "")
-    if not el or el not in _ELEMENT_COLORS:
-        return {"color": "밝고 자연스러운 색상", "element": "", "reason": "편안한 색상이 하루를 안정적으로 이끕니다."}
+    scored: list[tuple[int, str]] = []
+    for b in _DAYTIME:
+        el = BRANCHES_BY_KOREAN[b]["element"]
+        sc = 0
+        if el == primary: sc += 3
+        elif el in xi_sin: sc += 2
+        elif el in ji_sin: sc -= 2
+        for other, w in ((d_branch, 2), (today_branch, 1)):
+            if frozenset({b, other}) in hap_pairs: sc += w
+            if frozenset({b, other}) in chung_pairs: sc -= 3
+        scored.append((sc, b))
+    scored.sort(key=lambda t: (-t[0], _DAYTIME.index(t[1])))
+    picks = [b for sc, b in scored[:2] if sc > 0]
+    return [{"branch": b, "label": _HOUR_LABELS[b], "element": BRANCHES_BY_KOREAN[b]["element"]} for b in picks]
 
-    data = _ELEMENT_COLORS[el]
-    return {"color": data["color"], "element": el, "reason": data["reason"]}
+
+_DEFAULT_ACTIONS: dict[str, tuple[str, str]] = {
+    "exam":   ("공부·정리에 시간을 먼저 떼어두세요", "오늘은 머리에 들어오는 기운이 가장 좋은 날입니다. 미뤄둔 정리나 어려운 부분을 먼저 붙잡으세요."),
+    "money":  ("지출 내역을 한 번 정리해보세요", "재물 기운이 살아 있는 날입니다. 새는 돈을 잡고 정산할 것을 정리하면 실속이 남습니다."),
+    "love":   ("안부 한 통 먼저 보내보세요", "감정이 부드럽게 통하는 날입니다. 짧은 연락 하나가 관계의 온도를 올립니다."),
+    "career": ("미뤄둔 보고·제안을 오늘 처리하세요", "일이 풀리는 기운이 받쳐주는 날입니다. 결재나 제안은 오늘 올리는 편이 통합니다."),
+    "health": ("30분만 걷고 일찍 쉬세요", "몸의 기운이 회복되는 날입니다. 가볍게 움직이고 수면을 챙기면 내일까지 이어집니다."),
+    "social": ("연락 끊긴 사람에게 한 통 보내보세요", "사람 덕을 보는 날입니다. 먼저 건넨 연락이 생각보다 큰 인연으로 돌아옵니다."),
+}
+
+
+def _pick_action(signals: list[dict], has_chung: bool, chung_target: str, top_cat: str, good_hours: list[dict]) -> dict:
+    """신호 우선순위로 '오늘의 한 수' 1개 선택."""
+    keys = {s["key"]: s for s in signals}
+    if has_chung:
+        head, body = "약속과 일정을 한 번 더 확인하세요", f"오늘 지지가 내 {chung_target}와 충이라 계획이 틀어지기 쉬운 날입니다. 이동·약속은 여유를 두고, 큰 결정은 하루 미루는 편이 안전합니다."
+    elif "gong_mang" in keys:
+        head, body = "결과보다 과정에만 집중하세요", "오늘은 공망이 걸려 애쓴 만큼 바로 결과가 잡히지 않는 날입니다. 마무리·계약·결론은 내일로 넘기고 준비와 정리에 쓰세요."
+    elif "gwi_in" in keys:
+        head, body = "부탁할 일이 있다면 오늘 꺼내세요", "천을귀인이 들어온 날이라 도와주는 사람이 나타나기 쉽습니다. 미뤄둔 부탁이나 상담을 오늘 해보세요."
+    elif "do_hwa" in keys:
+        head, body = "첫인상에 조금 더 신경 쓰세요", "도화가 들어와 매력이 살아나는 날입니다. 소개·미팅·발표처럼 사람 앞에 서는 일이 유리합니다."
+    elif "stem_hap" in keys:
+        head, body = "제안이나 협업에 먼저 손 내미세요", "오늘 천간이 내 일간과 합을 이뤄 사람과 일이 잘 붙는 날입니다. 먼저 제안하는 쪽이 이깁니다."
+    elif "yeok_ma" in keys:
+        head, body = "밖으로 나가야 풀리는 날입니다", "역마가 들어와 움직임이 많은 날입니다. 앉아서 기다리기보다 직접 가서 보고 만나는 쪽이 성과가 납니다."
+    elif "stem_chung" in keys:
+        head, body = "맞서지 말고 한 박자 쉬세요", "오늘 천간이 내 일간과 충이라 고집이 부딪히기 쉬운 날입니다. 반박은 내일로 미루고 듣는 쪽으로 서세요."
+    elif "wun_strong" in keys:
+        head, body = "중요한 일은 오늘 몰아서 처리하세요", "내 일간이 힘을 얻는 자리에 든 날이라 추진력이 붙습니다. 미뤄둔 일을 한 번에 밀어붙이기 좋습니다."
+    elif "wun_weak" in keys:
+        head, body = "무리하지 말고 회복을 우선하세요", "내 일간의 기운이 가라앉는 자리에 든 날입니다. 일정은 가볍게, 수면과 식사를 먼저 챙기세요."
+    else:
+        head, body = _DEFAULT_ACTIONS[top_cat]
+    if good_hours:
+        hours = " · ".join(f"{h['label']}({h['branch']}시)" for h in good_hours)
+        body += f" 움직이기 좋은 시간은 {hours}입니다."
+    return {"headline": head, "body": body, "good_hours": good_hours}
 
 
 _TEN_GOD_DESC: dict[str, str] = {
@@ -332,12 +490,17 @@ def _make_basis(
     today_branch: str,
     day_master: str,
     year_branch: str,
+    branch_ten_god: str = "",
+    signals: list[dict] | None = None,
+    month_ten_god: str = "",
 ) -> str:
     """오늘 운세의 명리 근거 요약."""
     parts: list[str] = []
 
     tg_desc = _TEN_GOD_DESC.get(ten_god, "")
     parts.append(f"오늘 천간은 일간({day_master}) 기준 {ten_god}({tg_desc})")
+    if branch_ten_god:
+        parts.append(f"오늘 지지 본기는 {branch_ten_god}({_TEN_GOD_DESC.get(branch_ten_god, '')})")
 
     el_meaning = _WUXING_EL_MEANING.get(today_branch_el, "")
     wx_label = _WUXING_RELATION_LABEL.get(wx_bonus, "조심이 필요한 기운" if wx_bonus < 0 else "무난한 기운")
@@ -389,6 +552,11 @@ def _make_basis(
             parts.append("삼합 기운 형성 → 강한 에너지의 날")
             break
 
+    for sg in signals or []:
+        parts.append(sg["desc"])
+    if month_ten_god:
+        parts.append(f"이번 달 월운은 {month_ten_god}({_TEN_GOD_DESC.get(month_ten_god, '')}) 흐름")
+
     return "\n".join(parts)
 
 
@@ -405,16 +573,28 @@ def compute_daily_fortune(calc: dict, target_date: _date | None = None) -> dict:
     yong_sin     = calc.get("yong_sin", {})
 
     ten_god            = calculate_ten_god(day_master, day_ganji["stem"])
+    branch_ten_god     = get_branch_ten_god(day_master, day_ganji["branch"])
     today_branch_el    = BRANCHES_BY_KOREAN[day_ganji["branch"]]["element"]
     wx_bonus           = _wuxing_bonus(today_branch_el, yong_sin)
     day_branch_bonus   = _branch_pair_bonus(day_ganji["branch"], day_branch,   weight=1.0)
     month_branch_bonus = _branch_pair_bonus(day_ganji["branch"], month_branch, weight=0.67)
     branch_bonus       = day_branch_bonus + month_branch_bonus
+    signals            = _collect_signals(calc, day_ganji["stem"], day_ganji["branch"])
+
+    # 월운 맥락 (절기 기준 정확 월주) — 근거 문구용
+    try:
+        from engine.calc.se_un import calc_month_ganji_for_date
+        month_g = calc_month_ganji_for_date(datetime(today.year, today.month, today.day, 12, 0))
+        month_ten_god = calculate_ten_god(day_master, month_g["stem"])
+    except Exception:  # noqa: BLE001 — 근거 문구는 부가 정보
+        month_ten_god = ""
 
     fortunes: dict[str, dict] = {}
     for cat, tg_table in _TEN_GOD_SCORES.items():
-        tg_bonus = tg_table.get(ten_god, 0)
-        raw   = 50 + tg_bonus + wx_bonus + branch_bonus
+        tg_bonus  = tg_table.get(ten_god, 0)
+        btg_bonus = 0.6 * tg_table.get(branch_ten_god, 0)
+        sig_bonus = sum(sg["_bonus"][cat] for sg in signals)
+        raw   = 50 + tg_bonus + btg_bonus + wx_bonus + branch_bonus + sig_bonus
         score = _compress_score(raw)
         level = _get_level(score)
         fortunes[cat] = {
@@ -427,17 +607,24 @@ def compute_daily_fortune(calc: dict, target_date: _date | None = None) -> dict:
     avg_score  = sum(f["score"] for f in fortunes.values()) / len(fortunes)
     overall    = _get_overall(avg_score)
     worst_cat  = min(fortunes, key=lambda c: fortunes[c]["score"])
+    top_cat    = max(fortunes, key=lambda c: fortunes[c]["score"])
 
-    has_chung = any(
-        (a, b) in [(day_ganji["branch"], day_branch), (day_branch, day_ganji["branch"]),
-                   (day_ganji["branch"], month_branch), (month_branch, day_ganji["branch"])]
-        for a, b in CHUNG_PAIRS
-    )
+    chung_target = ""
+    for a, b in CHUNG_PAIRS:
+        if {a, b} == {day_ganji["branch"], day_branch}:
+            chung_target = f"일지({day_branch})"; break
+        if {a, b} == {day_ganji["branch"], month_branch}:
+            chung_target = f"월지({month_branch})"; break
+    has_chung = bool(chung_target)
     caution  = _CAUTION_CHUNG if has_chung else _CAUTION_BY_CATEGORY[worst_cat]
     basis    = _make_basis(ten_god, today_branch_el, wx_bonus, branch_bonus,
                            day_branch, month_branch, day_ganji["branch"],
-                           day_master, year_branch)
-    clothing = _clothing_color(yong_sin)
+                           day_master, year_branch,
+                           branch_ten_god=branch_ten_god, signals=signals, month_ten_god=month_ten_god)
+    good_hours = _good_hours(calc, day_ganji["branch"], yong_sin)
+    action     = _pick_action(signals, has_chung, chung_target, top_cat, good_hours)
+
+    public_signals = [{k: v for k, v in sg.items() if not k.startswith("_")} for sg in signals]
 
     return {
         "target_date":    today.isoformat(),
@@ -445,7 +632,9 @@ def compute_daily_fortune(calc: dict, target_date: _date | None = None) -> dict:
         "overall":        overall,
         "caution":        caution,
         "basis":          basis,
-        "clothing_color": clothing,
+        "signals":        public_signals,
+        "good_hours":     good_hours,
+        "action":         action,
         "fortunes":       fortunes,
         "birth_day_pillar": {
             "stem":         calc["day_pillar"]["stem"],

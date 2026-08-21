@@ -158,7 +158,7 @@ function slotIndex(kind: string, categoryKey?: string): number {
   if (kind === 'overall') return 5
   if (kind === 'category' && categoryKey && categoryKey in CATEGORY_SLOT) return CATEGORY_SLOT[categoryKey]
   if (kind === 'caution') return 9
-  if (kind === 'color') return 6
+  if (kind === 'action' || kind === 'color') return 6
   if (kind === 'summary') return 4
   return 10 // fallback
 }

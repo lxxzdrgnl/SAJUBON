@@ -4,10 +4,10 @@
 """
 
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime
 from engine.data.heavenly_stems import STEMS_BY_KOREAN
 from engine.data.earthly_branches import BRANCHES_BY_KOREAN
-from engine.calc.solar_terms import get_next_solar_term, get_previous_solar_term
+from engine.calc.solar_terms import get_next_solar_term, get_previous_solar_term, to_utc
 
 
 def _is_forward(saju: dict) -> bool:
@@ -51,16 +51,17 @@ def calculate_dae_un(saju: dict, count: int = 8) -> list[dict]:
     """
     y, mo, d = map(int, saju["birth_date"].split("-"))
     hh, mm = (12, 0) if saju.get("birth_time") is None else map(int, saju["birth_time"].split(":"))
-    birth_dt = datetime(y, mo, d, hh, mm, tzinfo=timezone.utc)
+    # 법정 KST 벽시계 시각 → 절기 비교를 위해 UTC로 변환 (solar_terms.to_utc가 역사적 오프셋 반영)
+    birth_dt = to_utc(datetime(y, mo, d, hh, mm))
 
     forward = _is_forward(saju)
 
     # 절기까지 일수 계산
     if forward:
-        target = get_next_solar_term(birth_dt)
+        target = get_next_solar_term(birth_dt, jeol_only=True)   # 대운수는 12절(節) 기준, 중기 제외
         delta = target["datetime"] - birth_dt
     else:
-        target = get_previous_solar_term(birth_dt)
+        target = get_previous_solar_term(birth_dt, jeol_only=True)
         delta = birth_dt - target["datetime"]
 
     total_seconds = int(delta.total_seconds())

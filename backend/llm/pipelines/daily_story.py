@@ -2,7 +2,7 @@
 
 흐름:
   1. 기존 daily 엔진 핸들러 → DailyFortuneResponse 데이터
-  2. 결정론 조립 → 카드 11장 (intro·overall·category×6·caution·color·summary)
+  2. 결정론 조립 → 카드 11장 (intro·overall·category×6·caution·action·summary)
   3. GPT 리라이트 1회 — headline·body만 반말로 일괄 변환 (점수·간지·사실 불변)
   4. 실패·키 없음 → 엔진 템플릿 원문 + rewritten=False (스토리는 항상 뜬다)
 """
@@ -129,15 +129,15 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
         "body": data.get("caution", ""),
     })
 
-    # color
-    color = data.get("clothing_color", {}) or {}
+    # action — 오늘의 한 수 (신호 우선순위 기반 구체 행동 + 길시)
+    action = data.get("action", {}) or {}
     cards.append({
-        "kind": "color",
+        "kind": "action",
         "category_key": None,
-        "title": "오늘의 색",
+        "title": "오늘의 한 수",
         "score": None,
-        "headline": color.get("color", ""),
-        "body": color.get("reason", ""),
+        "headline": action.get("headline", ""),
+        "body": action.get("body", ""),
     })
 
     # summary — headline은 총운 첫 문장(keyword 중복 방지), body는 총운 전체
@@ -154,7 +154,7 @@ def assemble_story(data: dict, profile_name: str) -> tuple[list[dict], dict[str,
     return cards, scores, keyword
 
 
-async def _rewrite(cards: list[dict], language: str = "ko") -> bool:
+async def _rewrite(cards: list[dict], language: str = "ko", facts: list[str] | None = None) -> bool:
     """카드 headline·body를 반말 톤으로 리라이트 — 작은 청크로 쪼개 **병렬** 호출.
 
     한 번에 11장을 리라이트하면 느려 타임아웃이 나므로, 3장씩 동시에 호출해
@@ -179,7 +179,7 @@ async def _rewrite(cards: list[dict], language: str = "ko") -> bool:
         try:
             messages = [
                 SystemMessage(content=system_prompt),
-                HumanMessage(content=format_daily_story_message(chunk)),
+                HumanMessage(content=format_daily_story_message(chunk, facts=facts)),
             ]
             resp = await llm.ainvoke(messages)
             raw = resp.content if hasattr(resp, "content") else str(resp)
@@ -230,7 +230,8 @@ async def build_daily_story(
     data = get_daily_fortune(req).model_dump()
     cards, scores, keyword = assemble_story(data, profile_name)
 
-    rewritten = await _rewrite(cards, language)
+    facts = [sg["desc"] for sg in data.get("signals", [])]
+    rewritten = await _rewrite(cards, language, facts=facts)
 
     # 리라이트 실패·누락 시 빈 headline 폴백 (UI 빈 칸 방지)
     for c in cards:

@@ -6,7 +6,7 @@ Strategy + Registry 패턴: 각 신살을 체커 함수로 등록하고 순회 �
 from __future__ import annotations
 from datetime import datetime
 from typing import Callable
-from engine.data.earthly_branches import GONG_MANG_TABLE
+from engine.data.earthly_branches import get_gong_mang
 
 # ─── 정적 데이터 ────────────────────────────────────────────────
 
@@ -34,42 +34,44 @@ _HWA_GAE_GROUPS: list[tuple[set[str], str]] = [
 ]
 
 
-_GWI_MUN_BRANCHES: set[str] = {"인", "신", "사", "해"}
+# 귀문관살 — 지지 쌍 (자유·축오·인미·묘신·진해·사술)
+_GWI_MUN_PAIRS: list[tuple[str, str]] = [("자", "유"), ("축", "오"), ("인", "미"), ("묘", "신"), ("진", "해"), ("사", "술")]
 
 _YANG_IN_TABLE: dict[str, str] = {
     "갑": "묘", "병": "오", "무": "오", "경": "유", "임": "자",
     "을": "진", "정": "미", "기": "미", "신": "술", "계": "축",
 }
 
+# 백호대살 7종 (갑진·을미·병술·정축·무진·임술·계축)
 _BAEK_HO_PAIRS: set[tuple[str, str]] = {
     ("갑", "진"), ("을", "미"), ("병", "술"), ("정", "축"),
-    ("무", "진"), ("기", "미"), ("경", "술"), ("신", "축"),
-    ("임", "진"), ("계", "미"),
+    ("무", "진"), ("임", "술"), ("계", "축"),
 }
 
 # ── 추가 8종 정적 데이터 ─────────────────────────────────────────
 
-_HYEON_CHIM_STEMS: set[str] = {"갑", "신", "임"}
-_HYEON_CHIM_BRANCHES: set[str] = {"오", "묘", "신"}
+_HYEON_CHIM_STEMS: set[str] = {"갑", "신"}
+_HYEON_CHIM_BRANCHES: set[str] = {"묘", "오", "미", "신"}
 
 _TAE_GEUK_TABLE: dict[str, list[str]] = {
     "갑": ["자", "오"], "을": ["자", "오"],
     "병": ["묘", "유"], "정": ["묘", "유"],
     "무": ["진", "술", "축", "미"], "기": ["진", "술", "축", "미"],
-    "경": ["인", "오"], "신": ["인", "오"],
+    "경": ["인", "해"], "신": ["인", "해"],
     "임": ["사", "신"], "계": ["사", "신"],
 }
 
 _MUN_GOK_TABLE: dict[str, str] = {
     "갑": "해", "을": "자", "병": "인", "정": "묘",
-    "무": "진", "기": "사", "경": "오", "신": "미",
+    "무": "인", "기": "묘", "경": "사", "신": "오",
     "임": "신", "계": "유",
 }
 
+# 관귀학관 (갑기→사, 을경→신, 병신→해, 정임→인, 무계→신)
 _GWAN_GWI_TABLE: dict[str, str] = {
-    "갑": "해", "을": "오", "병": "인", "정": "유",
-    "무": "인", "기": "유", "경": "사", "신": "자",
-    "임": "신", "계": "묘",
+    "갑": "사", "기": "사", "을": "신", "경": "신",
+    "병": "해", "신": "해", "정": "인", "임": "인",
+    "무": "신", "계": "신",
 }
 
 _HONG_YEOM_TABLE: dict[str, str] = {
@@ -92,24 +94,19 @@ _WOL_DEOK_TABLE: dict[str, str] = {
     "해": "갑", "묘": "갑", "미": "갑",
 }
 
-_HWANG_EUN_PILLARS: set[tuple[str, str]] = {
-    ("갑", "자"), ("갑", "술"), ("갑", "진"),
-    ("을", "해"), ("을", "묘"),
-    ("병", "자"), ("병", "오"), ("병", "인"),
-    ("정", "묘"),
-    ("무", "자"), ("무", "오"),
-    ("기", "사"), ("기", "해"),
-    ("경", "자"), ("경", "오"), ("경", "신"),
-    ("신", "유"),
-    ("임", "자"), ("임", "신"),
-    ("계", "사"), ("계", "해"),
+# 황은대사 — 월지 기준 일지
+_HWANG_EUN_TABLE: dict[str, str] = {
+    "자": "술", "축": "축", "인": "인", "묘": "사", "진": "유", "사": "묘",
+    "오": "자", "미": "오", "신": "해", "유": "진", "술": "신", "해": "미",
 }
 
+# 삼재 — 생년 삼합 그룹 → 삼재 해 (들·묵·날)
+# 신자진생→인묘진 · 사유축생→해자축 · 인오술생→신유술 · 해묘미생→사오미
 _SAM_JAE_TABLE: list[tuple[frozenset[str], list[str]]] = [
-    (frozenset({"인", "오", "술"}), ["해", "자", "축"]),
-    (frozenset({"사", "유", "축"}), ["인", "묘", "진"]),
-    (frozenset({"신", "자", "진"}), ["사", "오", "미"]),
-    (frozenset({"해", "묘", "미"}), ["신", "유", "술"]),
+    (frozenset({"신", "자", "진"}), ["인", "묘", "진"]),
+    (frozenset({"사", "유", "축"}), ["해", "자", "축"]),
+    (frozenset({"인", "오", "술"}), ["신", "유", "술"]),
+    (frozenset({"해", "묘", "미"}), ["사", "오", "미"]),
 ]
 
 _BRANCH_ORDER = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"]
@@ -144,7 +141,7 @@ def _find_group(
 ) -> tuple[set[str], str] | None:
     """삼합 그룹 중 조건 충족하는 첫 번째 항목 반환."""
     for group, sal in groups:
-        if group & branch_set and sal in branch_set:
+        if group & branch_set:
             return group, sal
     return None
 
@@ -183,12 +180,19 @@ def _make_stem_single(name: str, table: dict[str, str]) -> "SinSalChecker":
 
 def _make_group_branch(name: str, groups: list[tuple[set[str], str]], label_key: str) -> "SinSalChecker":
     """삼합 그룹 체커 (도화살·역마살·화개살)."""
-    def checker(_saju: dict, bs: set[str]) -> dict | None:
-        m = _find_group(bs, groups)
+    def checker(saju: dict, bs: set[str]) -> dict | None:
+        # 기준은 연지·일지 (월지·시지만으로는 발동하지 않음)
+        bases = {saju["year_pillar"]["branch"], saju["day_pillar"]["branch"]}
+        m = None
+        for base in sorted(bases, key=lambda x: _BRANCH_ORDER.index(x)):
+            cand = _find_group({base}, groups)
+            if cand is not None and cand[1] in bs:
+                m = cand
+                break
         if m is None:
             return None
         group, sal = m
-        group_matched = sorted(group & bs, key=lambda x: _BRANCH_ORDER.index(x))
+        group_matched = sorted(group & bases, key=lambda x: _BRANCH_ORDER.index(x))
         r = dict(SIN_SAL_INFO[name])
         r["reason"] = {"trigger": "branch_group", "group_branches": group_matched, label_key: sal}
         r["_location_branches"] = group_matched + [sal]
@@ -203,7 +207,7 @@ _hwa_gae   = _make_group_branch("화개살", _HWA_GAE_GROUPS, "화개지")
 
 def _gong_mang(saju: dict, bs: set[str]) -> dict | None:
     day_branch = saju["day_pillar"]["branch"]
-    gong_branches = GONG_MANG_TABLE.get(day_branch, [])
+    gong_branches = get_gong_mang(saju["day_pillar"]["stem"], day_branch)
     matched = [b for b in gong_branches if b in bs]
     if not matched:
         return None
@@ -227,14 +231,13 @@ def _won_jin(_saju: dict, bs: set[str]) -> dict | None:
     return None
 
 def _gwi_mun(_saju: dict, bs: set[str]) -> dict | None:
-    found = _GWI_MUN_BRANCHES & bs
-    if len(found) < 2:
-        return None
-    matched = sorted(found, key=lambda x: _BRANCH_ORDER.index(x))
-    r = dict(SIN_SAL_INFO["귀문관살"])
-    r["reason"] = {"trigger": "branch_count", "matched_branches": matched, "required_count": 2}
-    r["_location_branches"] = matched
-    return r
+    for a, b in _GWI_MUN_PAIRS:
+        if a in bs and b in bs:
+            r = dict(SIN_SAL_INFO["귀문관살"])
+            r["reason"] = {"trigger": "branch_pair", "pair": [a, b]}
+            r["_location_branches"] = [a, b]
+            return r
+    return None
 
 def _yang_in(saju: dict, bs: set[str]) -> dict | None:
     stem = saju["day_pillar"]["stem"]
@@ -279,7 +282,12 @@ def _hyeon_chim(saju: dict, _bs: set[str]) -> dict | None:
             continue
         if saju[key]["stem"] in _HYEON_CHIM_STEMS or saju[key]["branch"] in _HYEON_CHIM_BRANCHES:
             trigger_pillars.append(short)
-    if not trigger_pillars:
+    # 현침 글자(갑·신·묘·오·미·신)가 2개 이상일 때만 성립 — 1글자는 대부분의 사주에 해당해 의미 없음
+    glyph_count = sum(
+        (saju[key]["stem"] in _HYEON_CHIM_STEMS) + (saju[key]["branch"] in _HYEON_CHIM_BRANCHES)
+        for key in ["year_pillar", "month_pillar", "day_pillar", "hour_pillar"] if saju.get(key)
+    )
+    if not trigger_pillars or glyph_count < 2:
         return None
     r = dict(SIN_SAL_INFO["현침살"])
     r["reason"] = {"trigger": "stem_or_branch",
@@ -320,12 +328,13 @@ def _wol_deok(saju: dict, _bs: set[str]) -> dict | None:
 
 
 def _hwang_eun(saju: dict, _bs: set[str]) -> dict | None:
-    day = saju["day_pillar"]
-    if (day["stem"], day["branch"]) not in _HWANG_EUN_PILLARS:
+    month_branch = saju["month_pillar"]["branch"]
+    day_branch = saju["day_pillar"]["branch"]
+    if _HWANG_EUN_TABLE.get(month_branch) != day_branch:
         return None
     r = dict(SIN_SAL_INFO["황은대사"])
-    r["reason"] = {"trigger": "day_pillar",
-                   "day_stem": day["stem"], "day_branch": day["branch"]}
+    r["reason"] = {"trigger": "month_branch_day_branch",
+                   "month_branch": month_branch, "day_branch": day_branch}
     r["_location_pillars"] = ["day"]
     r["_location_branches"] = []
     return r

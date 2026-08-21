@@ -29,12 +29,29 @@ class DailyGanji(BaseModel):
     branch: str = Field(description="오늘 지지", examples=["오"])
 
 
-class ClothingColor(BaseModel):
-    """용신/희신 오행 기반 추천 옷 색깔."""
+class FortuneSignal(BaseModel):
+    """오늘 운세의 명리 근거 신호 1개 (천간 합충·12운성·신살·공망)."""
 
-    color:   str = Field(description="추천 색상", examples=["흰색·은색·회색"])
-    element: str = Field(description="근거 오행", examples=["금"])
-    reason:  str = Field(description="한 줄 이유")
+    key:   str = Field(description="신호 키", examples=["do_hwa"])
+    label: str = Field(description="짧은 라벨", examples=["도화"])
+    tone:  str = Field(description="good | bad | neutral")
+    desc:  str = Field(description="한 줄 근거 설명")
+
+
+class GoodHour(BaseModel):
+    """오늘 움직이기 좋은 시진."""
+
+    branch:  str = Field(description="시진 지지", examples=["사"])
+    label:   str = Field(description="시간대 라벨 (진태양시 보정)", examples=["오전 9시 반~11시 반"])
+    element: str = Field(description="시진 오행", examples=["화"])
+
+
+class ActionHint(BaseModel):
+    """오늘의 한 수 — 신호 우선순위로 고른 구체 행동 1개."""
+
+    headline:   str = Field(description="행동 한 마디")
+    body:       str = Field(description="이유 + 팁 (길시 포함)")
+    good_hours: list[GoodHour] = Field(default_factory=list)
 
 
 class BirthDayPillar(BaseModel):
@@ -51,7 +68,9 @@ class DailyFortuneResponse(BaseModel):
     overall:          str            = Field(description="전체 요약 한 문장")
     caution:          str            = Field(description="오늘 조심해야 할 것")
     basis:            str            = Field(description="오늘 운세의 명리 근거 요약")
-    clothing_color:   ClothingColor  = Field(description="추천 옷 색깔")
+    signals:          list[FortuneSignal] = Field(default_factory=list, description="구조화 근거 신호")
+    good_hours:       list[GoodHour]      = Field(default_factory=list, description="움직이기 좋은 시진")
+    action:           ActionHint          = Field(description="오늘의 한 수")
     fortunes:         dict[str, FortuneItem] = Field(
         description="카테고리별 운세 (exam/money/love/career/health/social)"
     )

@@ -175,11 +175,26 @@ export interface FortuneItem {
   label: string
 }
 
-/** 옷 색깔 추천 */
-export interface ClothingColor {
-  color:   string
+/** 오늘 운세의 명리 근거 신호 (천간 합충·12운성·신살·공망) */
+export interface FortuneSignal {
+  key:   string
+  label: string
+  tone:  'good' | 'bad' | 'neutral'
+  desc:  string
+}
+
+/** 움직이기 좋은 시진 */
+export interface GoodHour {
+  branch:  string
+  label:   string
   element: string
-  reason:  string
+}
+
+/** 오늘의 한 수 */
+export interface ActionHint {
+  headline:   string
+  body:       string
+  good_hours: GoodHour[]
 }
 
 /** 오늘의 운세 응답 */
@@ -189,7 +204,9 @@ export interface DailyFortuneResponse {
   overall:          string
   caution:          string
   basis:            string
-  clothing_color:   ClothingColor
+  signals:          FortuneSignal[]
+  good_hours:       GoodHour[]
+  action:           ActionHint
   fortunes:         Record<string, FortuneItem>
   birth_day_pillar: { stem: string; branch: string; stem_element: string }
 }

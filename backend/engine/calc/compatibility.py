@@ -88,17 +88,22 @@ def _branch_relation_score(saju1: dict, saju2: dict) -> tuple[int, list[str]]:
 
 def _ten_gods_score(saju1: dict, saju2: dict) -> int:
     """십성 상호 관계 점수 (일간 기준 실제 십성 계산)."""
-    rel = calculate_ten_god(saju1["day_pillar"]["stem"], saju2["day_pillar"]["stem"])
-    return _TEN_GOD_HARMONY.get(rel, 60)
+    # 양방향 평균 — A→B만 보면 입력 순서에 따라 점수가 달라진다 (91 vs 83 같은 비대칭)
+    s1, s2 = saju1["day_pillar"]["stem"], saju2["day_pillar"]["stem"]
+    fwd = _TEN_GOD_HARMONY.get(calculate_ten_god(s1, s2), 60)
+    bwd = _TEN_GOD_HARMONY.get(calculate_ten_god(s2, s1), 60)
+    return round((fwd + bwd) / 2)
 
 
 def _feelgood(x: int) -> int:
     """원점수를 기분 좋은 범위로 상향평준화한다 (단조 증가 → 순위 보존, 평균 ~85).
 
     궁합 점수는 소비자 경험상 너무 박하면 안 된다. raw 64 → 85로 매핑되며
-    잘 맞는 쌍은 90+, 안 맞는 쌍도 ~70대로 깔린다. 상대 비교는 그대로 유지.
+    잘 맞는 쌍은 90+, 안 맞는 쌍은 60대 후반~70대. 상대 비교는 그대로 유지.
     """
-    return round(min(100, max(0, 59 + x * 0.40)))
+    # 59+0.40x 는 SD 3.4(78~92)로 누구와 봐도 80점대라 변별력이 없었다.
+    # 25+0.90x: 평균 ~85, SD ~8, 69~100 — ≥95점 약 10%, ≥90점 약 39%, 75점 미만 12%.
+    return round(min(100, max(0, 25 + x * 0.90)))
 
 
 def check_compatibility(saju1: dict, saju2: dict) -> dict:

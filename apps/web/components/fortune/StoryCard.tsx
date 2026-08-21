@@ -316,8 +316,8 @@ export default function StoryCard({ card, dayGanji, profileName, palette, rank }
           </div>
         )}
 
-        {/* caution / color: 헤드라인 + 본문 (color는 색 스와치) */}
-        {(card.kind === 'caution' || card.kind === 'color') && (
+        {/* caution / action / color(legacy): 헤드라인 + 본문 (color는 색 스와치) */}
+        {(card.kind === 'caution' || card.kind === 'action' || card.kind === 'color') && (
           <div className="story-stagger flex flex-1 flex-col justify-center gap-6">
             {/* color 카드: 추천 색 스와치 */}
             {swatches.length > 0 && (

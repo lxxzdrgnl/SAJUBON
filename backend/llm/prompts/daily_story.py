@@ -30,6 +30,9 @@ DAILY_STORY_SYSTEM_PROMPT = """\
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - 점수(score), 간지(stem/branch), 카테고리(category_key, title), 명리 사실 절대 불변.
 - body는 문체·표현만 바꾼다. 새로운 사실·숫자·근거 지어내기 금지.
+- 단, 입력의 "facts"(오늘 일진의 명리 신호: 충·합·도화·역마·귀인·공망·12운성 등)는 확인된 사실이다.
+  카드 내용과 맞는 fact가 있으면 body 문장 1에 한 가지만 자연스럽게 녹여 "왜 오늘인지"를 구체화하라
+  (예: "오늘 지지가 네 일지랑 충이라…", "귀인이 들어온 날이라…"). 명리 용어는 한 카드에 하나까지만, 과시하지 마라.
 - 카드 개수·순서·id 그대로 유지.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -90,8 +93,9 @@ def build_daily_story_system_prompt(language: str = "ko") -> str:
     return DAILY_STORY_SYSTEM_PROMPT + english_output_directive(language)
 
 
-def format_daily_story_message(cards: list[dict]) -> str:
-    """리라이트 대상 카드(id·kind·title·score·headline·body)를 LLM 입력 JSON으로 직렬화."""
+def format_daily_story_message(cards: list[dict], facts: list[str] | None = None) -> str:
+    """리라이트 대상 카드(id·kind·title·score·headline·body)를 LLM 입력 JSON으로 직렬화.
+    facts: 오늘 일진의 명리 신호 설명(엔진 산출) — 리라이트가 참조 가능한 사실 목록."""
     items = [
         {
             "id": i,
@@ -103,8 +107,11 @@ def format_daily_story_message(cards: list[dict]) -> str:
         }
         for i, c in enumerate(cards)
     ]
+    payload: dict = {"cards": items}
+    if facts:
+        payload["facts"] = facts
     return (
-        "아래 카드들의 headline·body를 직설 친구 반말 톤으로 다시 써줘. "
-        "점수·간지·title·사실은 그대로 두고 문체만 바꿔.\n\n"
-        + json.dumps(items, ensure_ascii=False, indent=2)
+        "아래 cards의 headline·body를 직설 친구 반말 톤으로 다시 써줘. "
+        "점수·간지·title·사실은 그대로 두고 문체만 바꿔. facts는 오늘의 확인된 명리 근거야.\n\n"
+        + json.dumps(payload, ensure_ascii=False, indent=2)
     )

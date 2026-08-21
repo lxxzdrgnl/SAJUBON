@@ -86,6 +86,9 @@ def build_system_prompt(language: str = "ko") -> str:
 
 # ─── 사주 프로파일 포맷터 ─────────────────────────────────────────────────────
 
+_PILLAR_KO = {"year": "연", "month": "월", "day": "일", "hour": "시"}
+
+
 def _pillar_str(p: dict) -> str:
     if not p:
         return "?"
@@ -170,23 +173,36 @@ def format_user_message(
         status = "합화 성립" if eff else "합화 불성립(충·극 방해)"
         br_lines.append(f"육합 {pair}→{elem}화 ({status})")
 
+    for bang in br.get("bang_hap", []):
+        branches = "·".join(bang.get("branches", []))
+        br_lines.append(f"방합 {branches}→{bang.get('element','')}화 ({bang.get('type','')})")
+
     for sam_hap in br.get("sam_hap", []):
         branches = "·".join(sam_hap.get("branches", []))
         elem = sam_hap.get("element", "")
         label = sam_hap.get("label") or f"삼합 {branches}→{elem}화"
         br_lines.append(label if "합" in label else f"삼합 {branches}→{elem}화 ({label})")
 
-    for pair in br.get("chung", []):
-        br_lines.append(f"충 {'↔'.join(pair)} (충돌·약화)")
+    def _pair_of(item) -> list[str]:
+        # 엔진 항목은 {"pair": (a, b), "pillars": [...]} dict — 그대로 join하면 "pair↔pillars"가 찍힌다
+        return list(item.get("pair", [])) if isinstance(item, dict) else list(item)
+
+    def _pillars_of(item) -> str:
+        if isinstance(item, dict) and item.get("pillars"):
+            return "(" + "·".join(_PILLAR_KO.get(p, p) for p in item["pillars"]) + ")"
+        return ""
+
+    for item in br.get("chung", []):
+        br_lines.append(f"충 {'↔'.join(_pair_of(item))}{_pillars_of(item)} (충돌·약화)")
 
     for hyeong in br.get("sam_hyeong", []):
         br_lines.append(f"형 {hyeong}")
 
-    for pair in br.get("pa", []):
-        br_lines.append(f"파 {'·'.join(pair)}")
+    for item in br.get("pa", []):
+        br_lines.append(f"파 {'·'.join(_pair_of(item))}{_pillars_of(item)}")
 
-    for pair in br.get("hae", []):
-        br_lines.append(f"해 {'·'.join(pair)}")
+    for item in br.get("yuk_hae", []):   # 엔진 키는 yuk_hae ("hae"로 읽으면 해(害)가 영영 누락)
+        br_lines.append(f"해 {'·'.join(_pair_of(item))}{_pillars_of(item)}")
 
     if br_lines:
         parts.append("지지 상호작용: " + " / ".join(br_lines))
